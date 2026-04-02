@@ -78,11 +78,15 @@
     </section>
 
     <!-- 重要时间节点（可折叠) -->
-    <section class="timeline-section" v-if="userStore.isLoggedIn">
+    <section class="timeline-section">
       <div class="section-container">
-        <div class="timeline-toggle" @click="timelineExpanded = !timelineExpanded">
+        <div class="timeline-header">
           <h2>📌 重要时间节点</h2>
-          <span class="toggle-btn">{{ timelineExpanded ? '收起 ▲' : '展开 ▼' }}</span>
+          <span class="timeline-subtitle">登录后可查看各类考试的重要时间安排</span>
+        </div>
+
+        <div class="timeline-content">
+          <div class="exam-groups" v-if="examTimelines.length > 0">
         </div>
 
         <div class="timeline-content" v-show="timelineExpanded">
