@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -I https://api.anthropic.com)",
+      "Bash(node -e \"const https = require\\('https'\\); https.get\\('https://api.anthropic.com', \\(res\\) => console.log\\('Status:', res.statusCode\\)\\).on\\('error', \\(e\\) => console.log\\('Error:', e.message\\)\\)\")",
+      "Bash(npm run:*)",
+      "Bash(open http://localhost:5174/admin)",
+      "Bash(open \"vscode://simpleBrowser.show?http://localhost:5174/admin\")",
+      "Bash(sqlite3 /Users/wulobooo/Desktop/学习平台/server/data/learning_platform.db \".tables\")",
+      "Bash(sqlite3 /Users/wulobooo/Desktop/学习平台/server/data/learning_platform.db \"SELECT id, username, password, role, created_at FROM users;\")",
+      "Bash(curl -s -H \"x-api-key: sk-9514b7fed6fa494e9426421dc186d32e\" -H \"anthropic-version: 2023-06-01\" -H \"content-type: application/json\" -d '{\"model\":\"DeepSeek-V3.2\",\"max_tokens\":10,\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}]}' https://api.deepseek.com/anthropic/v1/messages)"
+    ]
+  }
+}
