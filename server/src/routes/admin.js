@@ -509,11 +509,11 @@ router.post('/timelines', async (req, res, next) => {
     }
 
     const timelineId = insert('exam_timelines', {
-      name,
-      icon: icon || '📝',
-      period: period || null,
-      status: status || 'upcoming',
-      status_label: status_label || '即将开始',
+      exam_name: name,
+      exam_icon: icon || '📝',
+      exam_period: period || null,
+      exam_status: status || 'upcoming',
+      exam_status_label: status_label || '即将开始',
       milestones: milestones ? JSON.stringify(milestones) : null
     })
 
@@ -537,11 +537,11 @@ router.put('/timelines/:id', async (req, res, next) => {
     }
 
     const updateData = {}
-    if (name) updateData.name = name
-    if (icon !== undefined) updateData.icon = icon
-    if (period !== undefined) updateData.period = period
-    if (status) updateData.status = status
-    if (status_label !== undefined) updateData.status_label = status_label
+    if (name) updateData.exam_name = name
+    if (icon !== undefined) updateData.exam_icon = icon
+    if (period !== undefined) updateData.exam_period = period
+    if (status) updateData.exam_status = status
+    if (status_label !== undefined) updateData.exam_status_label = status_label
     if (milestones !== undefined) updateData.milestones = JSON.stringify(milestones)
 
     update('exam_timelines', updateData, 'id = ?', [id])
