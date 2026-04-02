@@ -85,10 +85,6 @@
           <span class="timeline-subtitle">登录后可查看各类考试的重要时间安排</span>
         </div>
 
-        <div class="timeline-content">
-          <div class="exam-groups" v-if="examTimelines.length > 0">
-        </div>
-
         <div class="timeline-content" v-show="timelineExpanded">
           <div class="exam-groups" v-if="examTimelines.length > 0">
             <div
