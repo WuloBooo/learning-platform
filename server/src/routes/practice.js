@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { query, getOne, insert, update, remove } from '../config/database.js'
 import { authenticate } from '../middleware/auth.js'
 import * as xlsx from 'xlsx'
+import { getAIExplanation } from '../services/ai.js'
 
 const router = Router()
 
@@ -1069,6 +1070,51 @@ router.post('/questions/import-excel', async (req, res, next) => {
     })
   } catch (error) {
     next(error)
+  }
+})
+
+// 获取题目的 AI 解析
+router.get('/questions/:id/ai-explanation', authenticate, async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    // 获取题目信息
+    const question = getOne(
+      'SELECT id, title, options, answer, analysis, question_type FROM questions WHERE id = ?',
+      [id]
+    )
+
+    if (!question) {
+      return res.status(404).json({ message: '题目不存在' })
+    }
+
+    // 解析 options JSON
+    let options = null
+    if (question.options) {
+      try {
+        options = JSON.parse(question.options)
+      } catch (e) {
+        options = null
+      }
+    }
+
+    // 调用 AI 服务获取解析
+    const explanation = await getAIExplanation({
+      title: question.title,
+      options: options,
+      answer: question.answer,
+      analysis: question.analysis
+    })
+
+    res.json({
+      message: 'AI 解析生成成功',
+      explanation
+    })
+  } catch (error) {
+    console.error('AI 解析错误:', error)
+    res.status(500).json({
+      message: error.message || 'AI 解析生成失败，请稍后重试'
+    })
   }
 })
 

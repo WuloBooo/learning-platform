@@ -36,8 +36,27 @@
             <span class="label">解析：</span>
             <span class="value">{{ wq.analysis }}</span>
           </div>
+
+          <!-- AI 解析区域 -->
+          <div class="ai-explanation-section">
+            <button
+              class="btn-ai"
+              @click="fetchAIExplanation(wq)"
+              :disabled="loadingAI[wq.question_id]"
+              v-if="!aiExplanations[wq.question_id]"
+            >
+              {{ loadingAI[wq.question_id] ? 'AI 解析中...' : '🤖 获取AI解析' }}
+            </button>
+            <div class="ai-explanation" v-if="aiExplanations[wq.question_id]">
+              <div class="ai-header">
+                <span class="ai-icon">🤖</span>
+                <span class="ai-title">AI 解析</span>
+              </div>
+              <div class="ai-content" v-html="formatAIExplanation(aiExplanations[wq.question_id])"></div>
+            </div>
+          </div>
         </div>
-        
+
         <div class="question-actions">
           <button class="btn-master" @click="markAsMastered(wq)">标记为已掌握</button>
           <button class="btn-retry" @click="retryQuestion(wq)">重新作答</button>
@@ -117,6 +136,8 @@ import { practiceAPI } from '../api'
 const loading = ref(false)
 const wrongQuestions = ref([])
 const pagination = reactive({ page: 1, pageSize: 10, total: 0, totalPages: 0 })
+const aiExplanations = ref({})  // 存储AI解析
+const loadingAI = ref({})  // 加载状态
 const retryingQuestion = ref(null)
 const retryAnswer = ref('')
 const retryResult = ref(null)
@@ -186,7 +207,7 @@ const closeRetry = () => {
 
 const submitRetry = async () => {
   if (!retryAnswer.value) return
-  
+
   try {
     const res = await practiceAPI.submitAnswer({
       question_id: retryingQuestion.value.question_id,
@@ -202,6 +223,30 @@ const submitRetry = async () => {
   } catch (e) {
     alert(e.message || '提交失败')
   }
+}
+
+// 获取AI解析
+const fetchAIExplanation = async (wq) => {
+  const questionId = wq.question_id
+  if (aiExplanations.value[questionId] || loadingAI.value[questionId]) return
+
+  loadingAI.value[questionId] = true
+  try {
+    const res = await practiceAPI.getAIExplanation(questionId)
+    aiExplanations.value[questionId] = res.explanation
+  } catch (e) {
+    alert(e.message || 'AI解析获取失败')
+  } finally {
+    loadingAI.value[questionId] = false
+  }
+}
+
+// 格式化AI解析（将 **文字** 转为粗体，换行转为br）
+const formatAIExplanation = (text) => {
+  if (!text) return ''
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>')
 }
 
 onMounted(() => {
@@ -239,6 +284,17 @@ onMounted(() => {
 .correct-answer .value { color: #4caf50; font-weight: 600; }
 .analysis .label { color: #666; }
 .analysis .value { color: #333; }
+
+.ai-explanation-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #c8e6c9; }
+.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: transform 0.2s; }
+.btn-ai:hover { transform: translateY(-2px); }
+.btn-ai:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.ai-explanation { margin-top: 16px; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%); border-radius: 12px; padding: 16px; border-left: 4px solid #667eea; }
+.ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.ai-icon { font-size: 20px; }
+.ai-title { font-weight: 600; color: #4F46E5; }
+.ai-content { font-size: 14px; line-height: 1.8; color: #333; }
+.ai-content strong { color: #4F46E5; }
 
 .question-actions { display: flex; gap: 12px; }
 .btn-master { background: #e8f5e9; color: #4caf50; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }

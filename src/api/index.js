@@ -166,7 +166,8 @@ export const practiceAPI = {
 
   getHistory: (params) => api.get(`/practice/history?${new URLSearchParams(params)}`),
   getStatistics: () => api.get('/practice/statistics'),
-  getPublicExams: (params) => api.get(`/practice/public/exams?${new URLSearchParams(params)}`, { includeAuth: false })
+  getPublicExams: (params) => api.get(`/practice/public/exams?${new URLSearchParams(params)}`, { includeAuth: false }),
+  getAIExplanation: (questionId) => api.get(`/practice/questions/${questionId}/ai-explanation`)
 }
 
 // 公开API（无需登录）
