@@ -45,14 +45,80 @@
               :disabled="loadingAI[wq.question_id]"
               v-if="!aiExplanations[wq.question_id]"
             >
-              {{ loadingAI[wq.question_id] ? 'AI 解析中...' : '🤖 获取AI解析' }}
+              <span v-if="loadingAI[wq.question_id]">🔄 AI 解析中...</span>
+              <span v-else>🤖 获取AI解析</span>
             </button>
+
             <div class="ai-explanation" v-if="aiExplanations[wq.question_id]">
               <div class="ai-header">
                 <span class="ai-icon">🤖</span>
-                <span class="ai-title">AI 解析</span>
+                <span class="ai-title">AI 智能解析</span>
               </div>
-              <div class="ai-content" v-html="formatAIExplanation(aiExplanations[wq.question_id])"></div>
+
+              <div class="ai-body" v-if="aiExplanations[wq.question_id].data">
+                <!-- 知识点 -->
+                <div class="ai-item knowledge">
+                  <span class="item-icon">📚</span>
+                  <div class="item-content">
+                    <span class="item-label">考查知识点</span>
+                    <p>{{ aiExplanations[wq.question_id].data.knowledge }}</p>
+                  </div>
+                </div>
+
+                <!-- 题目分析 -->
+                <div class="ai-item">
+                  <span class="item-icon">🔍</span>
+                  <div class="item-content">
+                    <span class="item-label">题目分析</span>
+                    <p>{{ aiExplanations[wq.question_id].data.analysis }}</p>
+                  </div>
+                </div>
+
+                <!-- 解题步骤 -->
+                <div class="ai-item" v-if="aiExplanations[wq.question_id].data.solution">
+                  <span class="item-icon">📝</span>
+                  <div class="item-content">
+                    <span class="item-label">解题步骤</span>
+                    <p>{{ aiExplanations[wq.question_id].data.solution }}</p>
+                  </div>
+                </div>
+
+                <!-- 答案解释 -->
+                <div class="ai-item highlight">
+                  <span class="item-icon">✅</span>
+                  <div class="item-content">
+                    <span class="item-label">为什么选这个答案</span>
+                    <p>{{ aiExplanations[wq.question_id].data.answerReason }}</p>
+                  </div>
+                </div>
+
+                <!-- 错误选项分析 -->
+                <div class="ai-item" v-if="aiExplanations[wq.question_id].data.wrongOptions">
+                  <span class="item-icon">❌</span>
+                  <div class="item-content">
+                    <span class="item-label">其他选项为什么错</span>
+                    <p>{{ aiExplanations[wq.question_id].data.wrongOptions }}</p>
+                  </div>
+                </div>
+
+                <!-- 易错点提示 -->
+                <div class="ai-item warning" v-if="aiExplanations[wq.question_id].data.tips">
+                  <span class="item-icon">⚠️</span>
+                  <div class="item-content">
+                    <span class="item-label">易错点提示</span>
+                    <p>{{ aiExplanations[wq.question_id].data.tips }}</p>
+                  </div>
+                </div>
+
+                <!-- 总结 -->
+                <div class="ai-item summary" v-if="aiExplanations[wq.question_id].data.summary">
+                  <span class="item-icon">💡</span>
+                  <div class="item-content">
+                    <span class="item-label">核心要点</span>
+                    <p>{{ aiExplanations[wq.question_id].data.summary }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -241,14 +307,6 @@ const fetchAIExplanation = async (wq) => {
   }
 }
 
-// 格式化AI解析（将 **文字** 转为粗体，换行转为br）
-const formatAIExplanation = (text) => {
-  if (!text) return ''
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br>')
-}
-
 onMounted(() => {
   loadWrongQuestions()
 })
@@ -286,15 +344,28 @@ onMounted(() => {
 .analysis .value { color: #333; }
 
 .ai-explanation-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #c8e6c9; }
-.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: transform 0.2s; }
-.btn-ai:hover { transform: translateY(-2px); }
+.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ai:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
 .btn-ai:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-.ai-explanation { margin-top: 16px; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%); border-radius: 12px; padding: 16px; border-left: 4px solid #667eea; }
-.ai-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.ai-icon { font-size: 20px; }
-.ai-title { font-weight: 600; color: #4F46E5; }
-.ai-content { font-size: 14px; line-height: 1.8; color: #333; }
-.ai-content strong { color: #4F46E5; }
+
+.ai-explanation { margin-top: 16px; background: linear-gradient(135deg, #fafbfc 0%, #f0f4f8 100%); border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; }
+.ai-header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.ai-icon { font-size: 24px; }
+.ai-title { font-weight: 600; font-size: 16px; }
+.ai-body { padding: 20px; }
+
+.ai-item { display: flex; gap: 12px; padding: 16px; margin-bottom: 12px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; transition: all 0.2s; }
+.ai-item:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.ai-item:last-child { margin-bottom: 0; }
+.ai-item.knowledge { background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-color: #c7d2fe; }
+.ai-item.highlight { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-color: #a7f3d0; }
+.ai-item.warning { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-color: #fcd34d; }
+.ai-item.summary { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #bae6fd; }
+
+.item-icon { font-size: 20px; flex-shrink: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: white; border-radius: 8px; }
+.item-content { flex: 1; }
+.item-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.item-content p { margin: 0; font-size: 14px; line-height: 1.7; color: #334155; }
 
 .question-actions { display: flex; gap: 12px; }
 .btn-master { background: #e8f5e9; color: #4caf50; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; }

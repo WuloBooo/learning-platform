@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { query, getOne, insert, update, remove } from '../config/database.js'
 import { authenticate } from '../middleware/auth.js'
 import * as xlsx from 'xlsx'
-import { getAIExplanation } from '../services/ai.js'
+import { getAIExplanation, isAIServiceAvailable } from '../services/ai.js'
 
 const router = Router()
 
@@ -1073,8 +1073,14 @@ router.post('/questions/import-excel', async (req, res, next) => {
   }
 })
 
+// 获取 AI 服务状态
+router.get('/ai-status', (req, res) => {
+  const available = isAIServiceAvailable()
+  res.json({ available })
+})
+
 // 获取题目的 AI 解析
-router.get('/questions/:id/ai-explanation', authenticate, async (req, res, next) => {
+router.get('/questions/:id/ai-explanation', authenticate, async (req, res) => {
   try {
     const { id } = req.params
 
