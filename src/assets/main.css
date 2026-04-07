@@ -3034,21 +3034,43 @@ body {
   top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 0;
+}
+
+.entry-card:hover::before {
+  opacity: 1;
+}
+
+.entry-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 4px;
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
   transform: scaleX(0);
   transition: transform 0.3s;
+  z-index: 1;
 }
 
-.entry-card:hover::before {
+.entry-card:hover::after {
   transform: scaleX(1);
 }
 
 .entry-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.15);
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.2);
   border-color: var(--primary-color);
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+.entry-card > * {
+  position: relative;
+  z-index: 2;
 }
 
 .entry-card:hover h3,
@@ -3058,25 +3080,6 @@ body {
 
 .entry-card:hover p {
   color: rgba(255, 255, 255, 0.9);
-}
-
-.entry-card.primary {
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  color: white;
-  border: none;
-}
-
-.entry-card.primary::before {
-  display: none;
-}
-
-.entry-card.primary:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(245, 158, 11, 0.3);
-}
-
-.entry-card.primary .entry-icon {
-  transform: scale(1.1);
 }
 
 .entry-icon {
