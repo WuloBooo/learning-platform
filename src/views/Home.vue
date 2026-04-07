@@ -199,6 +199,16 @@ const currentBanner = ref(0)
     { id: 'software', label: '软件开发' }
   ]
 
+    // 预设的 banner 颜色组合
+    const bannerColors = [
+      { color1: '#667eea', color2: '#764ba2' },  // 紫色渐变
+      { color1: '#f093fb', color2: '#f5576c' },  // 粉色渐变
+      { color1: '#4facfe', color2: '#00f2fe' },  // 蓝色渐变
+      { color1: '#43e97b', color2: '#38f9d7' },  // 绿色渐变
+      { color1: '#fa709a', color2: '#fee140' },  // 橙粉渐变
+      { color1: '#a8edea', color2: '#fed6e3' },  // 清新渐变
+    ]
+
     // 加载数据
     const loadData = async () => {
     loading.value = { banners: true, news: true, timelines: true, programs: true }
@@ -213,13 +223,13 @@ const currentBanner = ref(0)
 
       // 处理轮播图数据
       if (bannersRes.banners && bannersRes.banners.length > 0) {
-        banners.value = bannersRes.banners.map(b => ({
+        banners.value = bannersRes.banners.map((b, index) => ({
           title: b.title,
           description: b.subtitle || '',
           btnText: '立即报名',
           link: '/registration',
-          color1: b.color1 || '#4F46E5',
-          color2: b.color2 || '#7C3AED'
+          color1: b.color1 || bannerColors[index % bannerColors.length].color1,
+          color2: b.color2 || bannerColors[index % bannerColors.length].color2
         }))
         currentBanner.value = 0
       }
