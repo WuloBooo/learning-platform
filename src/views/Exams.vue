@@ -129,7 +129,7 @@
                 <button class="btn-subscribe" @click.stop="subscribeExam(exam)" :class="{ subscribed: exam.subscribed }">
                   {{ exam.subscribed ? '✓ 已订阅' : '🔔 订阅通知' }}
                 </button>
-                <router-link to="/registration" class="btn-register">立即报名</router-link>
+                <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="btn-register">立即报名</a>
               </div>
             </div>
           </div>

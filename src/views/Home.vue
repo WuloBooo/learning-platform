@@ -13,7 +13,7 @@
             <div class="banner-content">
               <h2>{{ slide.title }}</h2>
               <p>{{ slide.description }}</p>
-              <router-link :to="slide.link" class="banner-btn">{{ slide.btnText }}</router-link>
+              <a :href="slide.link" target="_blank" class="banner-btn">{{ slide.btnText }}</a>
             </div>
           </div>
         </div>
@@ -33,11 +33,11 @@
     <!-- 快捷入口 -->
     <section class="quick-entry">
       <div class="entry-container">
-        <router-link to="/registration" class="entry-card">
+        <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="entry-card">
           <span class="entry-icon">📝</span>
           <h3>立即报名</h3>
-          <p>在线填写报名信息</p>
-        </router-link>
+          <p>跳转至报名网站</p>
+        </a>
         <router-link to="/downloads" class="entry-card">
           <span class="entry-icon">📥</span>
           <h3>资料下载</h3>
@@ -159,7 +159,7 @@
               </div>
               <div class="program-footer">
                 <span :class="['status', program.status]">{{ program.statusLabel }}</span>
-                <router-link to="/registration" class="btn-apply">立即报名</router-link>
+                <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="btn-apply">立即报名</a>
               </div>
             </div>
           </div>
@@ -227,7 +227,7 @@ const currentBanner = ref(0)
           title: b.title,
           description: b.subtitle || '',
           btnText: '立即报名',
-          link: '/registration',
+          link: 'https://xbgydx.jndj.ks.zjyun.org',
           color1: b.color1 || bannerColors[index % bannerColors.length].color1,
           color2: b.color2 || bannerColors[index % bannerColors.length].color2
         }))

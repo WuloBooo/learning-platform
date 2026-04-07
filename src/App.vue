@@ -8,7 +8,7 @@
         </div>
         <nav class="nav">
           <router-link to="/" class="nav-link" exact-active-class="active">首页</router-link>
-          <router-link to="/registration" class="nav-link" active-class="active">报名中心</router-link>
+          <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="nav-link">报名中心</a>
           <router-link to="/practice" class="nav-link" active-class="active" v-if="userStore.isLoggedIn">刷题中心</router-link>
           <router-link to="/downloads" class="nav-link" active-class="active">资料下载</router-link>
           <router-link to="/exams" class="nav-link" active-class="active">考试信息</router-link>
@@ -45,7 +45,7 @@
         </div>
         <div class="footer-section">
           <h4>快速链接</h4>
-          <router-link to="/registration">📝 立即报名</router-link>
+          <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank">📝 立即报名</a>
           <router-link to="/downloads">📥 资料下载</router-link>
           <router-link to="/exams">📅 考试信息</router-link>
           <router-link to="/practice" v-if="userStore.isLoggedIn">✍️ 刷题中心</router-link>

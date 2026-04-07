@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import Registration from '../views/Registration.vue'
 import Downloads from '../views/Downloads.vue'
 import Exams from '../views/Exams.vue'
 import WebBrowser from '../views/WebBrowser.vue'
@@ -40,12 +39,7 @@ const routes = [
     name: 'Register',
     component: Register
   },
-  {
-    path: '/registration',
-    name: 'Registration',
-    component: Registration
-  },
-  {
+    {
     path: '/downloads',
     name: 'Downloads',
     component: Downloads
@@ -153,7 +147,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/', '/login', '/register', '/registration', '/browser', '/downloads', '/exams', '/admin/login']
+  const publicPages = ['/', '/login', '/register', '/browser', '/downloads', '/exams', '/admin/login']
   const authRequired = !publicPages.includes(to.path) || to.meta.requiresAuth
   
   const token = localStorage.getItem('token')
