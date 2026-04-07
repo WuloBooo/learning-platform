@@ -100,18 +100,16 @@ body {
   color: var(--primary-color);
 }
 
-.nav-link.router-link-active,
-.nav-link.router-link-exact-active {
+.nav-link.active {
   color: var(--primary-color);
   font-weight: 600;
   border-bottom-color: var(--primary-color);
 }
 
-.nav-link.router-link-active::after,
-.nav-link.router-link-exact-active::after {
+.nav-link.active::after {
   content: '';
   position: absolute;
-  bottom: -3px;
+  bottom: -8px;
   left: 50%;
   transform: translateX(-50%);
   width: 6px;
