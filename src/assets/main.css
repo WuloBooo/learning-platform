@@ -3495,6 +3495,21 @@ body {
   color: white;
 }
 
+.footer-section .about-text {
+  font-size: 14px;
+  color: #9ca3af;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.footer-section .contact-info {
+  margin-top: 12px;
+}
+
+.footer-section .contact-info p {
+  margin-bottom: 6px;
+}
+
 .footer-bottom {
   max-width: 1200px;
   margin: 0 auto;
@@ -3527,6 +3542,12 @@ body {
 .footer-links a:hover {
   color: white;
 }
+
+.footer-links .divider {
+  color: #4b5563;
+}
+
+/* AI客服导航样式 */
 
 /* AI客服导航样式 */
 .nav-link.ai-service {
