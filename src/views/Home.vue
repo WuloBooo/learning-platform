@@ -33,7 +33,7 @@
     <!-- 快捷入口 -->
     <section class="quick-entry">
       <div class="entry-container">
-        <router-link to="/registration" class="entry-card primary">
+        <router-link to="/registration" class="entry-card">
           <span class="entry-icon">📝</span>
           <h3>立即报名</h3>
           <p>在线填写报名信息</p>
