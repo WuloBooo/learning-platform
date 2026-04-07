@@ -13,7 +13,7 @@
             <div class="banner-content">
               <h2>{{ slide.title }}</h2>
               <p>{{ slide.description }}</p>
-              <a :href="slide.link" target="_blank" class="banner-btn">{{ slide.btnText }}</a>
+              <span class="banner-btn" @click="goToRegistration">{{ slide.btnText }}</span>
             </div>
           </div>
         </div>
@@ -33,11 +33,11 @@
     <!-- 快捷入口 -->
     <section class="quick-entry">
       <div class="entry-container">
-        <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="entry-card">
+        <div class="entry-card" @click="goToRegistration">
           <span class="entry-icon">📝</span>
           <h3>立即报名</h3>
           <p>跳转至报名网站</p>
-        </a>
+        </div>
         <router-link to="/downloads" class="entry-card">
           <span class="entry-icon">📥</span>
           <h3>资料下载</h3>
@@ -159,7 +159,7 @@
               </div>
               <div class="program-footer">
                 <span :class="['status', program.status]">{{ program.statusLabel }}</span>
-                <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="btn-apply">立即报名</a>
+                <span class="btn-apply" @click="goToRegistration">立即报名</span>
               </div>
             </div>
           </div>
@@ -297,6 +297,12 @@ const currentBanner = ref(0)
     }
     return programs.value.filter(p => p.category === activeProgramTab.value)
   })
+
+  const goToRegistration = () => {
+    if (confirm('即将跳转至外部报名网站，是否继续？')) {
+      window.open('https://xbgydx.jndj.ks.zjyun.org', '_blank')
+    }
+  }
 
   let bannerInterval = null
 

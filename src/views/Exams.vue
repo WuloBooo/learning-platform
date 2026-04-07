@@ -129,7 +129,7 @@
                 <button class="btn-subscribe" @click.stop="subscribeExam(exam)" :class="{ subscribed: exam.subscribed }">
                   {{ exam.subscribed ? '✓ 已订阅' : '🔔 订阅通知' }}
                 </button>
-                <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="btn-register">立即报名</a>
+                <button class="btn-register" @click="goToRegistration">立即报名</button>
               </div>
             </div>
           </div>
@@ -295,4 +295,10 @@ onMounted(() => {
 watch([filterType, filterStatus, filterLocation], () => {
   loadExams()
 })
+
+const goToRegistration = () => {
+  if (confirm('即将跳转至外部报名网站，是否继续？')) {
+    window.open('https://xbgydx.jndj.ks.zjyun.org', '_blank')
+  }
+}
 </script>

@@ -8,7 +8,7 @@
         </div>
         <nav class="nav">
           <router-link to="/" class="nav-link" exact-active-class="active">首页</router-link>
-          <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank" class="nav-link">报名中心</a>
+          <span class="nav-link" @click="goToRegistration">报名中心</span>
           <router-link to="/practice" class="nav-link" active-class="active" v-if="userStore.isLoggedIn">刷题中心</router-link>
           <router-link to="/downloads" class="nav-link" active-class="active">资料下载</router-link>
           <router-link to="/exams" class="nav-link" active-class="active">考试信息</router-link>
@@ -45,7 +45,7 @@
         </div>
         <div class="footer-section">
           <h4>快速链接</h4>
-          <a href="https://xbgydx.jndj.ks.zjyun.org" target="_blank">📝 立即报名</a>
+          <a href="#" @click.prevent="goToRegistration">📝 立即报名</a>
           <router-link to="/downloads">📥 资料下载</router-link>
           <router-link to="/exams">📅 考试信息</router-link>
           <router-link to="/practice" v-if="userStore.isLoggedIn">✍️ 刷题中心</router-link>
@@ -114,5 +114,11 @@ const showFAQ = () => {
 
 const showFeedback = () => {
   alert('感谢您的反馈！\n\n如有意见或建议，请发送邮件至：\nservice@learning.com\n\n我们会尽快处理您的反馈。')
+}
+
+const goToRegistration = () => {
+  if (confirm('即将跳转至外部报名网站，是否继续？')) {
+    window.open('https://xbgydx.jndj.ks.zjyun.org', '_blank')
+  }
 }
 </script>
