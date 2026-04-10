@@ -147,20 +147,36 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/', '/login', '/register', '/browser', '/downloads', '/exams', '/admin/login']
-  const authRequired = !publicPages.includes(to.path) || to.meta.requiresAuth
-  
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || 'null')
-  
+
+  // 检查 token 是否过期
+  const isTokenExpired = () => {
+    if (!token) return true
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return payload.exp * 1000 < Date.now()
+    } catch {
+      return true
+    }
+  }
+
+  // Token 过期则清除
+  if (token && isTokenExpired()) {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+  }
+
   if (to.meta.requiresAdmin) {
-    if (!token || user?.role !== 'admin') {
+    if (!token || isTokenExpired() || user?.role !== 'admin') {
       return next('/admin/login')
     }
-  } else if (authRequired && !token) {
-    return next('/login')
+  } else if (to.meta.requiresAuth) {
+    if (!token || isTokenExpired()) {
+      return next('/login')
+    }
   }
-  
+
   next()
 })
 

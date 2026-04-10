@@ -33,7 +33,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true)
     } else {
-      callback(null, true) // 允许所有来源
+      callback(new Error('Not allowed by CORS'))
     }
   },
   credentials: true,
