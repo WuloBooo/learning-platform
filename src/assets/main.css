@@ -5,9 +5,9 @@
 }
 
 :root {
-  --primary-color: #4f46e5;
-  --primary-hover: #4338ca;
-  --secondary-color: #6366f1;
+  --primary-color: #183F8A;
+  --primary-hover: #12305F;
+  --secondary-color: #2B5EB0;
   --success-color: #10b981;
   --warning-color: #f59e0b;
   --danger-color: #ef4444;
@@ -3379,7 +3379,7 @@ body {
 
 .program-footer .status.upcoming {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #12305F;
 }
 
 .btn-apply {
@@ -4242,7 +4242,7 @@ body {
 
 .exam-meta .status.upcoming {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #12305F;
 }
 
 .exam-meta .status.finished {
@@ -5169,7 +5169,7 @@ body {
 
 .list-item .status.upcoming {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #12305F;
 }
 
 /* 管理页面通用样式 */
@@ -5330,7 +5330,7 @@ body {
 
 .data-table .role-badge.admin {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #12305F;
 }
 
 .data-table .role-badge.student {
@@ -5369,7 +5369,7 @@ body {
 
 .data-table .status-badge.upcoming {
   background: #e0e7ff;
-  color: #4338ca;
+  color: #12305F;
 }
 
 .data-table .status-badge.finished {
