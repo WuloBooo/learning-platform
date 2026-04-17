@@ -201,7 +201,7 @@ const currentBanner = ref(0)
 
     // 预设的 banner 颜色组合
     const bannerColors = [
-      { color1: '#667eea', color2: '#764ba2' },  // 紫色渐变
+      { color1: '#1D6FE8', color2: '#155BBF' },  // 紫色渐变
       { color1: '#f093fb', color2: '#f5576c' },  // 粉色渐变
       { color1: '#4facfe', color2: '#00f2fe' },  // 蓝色渐变
       { color1: '#43e97b', color2: '#38f9d7' },  // 绿色渐变
@@ -260,7 +260,7 @@ const currentBanner = ref(0)
       if (programsRes.programs) {
         programs.value = programsRes.programs.map(p => ({
           ...p,
-          gradient: p.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          gradient: p.gradient || 'linear-gradient(135deg, #1D6FE8 0%, #155BBF 100%)',
           statusLabel: p.status_label || '报名中'
         }))
       }
@@ -283,7 +283,7 @@ const currentBanner = ref(0)
       if (res.programs) {
         programs.value = res.programs.map(p => ({
           ...p,
-          gradient: p.gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+          gradient: p.gradient || 'linear-gradient(135deg, #1D6FE8 0%, #155BBF 100%)'
         }))
       }
     } catch (error) {

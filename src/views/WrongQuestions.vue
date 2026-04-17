@@ -344,12 +344,12 @@ onMounted(() => {
 .analysis .value { color: #333; }
 
 .ai-explanation-section { margin-top: 16px; padding-top: 16px; border-top: 1px dashed #c8e6c9; }
-.btn-ai { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-ai { background: linear-gradient(135deg, #1D6FE8 0%, #155BBF 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
 .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
 .btn-ai:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
 .ai-explanation { margin-top: 16px; background: linear-gradient(135deg, #fafbfc 0%, #f0f4f8 100%); border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; }
-.ai-header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.ai-header { display: flex; align-items: center; gap: 10px; padding: 16px 20px; background: linear-gradient(135deg, #1D6FE8 0%, #155BBF 100%); color: white; }
 .ai-icon { font-size: 24px; }
 .ai-title { font-weight: 600; font-size: 16px; }
 .ai-body { padding: 20px; }

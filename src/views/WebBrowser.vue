@@ -360,7 +360,7 @@ const copyUrl = () => {
 .btn-float {
   width: 100%;
   padding: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1D6FE8;
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -395,13 +395,13 @@ const copyUrl = () => {
 }
 
 .step-tab:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: #1D6FE8;
+  color: #1D6FE8;
 }
 
 .step-tab.active {
-  background: #667eea;
-  border-color: #667eea;
+  background: #1D6FE8;
+  border-color: #1D6FE8;
   color: #fff;
 }
 
@@ -432,7 +432,7 @@ const copyUrl = () => {
 .step-list .num {
   width: 24px;
   height: 24px;
-  background: #667eea;
+  background: #1D6FE8;
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -528,7 +528,7 @@ const copyUrl = () => {
 }
 
 .usage-tips strong {
-  color: #667eea;
+  color: #1D6FE8;
 }
 
 /* 二维码区域 */
@@ -573,7 +573,7 @@ const copyUrl = () => {
 .btn-open {
   flex: 1;
   padding: 10px;
-  background: #667eea;
+  background: #1D6FE8;
   color: #fff;
   text-align: center;
   text-decoration: none;
@@ -604,7 +604,7 @@ const copyUrl = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1D6FE8;
   padding: 40px;
 }
 
@@ -710,7 +710,7 @@ const copyUrl = () => {
 
 .btn-external {
   padding: 6px 12px;
-  background: #667eea;
+  background: #1D6FE8;
   color: #fff;
   text-decoration: none;
   border-radius: 4px;
@@ -723,7 +723,7 @@ const copyUrl = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1D6FE8;
 }
 
 .site-placeholder {

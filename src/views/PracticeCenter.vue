@@ -174,7 +174,7 @@ onMounted(() => {
 .page-header p { margin: 0; color: #666; }
 
 .stats-overview { display: flex; gap: 16px; margin-bottom: 24px; }
-.stat-item { flex: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; }
+.stat-item { flex: 1; background: linear-gradient(135deg, #1D6FE8 0%, #155BBF 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; }
 .stat-value { display: block; font-size: 28px; font-weight: 700; color: #fff; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
 .stat-label { font-size: 14px; color: rgba(255, 255, 255, 0.95); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
 
