@@ -3,7 +3,7 @@
     <div class="page-toolbar">
       <div class="toolbar-info">
         <h2>考场题目分发管理</h2>
-        <p class="hint">创建考场并上传题目 zip 文件，学生通过识别码下载</p>
+        <p class="hint">创建考场并上传题目文件，学生通过识别码下载</p>
       </div>
       <button class="btn-primary" @click="openAddModal">
         + 创建考场
@@ -48,6 +48,7 @@
             <td>{{ formatDate(room.created_at) }}</td>
             <td class="actions">
               <button class="btn-upload" @click="triggerUpload(room)">上传文件</button>
+              <button class="btn-upload" @click="triggerFolderUpload(room)">上传文件夹</button>
               <button class="btn-edit" @click="editRoom(room)">编辑</button>
               <button class="btn-toggle" @click="toggleStatus(room)">
                 {{ room.status === 'active' ? '关闭' : '开启' }}
@@ -67,15 +68,17 @@
 
     <!-- 隐藏的文件上传 input -->
     <input type="file" ref="fileInput" accept=".zip" @change="handleFileUpload" style="display:none" />
+    <!-- 隐藏的文件夹上传 input -->
+    <input type="file" ref="folderInput" webkitdirectory @change="handleFolderUpload" style="display:none" />
 
     <!-- 创建/编辑弹窗 -->
-    <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-      <div class="modal">
-        <div class="modal-header">
+    <div class="exam-modal" v-if="showModal" @click.self="showModal = false">
+      <div class="exam-modal-content">
+        <div class="exam-modal-header">
           <h3>{{ editingRoom ? '编辑考场' : '创建考场' }}</h3>
-          <button class="modal-close" @click="showModal = false">&times;</button>
+          <button class="exam-modal-close" @click="showModal = false">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="exam-modal-body">
           <div class="form-group">
             <label>考试名称</label>
             <input v-model="form.exam_name" placeholder="如：2026年春季实操考试" />
@@ -89,7 +92,7 @@
             <input v-model="form.room_code" placeholder="如：1234" />
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="exam-modal-footer">
           <button class="btn-cancel" @click="showModal = false">取消</button>
           <button class="btn-primary" @click="saveRoom" :disabled="saving">
             {{ saving ? '保存中...' : '保存' }}
@@ -99,13 +102,13 @@
     </div>
 
     <!-- 下载记录弹窗 -->
-    <div class="modal-overlay" v-if="showDownloadModal" @click.self="showDownloadModal = false">
-      <div class="modal modal-lg">
-        <div class="modal-header">
+    <div class="exam-modal" v-if="showDownloadModal" @click.self="showDownloadModal = false">
+      <div class="exam-modal-content exam-modal-lg">
+        <div class="exam-modal-header">
           <h3>{{ downloadRoom?.room_name }} - 下载记录 ({{ downloads.length }} 人)</h3>
-          <button class="modal-close" @click="showDownloadModal = false">&times;</button>
+          <button class="exam-modal-close" @click="showDownloadModal = false">&times;</button>
         </div>
-        <div class="modal-body">
+        <div class="exam-modal-body">
           <div class="data-table">
             <table>
               <thead>
@@ -147,6 +150,7 @@ const downloadRoom = ref(null)
 const downloads = ref([])
 const uploadingRoom = ref(null)
 const fileInput = ref(null)
+const folderInput = ref(null)
 
 const form = ref({
   exam_name: '',
@@ -248,6 +252,11 @@ const triggerUpload = (room) => {
   fileInput.value.click()
 }
 
+const triggerFolderUpload = (room) => {
+  uploadingRoom.value = room
+  folderInput.value.click()
+}
+
 const handleFileUpload = async (e) => {
   const file = e.target.files[0]
   if (!file || !uploadingRoom.value) return
@@ -257,6 +266,34 @@ const handleFileUpload = async (e) => {
 
   try {
     const res = await fetch(`${API_BASE}/${uploadingRoom.value.id}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token()}` },
+      body: formData
+    })
+    const data = await res.json()
+    if (res.ok) {
+      await loadRooms()
+    } else {
+      alert(data.message || '上传失败')
+    }
+  } catch (e) {
+    alert('上传失败: ' + e.message)
+  }
+  e.target.value = ''
+  uploadingRoom.value = null
+}
+
+const handleFolderUpload = async (e) => {
+  const files = Array.from(e.target.files)
+  if (!files.length || !uploadingRoom.value) return
+
+  const formData = new FormData()
+  files.forEach(file => {
+    formData.append('files', file, file.webkitRelativePath || file.name)
+  })
+
+  try {
+    const res = await fetch(`${API_BASE}/${uploadingRoom.value.id}/upload-folder`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token()}` },
       body: formData
@@ -379,7 +416,72 @@ onMounted(loadRooms)
   margin: 0;
   font-size: 18px;
 }
-.modal-lg {
-  width: 600px;
+
+/* 弹窗样式 */
+.exam-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.exam-modal-content {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.exam-modal-lg {
+  max-width: 700px;
+}
+.exam-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+.exam-modal-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+.exam-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.exam-modal-close:hover {
+  color: var(--text-primary);
+}
+.exam-modal-body {
+  padding: 24px;
+}
+.exam-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+}
+.btn-cancel {
+  padding: 8px 20px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-cancel:hover {
+  background: var(--bg-secondary);
 }
 </style>

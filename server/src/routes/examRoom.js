@@ -20,20 +20,29 @@ if (!fs.existsSync(uploadDir)) {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname)
-    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`)
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${path.extname(file.originalname) || ''}`)
   }
 })
 
 const upload = multer({
   storage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/zip' || file.mimetype === 'application/x-zip-compressed' || path.extname(file.originalname).toLowerCase() === '.zip') {
-      cb(null, true)
-    } else {
-      cb(new Error('只允许上传 ZIP 文件'))
-    }
+  limits: { fileSize: 500 * 1024 * 1024 }
+})
+
+// 将文件夹临时文件打包成 zip
+const folderStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const tempDir = join(uploadDir, 'temp', `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
+    fs.mkdirSync(tempDir, { recursive: true })
+    cb(null, tempDir)
   },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  }
+})
+
+const folderUpload = multer({
+  storage: folderStorage,
   limits: { fileSize: 500 * 1024 * 1024 }
 })
 
@@ -159,6 +168,7 @@ router.delete('/:id', async (req, res, next) => {
   }
 })
 
+// 上传 zip 文件
 router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
   try {
     const { id } = req.params
@@ -179,6 +189,72 @@ router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
       file_path: req.file.path,
       file_name: req.file.originalname,
       file_size: req.file.size
+    }, 'id = ?', [id])
+
+    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    res.json({ data: updated })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// 上传文件夹（多文件自动打包为 zip）
+router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    if (!room) {
+      return res.status(404).json({ message: '考场不存在' })
+    }
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: '请选择文件夹' })
+    }
+
+    // 找到共同根目录名（取第一个文件的顶级目录名）
+    const firstPath = req.files[0].originalname
+    const rootFolderName = firstPath.split('/')[0] || firstPath.split('\\')[0] || 'exam'
+
+    // 创建 zip 文件
+    const zipFileName = `${rootFolderName}.zip`
+    const zipPath = join(uploadDir, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.zip`)
+
+    // 使用 archiver 打包
+    const archiver = (await import('archiver')).default
+    const output = fs.createWriteStream(zipPath)
+    const archive = archiver('zip', { zlib: { level: 9 } })
+
+    await new Promise((resolve, reject) => {
+      output.on('close', resolve)
+      archive.on('error', reject)
+      archive.pipe(output)
+
+      for (const file of req.files) {
+        // originalname 包含相对路径（如 "文件夹/子文件.txt"）
+        const relativePath = file.originalname
+        if (file.size > 0 && !relativePath.endsWith('/')) {
+          archive.file(file.path, { name: relativePath })
+        }
+      }
+
+      archive.finalize()
+    })
+
+    // 删除旧的 zip 文件
+    if (room.file_path && fs.existsSync(room.file_path)) {
+      fs.unlinkSync(room.file_path)
+    }
+
+    // 删除临时文件夹
+    const tempDir = req.files[0].destination
+    fs.rmSync(tempDir, { recursive: true, force: true })
+
+    const zipSize = fs.statSync(zipPath).size
+
+    update('exam_rooms', {
+      file_path: zipPath,
+      file_name: zipFileName,
+      file_size: zipSize
     }, 'id = ?', [id])
 
     const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
