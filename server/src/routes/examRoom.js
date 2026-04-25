@@ -216,6 +216,9 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
       return res.status(400).json({ message: '请选择文件夹' })
     }
 
+    // 调试：打印前3个文件的 originalname
+    console.log('上传文件路径示例:', req.files.slice(0, 3).map(f => f.originalname))
+
     // 找到共同根目录名（取第一个文件的顶级目录名）
     const firstPath = req.files[0].originalname
     const rootFolderName = firstPath.split('/')[0] || firstPath.split('\\')[0] || 'exam'
