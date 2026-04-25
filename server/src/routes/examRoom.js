@@ -222,7 +222,8 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
     // 使用 archiver 打包
     const archiver = (await import('archiver')).default
     const output = fs.createWriteStream(zipPath)
-    const archive = archiver('zip', { zlib: { level: 9 } })
+    const archive = archiver('zip', { zlib: { level: 9 }, forceUTC: true })
+    archive.on('warning', (err) => { if (err.code !== 'ENOENT') console.error(err) })
 
     await new Promise((resolve, reject) => {
       output.on('close', resolve)
