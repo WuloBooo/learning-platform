@@ -63,7 +63,9 @@ router.get('/download', async (req, res, next) => {
       return res.status(404).json({ message: '题目文件未上传' })
     }
 
-    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress
+    const forwarded = req.headers['x-forwarded-for']
+    const realIp = req.headers['x-real-ip']
+    const ipAddress = (forwarded ? forwarded.split(',')[0].trim() : null) || realIp || req.socket.remoteAddress
 
     insert('exam_downloads', {
       room_id: room.id,
