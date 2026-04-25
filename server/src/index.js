@@ -13,6 +13,7 @@ import registrationRoutes from './routes/registration.js'
 import adminRoutes from './routes/admin.js'
 import practiceRoutes from './routes/practice.js'
 import publicRoutes from './routes/public.js'
+import examRoomRoutes from './routes/examRoom.js'
 import { errorHandler, notFound } from './middleware/error.js'
 
 const app = express()
@@ -59,6 +60,10 @@ app.use('/api/auth/login', authLimiter)
 app.use(express.json({ limit: '10kb' }))
 app.use(express.urlencoded({ extended: true }))
 
+// 文件上传需要更大的 body 限制
+app.use('/api/exam-rooms', express.json({ limit: '500mb' }))
+app.use('/api/exam-rooms', express.urlencoded({ extended: true, limit: '500mb' }))
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
@@ -71,6 +76,7 @@ app.use('/api/user', userRoutes)
 app.use('/api/registration', registrationRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/practice', practiceRoutes)
+app.use('/api/exam-rooms', examRoomRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

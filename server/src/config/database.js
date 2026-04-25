@@ -321,6 +321,33 @@ export async function initDatabase() {
     )
   `)
 
+  // 考场题目分发表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS exam_rooms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      exam_name TEXT NOT NULL,
+      room_name TEXT NOT NULL,
+      room_code TEXT NOT NULL UNIQUE,
+      file_path TEXT,
+      file_name TEXT,
+      file_size INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'active',
+      download_count INTEGER DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS exam_downloads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      room_id INTEGER NOT NULL,
+      ip_address TEXT,
+      downloaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (room_id) REFERENCES exam_rooms(id)
+    )
+  `)
+
   saveDatabase()
   
   return db

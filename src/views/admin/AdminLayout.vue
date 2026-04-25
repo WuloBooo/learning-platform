@@ -50,6 +50,10 @@
           <span class="icon">🎓</span>
           <span>培训项目管理</span>
         </router-link>
+        <router-link to="/admin/exam-rooms" class="nav-item" active-class="active">
+          <span class="icon">🏷️</span>
+          <span>考场题目分发</span>
+        </router-link>
       </nav>
       <div class="sidebar-footer">
         <router-link to="/" class="back-link">← 返回前台</router-link>
@@ -94,7 +98,8 @@ const pageTitle = computed(() => {
     '/admin/papers': '试卷管理',
     '/admin/news': '新闻管理',
     '/admin/timelines': '时间线管理',
-    '/admin/programs': '培训项目管理'
+    '/admin/programs': '培训项目管理',
+    '/admin/exam-rooms': '考场题目分发'
   }
   return titles[route.path] || '管理后台'
 })

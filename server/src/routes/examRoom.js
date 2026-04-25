@@ -1,0 +1,201 @@
+import express from 'express'
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import { query, getOne, insert, update, remove } from '../config/database.js'
+import { authenticate, authorize } from '../middleware/auth.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+const router = express.Router()
+
+const uploadDir = join(__dirname, '..', '..', 'uploads', 'exam_rooms')
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true })
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    cb(null, `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`)
+  }
+})
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/zip' || file.mimetype === 'application/x-zip-compressed' || path.extname(file.originalname).toLowerCase() === '.zip') {
+      cb(null, true)
+    } else {
+      cb(new Error('只允许上传 ZIP 文件'))
+    }
+  },
+  limits: { fileSize: 500 * 1024 * 1024 }
+})
+
+// ===== 公开接口：学生下载 =====
+router.get('/download', async (req, res, next) => {
+  try {
+    const { code } = req.query
+    if (!code) {
+      return res.status(400).json({ message: '请输入识别码' })
+    }
+
+    const room = getOne('SELECT * FROM exam_rooms WHERE room_code = ? AND status = ?', [code, 'active'])
+    if (!room) {
+      return res.status(404).json({ message: '识别码无效或考场已关闭' })
+    }
+
+    if (!room.file_path || !fs.existsSync(room.file_path)) {
+      return res.status(404).json({ message: '题目文件未上传' })
+    }
+
+    const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress
+
+    insert('exam_downloads', {
+      room_id: room.id,
+      ip_address: ipAddress
+    })
+
+    update('exam_rooms', { download_count: room.download_count + 1 }, 'id = ?', [room.id])
+
+    res.download(room.file_path, room.file_name || 'exam.zip')
+  } catch (error) {
+    next(error)
+  }
+})
+
+// ===== 管理接口 =====
+router.use(authenticate)
+router.use(authorize('admin'))
+
+router.get('/', async (req, res, next) => {
+  try {
+    const rooms = query('SELECT * FROM exam_rooms ORDER BY created_at DESC')
+    res.json({ data: rooms })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.post('/', async (req, res, next) => {
+  try {
+    const { exam_name, room_name, room_code } = req.body
+    if (!exam_name || !room_name || !room_code) {
+      return res.status(400).json({ message: '请填写完整信息' })
+    }
+    if (!/^\d+$/.test(room_code)) {
+      return res.status(400).json({ message: '识别码必须为纯数字' })
+    }
+
+    const existing = getOne('SELECT id FROM exam_rooms WHERE room_code = ?', [room_code])
+    if (existing) {
+      return res.status(400).json({ message: '识别码已存在' })
+    }
+
+    const id = insert('exam_rooms', { exam_name, room_name, room_code })
+    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    res.status(201).json({ data: room })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.put('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const { exam_name, room_name, room_code, status } = req.body
+
+    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    if (!room) {
+      return res.status(404).json({ message: '考场不存在' })
+    }
+
+    if (room_code && room_code !== room.room_code) {
+      if (!/^\d+$/.test(room_code)) {
+        return res.status(400).json({ message: '识别码必须为纯数字' })
+      }
+      const existing = getOne('SELECT id FROM exam_rooms WHERE room_code = ? AND id != ?', [room_code, id])
+      if (existing) {
+        return res.status(400).json({ message: '识别码已存在' })
+      }
+    }
+
+    const data = {}
+    if (exam_name) data.exam_name = exam_name
+    if (room_name) data.room_name = room_name
+    if (room_code) data.room_code = room_code
+    if (status) data.status = status
+
+    update('exam_rooms', data, 'id = ?', [id])
+    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    res.json({ data: updated })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.delete('/:id', async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    if (!room) {
+      return res.status(404).json({ message: '考场不存在' })
+    }
+
+    if (room.file_path && fs.existsSync(room.file_path)) {
+      fs.unlinkSync(room.file_path)
+    }
+
+    remove('exam_downloads', 'room_id = ?', [id])
+    remove('exam_rooms', 'id = ?', [id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    if (!room) {
+      return res.status(404).json({ message: '考场不存在' })
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: '请选择文件' })
+    }
+
+    if (room.file_path && fs.existsSync(room.file_path)) {
+      fs.unlinkSync(room.file_path)
+    }
+
+    update('exam_rooms', {
+      file_path: req.file.path,
+      file_name: req.file.originalname,
+      file_size: req.file.size
+    }, 'id = ?', [id])
+
+    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    res.json({ data: updated })
+  } catch (error) {
+    next(error)
+  }
+})
+
+router.get('/:id/downloads', async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const downloads = query('SELECT * FROM exam_downloads WHERE room_id = ? ORDER BY downloaded_at DESC', [id])
+    res.json({ data: downloads })
+  } catch (error) {
+    next(error)
+  }
+})
+
+export default router
