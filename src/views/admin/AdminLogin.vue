@@ -48,6 +48,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
+import { authAPI } from '../../api'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -64,25 +65,26 @@ const handleLogin = async () => {
     errorMessage.value = '请填写用户名和密码'
     return
   }
-  
+
   loading.value = true
   errorMessage.value = ''
-  
+
   try {
-    const result = await userStore.login(form.username, form.password)
-    
-    if (result.success) {
-      if (userStore.user?.role !== 'admin') {
-        errorMessage.value = '您不是管理员，无法登录后台'
-        userStore.logout()
-      } else {
-        router.push('/admin')
-      }
-    } else {
-      errorMessage.value = result.message
+    const response = await authAPI.login({ username: form.username, password: form.password })
+
+    if (response.user?.role !== 'admin') {
+      errorMessage.value = '您不是管理员，无法登录后台'
+      return
     }
+
+    userStore.token = response.token
+    userStore.user = response.user
+    localStorage.setItem('token', response.token)
+    localStorage.setItem('user', JSON.stringify(response.user))
+
+    router.push('/admin')
   } catch (error) {
-    errorMessage.value = '登录失败，请稍后重试'
+    errorMessage.value = error.message || '用户名或密码错误'
   } finally {
     loading.value = false
   }
