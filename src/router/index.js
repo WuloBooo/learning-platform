@@ -156,6 +156,11 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
+  // 管理员登录页始终放行，不跳转
+  if (to.path === '/admin/login') {
+    return next()
+  }
+
   // 检查 token 是否过期
   const isTokenExpired = () => {
     if (!token) return true
