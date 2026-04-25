@@ -216,11 +216,12 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
       return res.status(400).json({ message: '请选择文件夹' })
     }
 
-    // 调试：打印前3个文件的 originalname
-    console.log('上传文件路径示例:', req.files.slice(0, 3).map(f => f.originalname))
+    // 从 paths 字段获取完整相对路径
+    const paths = req.body.paths || []
+    console.log('paths字段示例:', paths.slice(0, 3))
 
-    // 找到共同根目录名（取第一个文件的顶级目录名）
-    const firstPath = req.files[0].originalname
+    // 找到共同根目录名（取第一个路径的顶级目录名）
+    const firstPath = paths[0] || req.files[0].originalname
     const rootFolderName = firstPath.split('/')[0] || firstPath.split('\\')[0] || 'exam'
 
     // 创建 zip 文件
@@ -238,9 +239,10 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
       archive.on('error', reject)
       archive.pipe(output)
 
-      for (const file of req.files) {
-        // originalname 包含相对路径（如 "文件夹/子文件.txt"）
-        const relativePath = file.originalname
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i]
+        // 优先使用 paths 字段的完整路径（如 "XGD3/第三题/q3_1.py"）
+        const relativePath = paths[i] || file.originalname
         if (file.size > 0 && !relativePath.endsWith('/')) {
           archive.file(file.path, { name: relativePath })
         }

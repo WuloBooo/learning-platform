@@ -289,7 +289,9 @@ const handleFolderUpload = async (e) => {
 
   const formData = new FormData()
   files.forEach(file => {
-    formData.append('files', file, file.webkitRelativePath || file.name)
+    const relativePath = file.webkitRelativePath || file.name
+    formData.append('files', file, file.name)
+    formData.append('paths', relativePath)
   })
 
   try {
