@@ -32,12 +32,15 @@ const upload = multer({
 // 将文件夹临时文件打包成 zip
 const folderStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const tempDir = join(uploadDir, 'temp', `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
-    fs.mkdirSync(tempDir, { recursive: true })
-    cb(null, tempDir)
+    const tempBase = join(uploadDir, 'temp', `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
+    const relativePath = file.originalname
+    const dir = join(tempBase, path.dirname(relativePath))
+    fs.mkdirSync(dir, { recursive: true })
+    req._tempBase = tempBase
+    cb(null, dir)
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname)
+    cb(null, path.basename(file.originalname))
   }
 })
 
@@ -249,8 +252,9 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
     }
 
     // 删除临时文件夹
-    const tempDir = req.files[0].destination
-    fs.rmSync(tempDir, { recursive: true, force: true })
+    if (req._tempBase) {
+      fs.rmSync(req._tempBase, { recursive: true, force: true })
+    }
 
     const zipSize = fs.statSync(zipPath).size
 
