@@ -348,6 +348,28 @@ export async function initDatabase() {
     )
   `)
 
+  // 调研会话表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS survey_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT DEFAULT '匿名',
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  // 调研消息表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS survey_messages (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (session_id) REFERENCES survey_sessions(id)
+    )
+  `)
+
   saveDatabase()
   
   return db

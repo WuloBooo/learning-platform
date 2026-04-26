@@ -8,6 +8,7 @@ import WebBrowser from '../views/WebBrowser.vue'
 import PracticeCenter from '../views/PracticeCenter.vue'
 import ExamPage from '../views/ExamPage.vue'
 import WrongQuestions from '../views/WrongQuestions.vue'
+import SurveyChat from '../views/SurveyChat.vue'
 
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -72,6 +73,11 @@ const routes = [
     name: 'WrongQuestions',
     component: WrongQuestions,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/survey',
+    name: 'SurveyChat',
+    component: SurveyChat
   },
   {
     path: '/admin/login',
