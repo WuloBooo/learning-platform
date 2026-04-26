@@ -166,6 +166,7 @@ const sendMessage = async () => {
   max-width: 700px;
   margin: 0 auto;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #f8f9fa;
@@ -201,6 +202,7 @@ const sendMessage = async () => {
   flex: 1;
   overflow-y: auto;
   padding: 20px 16px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .message {
@@ -240,7 +242,7 @@ const sendMessage = async () => {
   border-radius: 16px;
   line-height: 1.6;
   font-size: 14px;
-  max-width: 480px;
+  max-width: calc(100vw - 120px);
   word-break: break-word;
 }
 
@@ -281,6 +283,7 @@ const sendMessage = async () => {
 
 .chat-input {
   padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   background: white;
   border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
@@ -297,7 +300,7 @@ const sendMessage = async () => {
   padding: 12px 16px;
   border: 1px solid #e5e7eb;
   border-radius: 24px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.2s;
 }
@@ -387,7 +390,7 @@ const sendMessage = async () => {
   padding: 12px 16px;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   text-align: center;
   transition: border-color 0.2s;
@@ -413,5 +416,51 @@ const sendMessage = async () => {
 
 .start-btn:hover {
   opacity: 0.9;
+}
+
+/* 手机适配 */
+@media (max-width: 480px) {
+  .chat-header {
+    padding: 16px;
+  }
+
+  .chat-header h2 {
+    font-size: 16px;
+  }
+
+  .chat-messages {
+    padding: 12px 10px;
+  }
+
+  .message {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .message-bubble {
+    padding: 10px 14px;
+    font-size: 14px;
+    max-width: calc(100vw - 90px);
+  }
+
+  .chat-input {
+    padding: 10px 12px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .welcome-card {
+    padding: 28px 20px;
+    border-radius: 16px;
+  }
+
+  .welcome-card h2 {
+    font-size: 19px;
+  }
 }
 </style>
