@@ -96,6 +96,34 @@ const scrollToBottom = async () => {
   }
 }
 
+// 恢复历史会话
+const restoreSession = async () => {
+  const savedId = localStorage.getItem('survey_session_id')
+  if (!savedId) return false
+
+  try {
+    const res = await fetch(`${API_BASE}/sessions/${savedId}/messages`)
+    const data = await res.json()
+    if (!res.ok || !data.messages || data.messages.length === 0) {
+      localStorage.removeItem('survey_session_id')
+      return false
+    }
+
+    sessionId.value = parseInt(savedId)
+    messages.value = data.messages
+    started.value = true
+    await scrollToBottom()
+    return true
+  } catch {
+    localStorage.removeItem('survey_session_id')
+    return false
+  }
+}
+
+onMounted(() => {
+  restoreSession()
+})
+
 const startChat = async () => {
   try {
     const res = await fetch(`${API_BASE}/sessions`, {
@@ -107,6 +135,7 @@ const startChat = async () => {
     if (!res.ok) throw new Error(data.message)
 
     sessionId.value = data.sessionId
+    localStorage.setItem('survey_session_id', data.sessionId)
     messages.value.push({
       tempId: Date.now(),
       role: 'assistant',
