@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <header class="header" v-if="!isAuthPage">
+    <header class="header" v-if="!isAuthPage && !hideLayout">
       <div class="header-content">
         <div class="logo" @click="goHome">
           <span class="logo-icon">📚</span>
@@ -32,7 +32,7 @@
       <router-view />
     </main>
     
-    <footer class="footer" v-if="!isAuthPage">
+    <footer class="footer" v-if="!isAuthPage && !hideLayout">
       <div class="footer-content">
         <div class="footer-section">
           <h4>关于我们</h4>
@@ -90,6 +90,10 @@ const userStore = useUserStore()
 
 const isAuthPage = computed(() => {
   return route.path === '/login' || route.path === '/register'
+})
+
+const hideLayout = computed(() => {
+  return route.path === '/survey'
 })
 
 const goHome = () => {
