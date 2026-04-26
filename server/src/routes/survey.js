@@ -180,4 +180,27 @@ router.get('/sessions/:sessionId/export', (req, res) => {
   }
 })
 
+// 删除单个会话
+router.delete('/sessions/:sessionId', (req, res) => {
+  try {
+    const { sessionId } = req.params
+    query('DELETE FROM survey_messages WHERE session_id = ?', [sessionId])
+    query('DELETE FROM survey_sessions WHERE id = ?', [sessionId])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败', error: error.message })
+  }
+})
+
+// 清空所有会话
+router.delete('/sessions', (req, res) => {
+  try {
+    query('DELETE FROM survey_messages')
+    query('DELETE FROM survey_sessions')
+    res.json({ message: '已清空所有会话' })
+  } catch (error) {
+    res.status(500).json({ message: '清空失败', error: error.message })
+  }
+})
+
 export default router
