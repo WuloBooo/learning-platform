@@ -370,6 +370,33 @@ export async function initDatabase() {
     )
   `)
 
+  // 流程调研问卷表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS survey_forms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      q1 TEXT DEFAULT '',
+      q2 TEXT DEFAULT '',
+      q3 TEXT DEFAULT '',
+      q4 TEXT DEFAULT '',
+      q5 TEXT DEFAULT '',
+      q6 TEXT DEFAULT '',
+      q7 TEXT DEFAULT '',
+      q8 TEXT DEFAULT '',
+      q9 TEXT DEFAULT '',
+      q10 TEXT DEFAULT '',
+      q11 TEXT DEFAULT '',
+      q12 TEXT DEFAULT '',
+      q13 TEXT DEFAULT '',
+      q14 TEXT DEFAULT '',
+      q15 TEXT DEFAULT '',
+      q16 TEXT DEFAULT '',
+      q17 TEXT DEFAULT '',
+      q18 TEXT DEFAULT '',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
   saveDatabase()
   
   return db

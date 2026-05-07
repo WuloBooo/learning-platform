@@ -203,4 +203,49 @@ router.delete('/sessions', (req, res) => {
   }
 })
 
+// 提交流程调研问卷
+router.post('/form', (req, res) => {
+  try {
+    const data = req.body
+    if (!data.name || !data.name.trim()) {
+      return res.status(400).json({ message: '请填写姓名' })
+    }
+    const id = insert('survey_forms', {
+      name: data.name,
+      q1: data.q1 || '',
+      q2: data.q2 || '',
+      q3: data.q3 || '',
+      q4: data.q4 || '',
+      q5: data.q5 || '',
+      q6: data.q6 || '',
+      q7: data.q7 || '',
+      q8: data.q8 || '',
+      q9: data.q9 || '',
+      q10: data.q10 || '',
+      q11: data.q11 || '',
+      q12: data.q12 || '',
+      q13: data.q13 || '',
+      q14: data.q14 || '',
+      q15: data.q15 || '',
+      q16: data.q16 || '',
+      q17: data.q17 || '',
+      q18: data.q18 || '',
+      created_at: new Date().toISOString()
+    })
+    res.json({ message: '提交成功', id })
+  } catch (error) {
+    res.status(500).json({ message: '提交失败', error: error.message })
+  }
+})
+
+// 获取所有问卷结果
+router.get('/form', (req, res) => {
+  try {
+    const forms = query('SELECT * FROM survey_forms ORDER BY created_at DESC')
+    res.json({ forms })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败', error: error.message })
+  }
+})
+
 export default router

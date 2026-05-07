@@ -9,6 +9,7 @@ import PracticeCenter from '../views/PracticeCenter.vue'
 import ExamPage from '../views/ExamPage.vue'
 import WrongQuestions from '../views/WrongQuestions.vue'
 import SurveyChat from '../views/SurveyChat.vue'
+import SurveyForm from '../views/SurveyForm.vue'
 
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -78,6 +79,11 @@ const routes = [
     path: '/survey',
     name: 'SurveyChat',
     component: SurveyChat
+  },
+  {
+    path: '/survey/form',
+    name: 'SurveyForm',
+    component: SurveyForm
   },
   {
     path: '/admin/login',
