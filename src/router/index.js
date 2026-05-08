@@ -10,6 +10,8 @@ import ExamPage from '../views/ExamPage.vue'
 import WrongQuestions from '../views/WrongQuestions.vue'
 import SurveyChat from '../views/SurveyChat.vue'
 import SurveyForm from '../views/SurveyForm.vue'
+import MajorCheck from '../views/MajorCheck.vue'
+import StudentRegister from '../views/StudentRegister.vue'
 
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -84,6 +86,16 @@ const routes = [
     path: '/survey/form',
     name: 'SurveyForm',
     component: SurveyForm
+  },
+  {
+    path: '/major-check',
+    name: 'MajorCheck',
+    component: MajorCheck
+  },
+  {
+    path: '/student-register',
+    name: 'StudentRegister',
+    component: StudentRegister
   },
   {
     path: '/admin/login',

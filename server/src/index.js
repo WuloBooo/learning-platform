@@ -15,6 +15,7 @@ import practiceRoutes from './routes/practice.js'
 import publicRoutes from './routes/public.js'
 import examRoomRoutes from './routes/examRoom.js'
 import surveyRoutes from './routes/survey.js'
+import workflowRoutes from './routes/workflow.js'
 import { errorHandler, notFound } from './middleware/error.js'
 
 const app = express()
@@ -79,6 +80,7 @@ app.use('/api/admin', adminRoutes)
 app.use('/api/practice', practiceRoutes)
 app.use('/api/exam-rooms', examRoomRoutes)
 app.use('/api/survey', surveyRoutes)
+app.use('/api/workflow', workflowRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

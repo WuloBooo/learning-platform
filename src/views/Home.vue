@@ -48,6 +48,16 @@
           <h3>考试计划</h3>
           <p>查看考试安排</p>
         </router-link>
+        <router-link to="/major-check" class="entry-card">
+          <span class="entry-icon">🎓</span>
+          <h3>专业查询</h3>
+          <p>查询专业是否可报考</p>
+        </router-link>
+        <router-link to="/student-register" class="entry-card">
+          <span class="entry-icon">📋</span>
+          <h3>学员登记</h3>
+          <p>填写信息获取资料清单</p>
+        </router-link>
       </div>
     </section>
 
