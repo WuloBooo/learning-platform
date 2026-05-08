@@ -397,6 +397,88 @@ export async function initDatabase() {
     )
   `)
 
+  // ===== 部门工作流程优化相关表 =====
+
+  // 专业目录表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS major_catalog (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      major_name TEXT NOT NULL,
+      category TEXT,
+      allowed_levels TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  // 学员信息表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS student_profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      email TEXT,
+      gender TEXT,
+      age INTEGER,
+      education TEXT,
+      major TEXT,
+      work_years INTEGER,
+      social_security_years INTEGER,
+      id_card TEXT,
+      target_level TEXT,
+      organization TEXT,
+      remark TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  // 学员状态跟踪表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS student_status (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      stage TEXT NOT NULL,
+      operator TEXT,
+      note TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (student_id) REFERENCES student_profiles(id)
+    )
+  `)
+
+  // 机构信息表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS organizations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      contact_person TEXT,
+      contact_phone TEXT,
+      address TEXT,
+      cooperation_type TEXT,
+      student_count INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  // 证书记录表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS certificates (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      cert_type TEXT,
+      cert_level TEXT,
+      cert_number TEXT,
+      issue_date DATE,
+      file_path TEXT,
+      status TEXT DEFAULT 'pending',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (student_id) REFERENCES student_profiles(id)
+    )
+  `)
+
   saveDatabase()
   
   return db
