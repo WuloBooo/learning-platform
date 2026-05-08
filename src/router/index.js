@@ -27,6 +27,8 @@ import NewsManage from '../views/admin/NewsManage.vue'
 import TimelinesManage from '../views/admin/TimelinesManage.vue'
 import ProgramsManage from '../views/admin/ProgramsManage.vue'
 import ExamRoomsManage from '../views/admin/ExamRoomsManage.vue'
+import StudentsManage from '../views/admin/StudentsManage.vue'
+import MajorsManage from '../views/admin/MajorsManage.vue'
 
 const routes = [
   {
@@ -166,6 +168,16 @@ const routes = [
         path: 'exam-rooms',
         name: 'ExamRoomsManage',
         component: ExamRoomsManage
+      },
+      {
+        path: 'students',
+        name: 'StudentsManage',
+        component: StudentsManage
+      },
+      {
+        path: 'majors',
+        name: 'MajorsManage',
+        component: MajorsManage
       }
     ]
   }

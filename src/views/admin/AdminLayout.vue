@@ -54,6 +54,14 @@
           <span class="icon">🏷️</span>
           <span>考场题目分发</span>
         </router-link>
+        <router-link to="/admin/students" class="nav-item" active-class="active">
+          <span class="icon">👥</span>
+          <span>学员管理</span>
+        </router-link>
+        <router-link to="/admin/majors" class="nav-item" active-class="active">
+          <span class="icon">🎓</span>
+          <span>专业目录管理</span>
+        </router-link>
       </nav>
       <div class="sidebar-footer">
         <router-link to="/" class="back-link">← 返回前台</router-link>
@@ -99,7 +107,9 @@ const pageTitle = computed(() => {
     '/admin/news': '新闻管理',
     '/admin/timelines': '时间线管理',
     '/admin/programs': '培训项目管理',
-    '/admin/exam-rooms': '考场题目分发'
+    '/admin/exam-rooms': '考场题目分发',
+    '/admin/students': '学员管理',
+    '/admin/majors': '专业目录管理'
   }
   return titles[route.path] || '管理后台'
 })
