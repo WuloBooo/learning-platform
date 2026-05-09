@@ -37,7 +37,7 @@ router.get('/major/list', (req, res) => {
 // 提交学员信息（公开）
 router.post('/student/submit', (req, res) => {
   try {
-    const { name, phone, email, gender, age, education, major, work_years, social_security_years, id_card, target_level, organization, remark } = req.body
+    const { name, phone, email, gender, age, education, major, work_years, social_security_years, id_card, target_level, organization, source, remark } = req.body
 
     if (!name || !phone) {
       return res.status(400).json({ message: '请填写姓名和手机号' })
@@ -46,7 +46,7 @@ router.post('/student/submit', (req, res) => {
     const id = insert('student_profiles', {
       name, phone, email, gender, age, education, major,
       work_years, social_security_years, id_card, target_level,
-      organization, remark, status: 'pending'
+      organization, source: source || '网站', remark, status: 'pending'
     })
 
     // 初始状态：意向学员

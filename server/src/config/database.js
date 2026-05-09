@@ -427,12 +427,18 @@ export async function initDatabase() {
       id_card TEXT,
       target_level TEXT,
       organization TEXT,
+      source TEXT DEFAULT '网站',
       remark TEXT,
       status TEXT DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `)
+
+  // 兼容旧表：如果没有 source 列则添加
+  try {
+    db.run('ALTER TABLE student_profiles ADD COLUMN source TEXT DEFAULT \'网站\'')
+  } catch (e) {}
 
   // 学员状态跟踪表
   db.run(`

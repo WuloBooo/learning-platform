@@ -17,6 +17,7 @@
           <option value="已拿证">已拿证</option>
         </select>
         <input v-model="searchKey" placeholder="搜索姓名/手机号" @keyup.enter="loadStudents" />
+        <button class="btn-primary" @click="openAddModal">+ 手动添加学员</button>
       </div>
     </div>
 
@@ -29,6 +30,7 @@
             <th>手机号</th>
             <th>专业</th>
             <th>目标等级</th>
+            <th>来源</th>
             <th>学员进度</th>
             <th>提交时间</th>
             <th>操作</th>
@@ -41,6 +43,7 @@
             <td>{{ s.phone }}</td>
             <td>{{ s.major || '-' }}</td>
             <td>{{ s.target_level || '-' }}</td>
+            <td><span class="source-badge">{{ s.source || '网站' }}</span></td>
             <td class="progress-cell">
               <div class="stage-progress">
                 <div v-for="(stage, idx) in STAGES" :key="idx"
@@ -132,6 +135,124 @@
         <div class="exam-modal-footer">
           <button class="btn-cancel" @click="showStatusModal = false">取消</button>
           <button class="btn-primary" @click="submitStatus">确认</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手动添加学员弹窗 -->
+    <div class="exam-modal" v-if="showAddModal" @click.self="showAddModal = false">
+      <div class="exam-modal-content exam-modal-lg">
+        <div class="exam-modal-header">
+          <h3>手动添加学员</h3>
+          <button class="exam-modal-close" @click="showAddModal = false">&times;</button>
+        </div>
+        <div class="exam-modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>姓名 <span class="required">*</span></label>
+              <input v-model="addForm.name" placeholder="学员姓名" />
+            </div>
+            <div class="form-group">
+              <label>手机号 <span class="required">*</span></label>
+              <input v-model="addForm.phone" placeholder="手机号" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>性别</label>
+              <select v-model="addForm.gender">
+                <option value="">请选择</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>年龄</label>
+              <input v-model.number="addForm.age" type="number" placeholder="年龄" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>身份证号</label>
+              <input v-model="addForm.id_card" placeholder="身份证号" />
+            </div>
+            <div class="form-group">
+              <label>邮箱</label>
+              <input v-model="addForm.email" placeholder="邮箱" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>学历</label>
+              <select v-model="addForm.education">
+                <option value="">请选择</option>
+                <option value="初中">初中</option>
+                <option value="高中">高中</option>
+                <option value="大专">大专</option>
+                <option value="本科">本科</option>
+                <option value="硕士">硕士</option>
+                <option value="博士">博士</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>专业</label>
+              <input v-model="addForm.major" placeholder="所学专业" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>工作年限</label>
+              <input v-model.number="addForm.work_years" type="number" placeholder="工作年限" />
+            </div>
+            <div class="form-group">
+              <label>社保年限</label>
+              <input v-model.number="addForm.social_security_years" type="number" placeholder="社保年限" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>目标等级</label>
+              <select v-model="addForm.target_level">
+                <option value="">请选择</option>
+                <option value="初级">初级</option>
+                <option value="中级">中级</option>
+                <option value="高级">高级</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>来源渠道</label>
+              <select v-model="addForm.source">
+                <option value="网站">网站咨询</option>
+                <option value="微信">微信咨询</option>
+                <option value="电话">电话咨询</option>
+                <option value="机构">机构推荐</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>所属机构</label>
+              <input v-model="addForm.organization" placeholder="所属机构（可选）" />
+            </div>
+            <div class="form-group">
+              <label>初始状态</label>
+              <select v-model="addForm.status">
+                <option value="意向">意向</option>
+                <option value="已报名">已报名</option>
+                <option value="资料审核">资料审核</option>
+                <option value="已缴费">已缴费</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>备注</label>
+            <textarea v-model="addForm.remark" placeholder="备注信息" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="exam-modal-footer">
+          <button class="btn-cancel" @click="showAddModal = false">取消</button>
+          <button class="btn-primary" @click="submitAddStudent">添加学员</button>
         </div>
       </div>
     </div>
@@ -260,6 +381,46 @@ const formatDate = (d) => {
   return new Date(d).toLocaleString('zh-CN')
 }
 
+// 手动添加学员
+const showAddModal = ref(false)
+const addForm = ref({ name: '', phone: '', gender: '', age: '', id_card: '', email: '', education: '', major: '', work_years: '', social_security_years: '', target_level: '', source: '微信', organization: '', status: '意向', remark: '' })
+
+const openAddModal = () => {
+  addForm.value = { name: '', phone: '', gender: '', age: '', id_card: '', email: '', education: '', major: '', work_years: '', social_security_years: '', target_level: '', source: '微信', organization: '', status: '意向', remark: '' }
+  showAddModal.value = true
+}
+
+const submitAddStudent = async () => {
+  if (!addForm.value.name || !addForm.value.phone) {
+    alert('请填写姓名和手机号')
+    return
+  }
+  try {
+    const res = await fetch(`${API_BASE}/student/submit`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(addForm.value)
+    })
+    if (res.ok) {
+      // 如果初始状态不是意向，需要更新状态
+      const data = await res.json()
+      if (addForm.value.status !== '意向' && data.data?.id) {
+        await fetch(`${API_BASE}/admin/students/${data.data.id}/status`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ stage: addForm.value.status, operator: '管理员', note: `手动添加，初始状态：${addForm.value.status}` })
+        })
+      }
+      showAddModal.value = false
+      await loadStudents()
+    } else {
+      alert('添加失败')
+    }
+  } catch (e) {
+    alert('添加失败')
+  }
+}
+
 onMounted(loadStudents)
 </script>
 
@@ -275,6 +436,7 @@ onMounted(loadStudents)
 .status-badge.warning { background: #fef3c7; color: #92400e; }
 .status-badge.success { background: #d1fae5; color: #065f46; }
 .status-badge.complete { background: #ede9fe; color: #5b21b6; }
+.source-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #f0f0f0; color: #666; white-space: nowrap; }
 .btn-view { padding: 4px 10px; border: 1px solid var(--primary-color); background: transparent; color: var(--primary-color); border-radius: 4px; cursor: pointer; font-size: 12px; }
 .btn-view:hover { background: var(--primary-color); color: white; }
 .btn-status { padding: 4px 10px; border: 1px solid var(--warning-color); background: transparent; color: var(--warning-color); border-radius: 4px; cursor: pointer; font-size: 12px; }
@@ -309,7 +471,10 @@ onMounted(loadStudents)
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
 .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; }
-@media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+.form-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; box-sizing: border-box; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.required { color: #ef4444; }
+@media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
 
 /* 状态进度条 */
 .progress-cell { min-width: 320px; }
