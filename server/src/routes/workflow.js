@@ -149,4 +149,104 @@ router.delete('/admin/major/:id', (req, res) => {
   }
 })
 
+// ===== 机构管理接口 =====
+
+// 管理员：获取机构列表（含学员数统计）
+router.get('/admin/organizations', (req, res) => {
+  try {
+    const orgs = query('SELECT * FROM organizations ORDER BY created_at DESC')
+    // 统计每个机构的学员数
+    for (const org of orgs) {
+      const result = getOne('SELECT COUNT(*) as count FROM student_profiles WHERE organization = ?', [org.name])
+      org.student_count = result?.count || 0
+    }
+    res.json({ data: orgs })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：添加机构
+router.post('/admin/organizations', (req, res) => {
+  try {
+    const { name, contact_person, contact_phone, address, cooperation_type, status } = req.body
+    if (!name) return res.status(400).json({ message: '请填写机构名称' })
+    const id = insert('organizations', { name, contact_person, contact_phone, address, cooperation_type, status: status || 'active' })
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '添加失败' })
+  }
+})
+
+// 管理员：编辑机构
+router.put('/admin/organizations/:id', (req, res) => {
+  try {
+    const { name, contact_person, contact_phone, address, cooperation_type, status } = req.body
+    update('organizations', { name, contact_person, contact_phone, address, cooperation_type, status }, 'id = ?', [req.params.id])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：删除机构
+router.delete('/admin/organizations/:id', (req, res) => {
+  try {
+    remove('organizations', 'id = ?', [req.params.id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败' })
+  }
+})
+
+// ===== 证书管理接口 =====
+
+// 管理员：获取证书列表（关联学员姓名）
+router.get('/admin/certificates', (req, res) => {
+  try {
+    const certs = query(`
+      SELECT c.*, sp.name as student_name
+      FROM certificates c
+      LEFT JOIN student_profiles sp ON c.student_id = sp.id
+      ORDER BY c.created_at DESC
+    `)
+    res.json({ data: certs })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：添加证书
+router.post('/admin/certificates', (req, res) => {
+  try {
+    const { student_id, cert_type, cert_level, cert_number, issue_date, status } = req.body
+    if (!student_id) return res.status(400).json({ message: '请选择学员' })
+    const id = insert('certificates', { student_id, cert_type, cert_level, cert_number, issue_date, status: status || 'pending' })
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '添加失败' })
+  }
+})
+
+// 管理员：编辑证书
+router.put('/admin/certificates/:id', (req, res) => {
+  try {
+    const { cert_type, cert_level, cert_number, issue_date, status } = req.body
+    update('certificates', { cert_type, cert_level, cert_number, issue_date, status }, 'id = ?', [req.params.id])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：删除证书
+router.delete('/admin/certificates/:id', (req, res) => {
+  try {
+    remove('certificates', 'id = ?', [req.params.id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败' })
+  }
+})
+
 export default router

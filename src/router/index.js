@@ -29,6 +29,8 @@ import ProgramsManage from '../views/admin/ProgramsManage.vue'
 import ExamRoomsManage from '../views/admin/ExamRoomsManage.vue'
 import StudentsManage from '../views/admin/StudentsManage.vue'
 import MajorsManage from '../views/admin/MajorsManage.vue'
+import OrganizationsManage from '../views/admin/OrganizationsManage.vue'
+import CertificatesManage from '../views/admin/CertificatesManage.vue'
 
 const routes = [
   {
@@ -178,6 +180,16 @@ const routes = [
         path: 'majors',
         name: 'MajorsManage',
         component: MajorsManage
+      },
+      {
+        path: 'organizations',
+        name: 'OrganizationsManage',
+        component: OrganizationsManage
+      },
+      {
+        path: 'certificates',
+        name: 'CertificatesManage',
+        component: CertificatesManage
       }
     ]
   }

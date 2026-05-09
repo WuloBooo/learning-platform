@@ -27,11 +27,9 @@
             <th>ID</th>
             <th>姓名</th>
             <th>手机号</th>
-            <th>学历</th>
             <th>专业</th>
             <th>目标等级</th>
-            <th>机构</th>
-            <th>状态</th>
+            <th>学员进度</th>
             <th>提交时间</th>
             <th>操作</th>
           </tr>
@@ -41,17 +39,20 @@
             <td>{{ s.id }}</td>
             <td>{{ s.name }}</td>
             <td>{{ s.phone }}</td>
-            <td>{{ s.education || '-' }}</td>
             <td>{{ s.major || '-' }}</td>
             <td>{{ s.target_level || '-' }}</td>
-            <td>{{ s.organization || '-' }}</td>
-            <td>
-              <span :class="['status-badge', getStatusClass(s.status)]">{{ s.status || 'pending' }}</span>
+            <td class="progress-cell">
+              <div class="stage-progress">
+                <div v-for="(stage, idx) in STAGES" :key="idx"
+                     class="stage-dot-wrap" @click="quickChangeStatus(s, stage)">
+                  <div :class="['stage-dot', getDotClass(idx, s.status)]"></div>
+                  <span class="stage-label">{{ STAGE_SHORT[idx] }}</span>
+                </div>
+              </div>
             </td>
             <td>{{ formatDate(s.created_at) }}</td>
             <td class="actions">
               <button class="btn-view" @click="viewDetail(s)">详情</button>
-              <button class="btn-status" @click="changeStatus(s)">更新状态</button>
               <button class="btn-delete" @click="deleteStudent(s)">删除</button>
             </td>
           </tr>
@@ -143,6 +144,27 @@ import { ref, computed, onMounted } from 'vue'
 const API_BASE = '/api/workflow'
 const token = () => localStorage.getItem('token')
 const headers = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` })
+
+const STAGES = ['意向', '已报名', '资料审核', '已缴费', '学习中', '已考试', '已拿证']
+const STAGE_SHORT = ['意向', '报名', '审核', '缴费', '学习', '考试', '拿证']
+
+const getStageIndex = (status) => STAGES.indexOf(status)
+const getDotClass = (idx, status) => {
+  const current = getStageIndex(status)
+  if (idx < current) return 'done'
+  if (idx === current) return 'active'
+  return 'pending'
+}
+
+const quickChangeStatus = (s, stage) => {
+  const current = getStageIndex(s.status)
+  const target = getStageIndex(stage)
+  if (target <= current) return
+  statusStudent.value = s
+  newStatus.value = stage
+  statusNote.value = ''
+  showStatusModal.value = true
+}
 
 const students = ref([])
 const loading = ref(false)
@@ -288,4 +310,18 @@ onMounted(loadStudents)
 .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
 .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; }
 @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } }
+
+/* 状态进度条 */
+.progress-cell { min-width: 320px; }
+.stage-progress { display: flex; align-items: flex-start; gap: 0; position: relative; }
+.stage-dot-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; cursor: pointer; position: relative; padding-top: 4px; }
+.stage-dot-wrap:not(:last-child)::after { content: ''; position: absolute; top: 11px; left: 50%; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
+.stage-dot-wrap.done:not(:last-child)::after { background: #10b981; }
+.stage-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #d1d5db; background: #f3f4f6; z-index: 1; position: relative; transition: all .2s; }
+.stage-dot.done { background: #10b981; border-color: #10b981; }
+.stage-dot.active { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+.stage-label { font-size: 10px; color: #9ca3af; margin-top: 4px; white-space: nowrap; }
+.stage-dot-wrap.done .stage-label { color: #10b981; }
+.stage-dot-wrap.active .stage-label { color: #3b82f6; font-weight: 600; }
+.stage-dot-wrap:hover .stage-dot { transform: scale(1.2); }
 </style>

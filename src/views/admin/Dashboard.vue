@@ -16,6 +16,20 @@
         </div>
       </div>
       <div class="stat-card">
+        <span class="stat-icon">🎓</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.totalStudents || 0 }}</span>
+          <span class="stat-label">学员总数</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🆕</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ stats.newStudentsThisMonth || 0 }}</span>
+          <span class="stat-label">本月新增学员</span>
+        </div>
+      </div>
+      <div class="stat-card">
         <span class="stat-icon">⏳</span>
         <div class="stat-info">
           <span class="stat-value">{{ stats.pendingRegistrations }}</span>
@@ -30,7 +44,21 @@
         </div>
       </div>
     </div>
-    
+
+    <!-- 学员状态分布 -->
+    <div class="dashboard-card" v-if="studentStatusStats.length > 0">
+      <h3>学员状态分布</h3>
+      <div class="bar-chart">
+        <div class="bar-item" v-for="item in studentStatusStats" :key="item.status">
+          <div class="bar-label">{{ item.status }}</div>
+          <div class="bar-wrapper">
+            <div class="bar-fill student-bar" :style="{ width: getStudentBarWidth(item.count) + '%' }"></div>
+          </div>
+          <div class="bar-value">{{ item.count }}</div>
+        </div>
+      </div>
+    </div>
+
     <div class="dashboard-grid">
       <div class="dashboard-card">
         <h3>最近报名</h3>
@@ -47,28 +75,19 @@
           </div>
         </div>
       </div>
-      
+
       <div class="dashboard-card">
-        <h3>考试类型分布</h3>
-        <div class="chart-container">
-          <div class="bar-chart">
-            <div 
-              class="bar-item" 
-              v-for="item in examTypeStats" 
-              :key="item.exam_type"
-            >
-              <div class="bar-label">{{ getExamTypeLabel(item.exam_type) }}</div>
-              <div class="bar-wrapper">
-                <div 
-                  class="bar-fill" 
-                  :style="{ width: getBarWidth(item.count) + '%' }"
-                ></div>
-              </div>
-              <div class="bar-value">{{ item.count }}</div>
+        <h3>最近学员</h3>
+        <div class="list-container">
+          <div class="list-item" v-for="s in recentStudents" :key="s.id">
+            <div class="item-info">
+              <span class="name">{{ s.name }}</span>
+              <span class="exam">{{ s.major || '未填写专业' }}</span>
             </div>
+            <span :class="['mini-badge', getStudentStatusClass(s.status)]">{{ s.status }}</span>
           </div>
-          <div class="empty-state" v-if="examTypeStats.length === 0">
-            暂无数据
+          <div class="empty-state" v-if="recentStudents.length === 0">
+            暂无学员
           </div>
         </div>
       </div>
@@ -86,11 +105,15 @@ const stats = ref({
   pendingRegistrations: 0,
   upcomingExams: 0,
   totalMaterials: 0,
-  totalDownloads: 0
+  totalDownloads: 0,
+  totalStudents: 0,
+  newStudentsThisMonth: 0
 })
 
 const recentRegistrations = ref([])
 const examTypeStats = ref([])
+const studentStatusStats = ref([])
+const recentStudents = ref([])
 
 const examTypeLabels = {
   'ai': '人工智能训练师',
@@ -114,12 +137,24 @@ const getBarWidth = (count) => {
   return (count / max) * 100
 }
 
+const getStudentBarWidth = (count) => {
+  const max = Math.max(...studentStatusStats.value.map(s => s.count), 1)
+  return (count / max) * 100
+}
+
+const getStudentStatusClass = (status) => {
+  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
+  return map[status] || 'pending'
+}
+
 const loadStatistics = async () => {
   try {
     const response = await adminAPI.getStatistics()
     stats.value = response.overview
     recentRegistrations.value = response.recentRegistrations
     examTypeStats.value = response.examTypeStats
+    studentStatusStats.value = response.studentStatusStats || []
+    recentStudents.value = response.recentStudents || []
   } catch (error) {
     console.error('加载统计数据失败:', error)
   }
@@ -164,10 +199,26 @@ onMounted(() => {
   transition: width 0.3s ease;
 }
 
+.bar-fill.student-bar {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
 .bar-value {
   width: 40px;
   text-align: right;
   font-weight: 600;
   color: #333;
 }
+
+.mini-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.mini-badge.pending { background: #fef3c7; color: #92400e; }
+.mini-badge.info { background: #dbeafe; color: #1e40af; }
+.mini-badge.warning { background: #fef3c7; color: #92400e; }
+.mini-badge.success { background: #d1fae5; color: #065f46; }
+.mini-badge.complete { background: #ede9fe; color: #5b21b6; }
 </style>

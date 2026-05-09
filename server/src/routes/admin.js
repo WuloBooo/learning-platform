@@ -684,12 +684,23 @@ router.get('/statistics', async (req, res, next) => {
     )
     
     const examTypeStats = query(
-      `SELECT exam_type, COUNT(*) as count 
-       FROM registrations 
-       GROUP BY exam_type 
+      `SELECT exam_type, COUNT(*) as count
+       FROM registrations
+       GROUP BY exam_type
        ORDER BY count DESC`
     )
-    
+
+    // 学员统计
+    const totalStudents = getOne('SELECT COUNT(*) as count FROM student_profiles')?.count || 0
+    const thisMonth = new Date().toISOString().slice(0, 7)
+    const newStudentsThisMonth = getOne('SELECT COUNT(*) as count FROM student_profiles WHERE created_at >= ?', [thisMonth])?.count || 0
+    const studentStatusStats = query(
+      `SELECT status, COUNT(*) as count FROM student_profiles GROUP BY status`
+    )
+    const recentStudents = query(
+      `SELECT id, name, phone, major, status, created_at FROM student_profiles ORDER BY created_at DESC LIMIT 5`
+    )
+
     res.json({
       overview: {
         totalUsers,
@@ -698,10 +709,14 @@ router.get('/statistics', async (req, res, next) => {
         approvedRegistrations,
         upcomingExams,
         totalMaterials,
-        totalDownloads
+        totalDownloads,
+        totalStudents,
+        newStudentsThisMonth
       },
       recentRegistrations,
-      examTypeStats
+      examTypeStats,
+      studentStatusStats,
+      recentStudents
     })
   } catch (error) {
     next(error)
