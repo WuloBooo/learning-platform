@@ -160,7 +160,7 @@ const API_BASE = '/api/workflow'
 const token = () => localStorage.getItem('token')
 const headers = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token()}` })
 
-const STAGES = ['意向', '已报名', '资料审核', '已缴费', '学习中', '已考试', '已拿证']
+const STAGES = ['意向', '已报名', '资料审核', '实名认证', '已缴费', '学习中', '已考试', '已拿证']
 
 const COLUMNS = [
   { key: 'name', label: '姓名', width: '70px' },
@@ -188,7 +188,7 @@ const ADD_FORM_COLS = [
   { key: 'target_level', label: '目标等级', type: 'select', options: ['初级', '中级', '高级'] },
   { key: 'source', label: '来源渠道', type: 'select', options: ['网站', '微信', '电话', '机构', '其他'] },
   { key: 'organization', label: '所属机构' },
-  { key: 'status', label: '初始状态', type: 'select', options: ['意向', '已报名', '资料审核', '已缴费'] },
+  { key: 'status', label: '初始状态', type: 'select', options: ['意向', '已报名', '资料审核', '实名认证', '已缴费'] },
 ]
 
 // 数据
@@ -406,7 +406,7 @@ const submitAddStudent = async () => {
 }
 
 const getStatusClass = (status) => {
-  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
+  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '实名认证': 'verify', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
   return map[status] || 'pending'
 }
 
@@ -461,6 +461,7 @@ onMounted(loadStudents)
 .status-tag.warning { background: #fef3c7; color: #92400e; }
 .status-tag.success { background: #d1fae5; color: #065f46; }
 .status-tag.complete { background: #ede9fe; color: #5b21b6; }
+.status-tag.verify { background: #e0e7ff; color: #4338ca; }
 
 /* 弹窗 */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }

@@ -143,7 +143,7 @@ const getStudentBarWidth = (count) => {
 }
 
 const getStudentStatusClass = (status) => {
-  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
+  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '实名认证': 'verify', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
   return map[status] || 'pending'
 }
 
