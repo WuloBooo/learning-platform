@@ -1,5 +1,6 @@
 import express from 'express'
 import { query, getOne, insert, update, remove } from '../config/database.js'
+import * as xlsx from 'xlsx'
 
 const router = express.Router()
 
@@ -246,6 +247,91 @@ router.delete('/admin/certificates/:id', (req, res) => {
     res.json({ message: '删除成功' })
   } catch (error) {
     res.status(500).json({ message: '删除失败' })
+  }
+})
+
+// ===== 批量操作接口 =====
+
+// 批量更新学员状态
+router.post('/admin/students/batch-status', (req, res) => {
+  try {
+    const { ids, stage, note } = req.body
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: '请选择学员' })
+    }
+    if (!stage) return res.status(400).json({ message: '请选择状态' })
+    for (const id of ids) {
+      insert('student_status', { student_id: id, stage, operator: '管理员', note: note || '批量操作' })
+      update('student_profiles', { status: stage }, 'id = ?', [id])
+    }
+    res.json({ message: `成功更新 ${ids.length} 条` })
+  } catch (error) {
+    res.status(500).json({ message: '批量更新失败' })
+  }
+})
+
+// 批量删除学员
+router.post('/admin/students/batch-delete', (req, res) => {
+  try {
+    const { ids } = req.body
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: '请选择学员' })
+    }
+    for (const id of ids) {
+      remove('student_status', 'student_id = ?', [id])
+      remove('student_profiles', 'id = ?', [id])
+    }
+    res.json({ message: `成功删除 ${ids.length} 条` })
+  } catch (error) {
+    res.status(500).json({ message: '批量删除失败' })
+  }
+})
+
+// 导入学员
+router.post('/admin/students/import', (req, res) => {
+  try {
+    const { fileData } = req.body
+    if (!fileData) return res.status(400).json({ message: '请上传文件' })
+
+    const buffer = Buffer.from(fileData, 'base64')
+    const workbook = xlsx.read(buffer, { type: 'buffer' })
+    const sheet = workbook.Sheets[workbook.SheetNames[0]]
+    const rows = xlsx.utils.sheet_to_json(sheet)
+
+    if (rows.length === 0) return res.status(400).json({ message: '文件中没有数据' })
+
+    const result = { success: 0, failed: 0 }
+    for (const row of rows) {
+      try {
+        const name = row['姓名'] || row['name']
+        const phone = String(row['手机号'] || row['phone'] || '')
+        if (!name || !phone) { result.failed++; continue }
+
+        insert('student_profiles', {
+          name, phone,
+          email: row['邮箱'] || row['email'] || null,
+          gender: row['性别'] || row['gender'] || null,
+          age: row['年龄'] || row['age'] || null,
+          education: row['学历'] || row['education'] || null,
+          major: row['专业'] || row['major'] || null,
+          work_years: row['工作年限'] || row['work_years'] || null,
+          social_security_years: row['社保年限'] || row['social_security_years'] || null,
+          id_card: String(row['身份证号'] || row['id_card'] || ''),
+          target_level: row['目标等级'] || row['target_level'] || null,
+          organization: row['机构'] || row['organization'] || null,
+          source: row['来源'] || row['source'] || '导入',
+          remark: row['备注'] || row['remark'] || null,
+          status: row['状态'] || '意向'
+        })
+        result.success++
+      } catch (e) {
+        result.failed++
+      }
+    }
+
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ message: '导入失败：' + error.message })
   }
 })
 
