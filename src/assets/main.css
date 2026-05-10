@@ -5220,35 +5220,45 @@ body {
 .data-table {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: auto;
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .data-table table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 800px;
 }
 
 .data-table th {
-  background: var(--bg-secondary);
-  padding: 14px 16px;
+  background: #f8fafc;
+  padding: 12px 14px;
   text-align: left;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  color: #64748b;
+  border-bottom: 2px solid var(--border-color);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .data-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
   color: var(--text-primary);
+  vertical-align: middle;
 }
 
-.data-table tr:hover {
-  background: var(--bg-secondary);
+.data-table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.data-table tbody tr:hover {
+  background: #eff6ff;
 }
 
 .data-table .actions {

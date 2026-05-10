@@ -477,16 +477,16 @@ onMounted(loadStudents)
 @media (max-width: 600px) { .detail-grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
 
 /* 状态进度条 */
-.progress-cell { min-width: 320px; }
-.stage-progress { display: flex; align-items: flex-start; gap: 0; position: relative; }
-.stage-dot-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; cursor: pointer; position: relative; padding-top: 4px; }
-.stage-dot-wrap:not(:last-child)::after { content: ''; position: absolute; top: 11px; left: 50%; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
+.progress-cell { min-width: 280px; }
+.stage-progress { display: flex; align-items: center; gap: 0; }
+.stage-dot-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; cursor: pointer; position: relative; }
+.stage-dot-wrap:not(:last-child)::after { content: ''; position: absolute; top: 7px; left: 50%; width: 100%; height: 2px; background: #e5e7eb; z-index: 0; }
 .stage-dot-wrap.done:not(:last-child)::after { background: #10b981; }
-.stage-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #d1d5db; background: #f3f4f6; z-index: 1; position: relative; transition: all .2s; }
+.stage-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #d1d5db; background: #fff; z-index: 1; position: relative; transition: all .15s; }
 .stage-dot.done { background: #10b981; border-color: #10b981; }
-.stage-dot.active { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
-.stage-label { font-size: 10px; color: #9ca3af; margin-top: 4px; white-space: nowrap; }
-.stage-dot-wrap.done .stage-label { color: #10b981; }
-.stage-dot-wrap.active .stage-label { color: #3b82f6; font-weight: 600; }
-.stage-dot-wrap:hover .stage-dot { transform: scale(1.2); }
+.stage-dot.active { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+.stage-label { font-size: 10px; color: #9ca3af; margin-top: 3px; white-space: nowrap; line-height: 1; }
+.stage-dot-wrap.done .stage-label { color: #059669; }
+.stage-dot-wrap.active .stage-label { color: #2563eb; font-weight: 600; }
+.stage-dot-wrap:hover .stage-dot { transform: scale(1.3); }
 </style>
