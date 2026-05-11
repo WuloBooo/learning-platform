@@ -59,13 +59,13 @@ const authLimiter = rateLimit({
 })
 app.use('/api/auth/login', authLimiter)
 
-app.use(express.json({ limit: '10kb' }))
-app.use(express.urlencoded({ extended: true }))
-
-// 文件上传需要更大的 body 限制
+// 大文件上传路由（必须在全局 10kb 限制之前）
 app.use('/api/exam-rooms', express.json({ limit: '500mb' }))
 app.use('/api/exam-rooms', express.urlencoded({ extended: true, limit: '500mb' }))
 app.use('/api/workflow/admin/students/import', express.json({ limit: '50mb' }))
+
+app.use(express.json({ limit: '10kb' }))
+app.use(express.urlencoded({ extended: true }))
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
