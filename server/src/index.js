@@ -65,6 +65,7 @@ app.use(express.urlencoded({ extended: true }))
 // 文件上传需要更大的 body 限制
 app.use('/api/exam-rooms', express.json({ limit: '500mb' }))
 app.use('/api/exam-rooms', express.urlencoded({ extended: true, limit: '500mb' }))
+app.use('/api/workflow/admin/students/import', express.json({ limit: '50mb' }))
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
