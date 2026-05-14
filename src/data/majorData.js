@@ -36,10 +36,15 @@ const masterNames = [
   '教育学', '体育学', '师范'
 ]
 
+// 去掉前导零用于比较
+function normalizeCode(code) {
+  return String(code).replace(/^0+/, '') || '0'
+}
+
 // 从专业类字符串中提取数字代码
 function extractCode(className) {
   const match = String(className).match(/(\d+)/)
-  return match ? match[1] : ''
+  return match ? normalizeCode(match[1]) : ''
 }
 
 // 判断是否符合报名条件
@@ -51,8 +56,9 @@ export function checkQualification(major) {
   const code = extractCode(className)
 
   if (level === '本科') {
-    // 代码匹配
-    if (bachelorCodes.includes(code)) {
+    // 代码匹配（去掉前导零比较）
+    const normalizedBachelor = bachelorCodes.map(normalizeCode)
+    if (normalizedBachelor.includes(code)) {
       return { qualified: true, matchedCode: code, className }
     }
     // 名称匹配（师范类等）
@@ -63,7 +69,8 @@ export function checkQualification(major) {
   }
 
   if (level === '专科') {
-    if (collegeCodes.includes(code)) {
+    const normalizedCollege = collegeCodes.map(normalizeCode)
+    if (normalizedCollege.includes(code)) {
       return { qualified: true, matchedCode: code, className }
     }
     return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
