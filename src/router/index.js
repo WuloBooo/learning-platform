@@ -38,6 +38,10 @@ import DataSheetsManage from '../views/admin/DataSheetsManage.vue'
 import OrgLogin from '../views/org/OrgLogin.vue'
 import OrgLayout from '../views/org/OrgLayout.vue'
 
+import WorkflowLogin from '../views/workflow/WorkflowLogin.vue'
+import WorkflowLayout from '../views/workflow/WorkflowLayout.vue'
+import WorkflowDashboard from '../views/workflow/WorkflowDashboard.vue'
+
 const routes = [
   {
     path: '/',
@@ -122,6 +126,58 @@ const routes = [
     name: 'OrgDashboard',
     component: OrgLayout,
     meta: { requiresOrg: true }
+  },
+  {
+    path: '/workflow/login',
+    name: 'WorkflowLogin',
+    component: WorkflowLogin
+  },
+  {
+    path: '/workflow',
+    component: WorkflowLayout,
+    meta: { requiresWorkflow: true },
+    children: [
+      {
+        path: '',
+        name: 'WorkflowDashboard',
+        component: WorkflowDashboard
+      },
+      {
+        path: 'org-users',
+        name: 'WorkflowOrgUsers',
+        component: OrgUsersManage
+      },
+      {
+        path: 'exam-plans',
+        name: 'WorkflowExamPlans',
+        component: ExamPlansManage
+      },
+      {
+        path: 'data-sheets',
+        name: 'WorkflowDataSheets',
+        component: DataSheetsManage
+      },
+      {
+        path: 'organizations',
+        name: 'WorkflowOrganizations',
+        component: OrganizationsManage
+      },
+      {
+        path: 'students',
+        name: 'WorkflowStudents',
+        component: StudentsManage
+      },
+      {
+        path: 'majors',
+        name: 'WorkflowMajors',
+        component: MajorsManage
+      },
+      {
+        path: 'certificates',
+        name: 'WorkflowCertificates',
+        component: CertificatesManage
+      }
+    ]
   },
   {
     path: '/admin',
@@ -246,6 +302,11 @@ router.beforeEach((to, from, next) => {
     return next()
   }
 
+  // 数据管理中心登录页始终放行
+  if (to.path === '/workflow/login') {
+    return next()
+  }
+
   // 检查 token 是否过期
   const isTokenExpired = () => {
     if (!token) return true
@@ -266,6 +327,10 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAdmin) {
     if (!token || isTokenExpired() || user?.role !== 'admin') {
       return next('/admin/login')
+    }
+  } else if (to.meta.requiresWorkflow) {
+    if (!token || isTokenExpired() || user?.role !== 'admin') {
+      return next('/workflow/login')
     }
   } else if (to.meta.requiresOrg) {
     const orgToken = localStorage.getItem('org_token')
