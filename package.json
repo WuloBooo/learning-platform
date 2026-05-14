@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@handsontable/vue3": "^17.0.1",
+    "handsontable": "^17.0.1",
     "pinia": "^2.1.0",
     "qrcode": "^1.5.4",
     "vue": "^3.4.0",
