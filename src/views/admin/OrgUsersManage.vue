@@ -45,7 +45,7 @@
     <!-- 创建/编辑弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-        <div class="modal">
+        <div class="modal-card">
           <h3>{{ editingUser ? '编辑机构账号' : '创建机构账号' }}</h3>
           <div class="form-group" v-if="!editingUser">
             <label>所属机构</label>
@@ -251,7 +251,7 @@ onMounted(() => {
   z-index: 1000;
 }
 
-.modal-overlay .modal {
+.modal-overlay .modal-card {
   position: relative;
   inset: auto;
   background: white;
@@ -261,7 +261,7 @@ onMounted(() => {
   max-width: 90vw;
 }
 
-.modal-overlay .modal h3 { margin: 0 0 20px; font-size: 18px; }
+.modal-overlay .modal-card h3 { margin: 0 0 20px; font-size: 18px; }
 
 .modal-overlay .form-group { margin-bottom: 16px; }
 .modal-overlay .form-group label {

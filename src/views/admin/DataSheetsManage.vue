@@ -56,7 +56,7 @@
     <!-- 查看表格数据弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay large" v-if="viewingSheet" @click.self="viewingSheet = null">
-        <div class="modal large-modal">
+        <div class="modal-card large-modal">
           <div class="modal-header">
             <h3>{{ viewingSheet.sheet_name }} — {{ viewingSheet.org_name }}</h3>
             <button class="close-btn" @click="viewingSheet = null">✕</button>
@@ -101,7 +101,7 @@
     <!-- 创建弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-        <div class="modal">
+        <div class="modal-card">
           <h3>{{ editing ? '编辑数据表' : '创建数据表' }}</h3>
           <div class="form-group" v-if="!editing">
             <label>所属机构 *</label>
@@ -143,7 +143,7 @@
     <!-- 批量创建弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showBatchModal" @click.self="showBatchModal = false">
-        <div class="modal">
+        <div class="modal-card">
           <h3>批量为所有机构创建数据表</h3>
           <p class="hint">将为所有启用的机构创建相同名称的数据表</p>
           <div class="form-group">
@@ -382,7 +382,7 @@ onMounted(() => {
   z-index: 1000;
 }
 
-.modal-overlay .modal {
+.modal-overlay .modal-card {
   position: relative;
   inset: auto;
   background: white;
@@ -419,7 +419,7 @@ onMounted(() => {
 
 .modal-overlay .table-scroll { overflow: auto; }
 
-.modal-overlay .modal h3 { margin: 0 0 20px; font-size: 18px; }
+.modal-overlay .modal-card h3 { margin: 0 0 20px; font-size: 18px; }
 .modal-overlay .hint { font-size: 13px; color: #999; margin: 0 0 16px; }
 
 .modal-overlay .form-group { margin-bottom: 14px; }
