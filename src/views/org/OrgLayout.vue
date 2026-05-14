@@ -129,18 +129,19 @@ const buildSettings = () => ({
   licenseKey: 'non-commercial-and-evaluation',
   afterChange(changes, source) {
     if (source === 'loadData' || !changes || !currentSheet.value) return
+    const hot = hotRef.value?.hotInstance
+    if (!hot) return
     changes.forEach(([row, prop, oldVal, newVal]) => {
-      if (oldVal !== newVal && tableData.value[row]) {
-        const rowData = tableData.value[row]
-        const isCustom = customCols.value.some(c => c.key === prop)
-        if (isCustom) {
-          const extra = JSON.parse(rowData.extra_data || '{}')
-          extra[prop] = newVal
-          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { extra_data: JSON.stringify(extra) })
-          rowData.extra_data = JSON.stringify(extra)
-        } else {
-          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal })
-        }
+      const rowData = hot.getSourceDataAtRow(row)
+      if (!rowData || !rowData.id) return
+      const isCustom = customCols.value.some(c => c.key === prop)
+      if (isCustom) {
+        const extra = JSON.parse(rowData.extra_data || '{}')
+        extra[prop] = newVal
+        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { extra_data: JSON.stringify(extra) })
+        rowData.extra_data = JSON.stringify(extra)
+      } else {
+        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal })
       }
     })
   },
