@@ -12,6 +12,7 @@ import SurveyChat from '../views/SurveyChat.vue'
 import SurveyForm from '../views/SurveyForm.vue'
 import MajorCheck from '../views/MajorCheck.vue'
 import StudentRegister from '../views/StudentRegister.vue'
+import MajorJudge from '../views/MajorJudge.vue'
 
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -110,6 +111,11 @@ const routes = [
     path: '/student-register',
     name: 'StudentRegister',
     component: StudentRegister
+  },
+  {
+    path: '/major-judge',
+    name: 'MajorJudge',
+    component: MajorJudge
   },
   {
     path: '/admin/login',
