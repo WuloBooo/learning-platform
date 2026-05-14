@@ -75,61 +75,63 @@
     </div>
 
     <!-- 创建/编辑弹窗 -->
-    <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-      <div class="modal">
-        <h3>{{ editing ? '编辑考试计划' : '创建考试计划' }}</h3>
-        <div class="form-group">
-          <label>计划名称 *</label>
-          <input v-model="form.title" placeholder="如：2026年5月人工智能训练师考试" />
-        </div>
-        <div class="form-row">
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
+        <div class="modal">
+          <h3>{{ editing ? '编辑考试计划' : '创建考试计划' }}</h3>
           <div class="form-group">
-            <label>考试类型</label>
-            <input v-model="form.exam_type" placeholder="如：人工智能训练师" />
+            <label>计划名称 *</label>
+            <input v-model="form.title" placeholder="如：2026年5月人工智能训练师考试" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>考试类型</label>
+              <input v-model="form.exam_type" placeholder="如：人工智能训练师" />
+            </div>
+            <div class="form-group">
+              <label>考试等级</label>
+              <input v-model="form.exam_level" placeholder="如：初级/中级/高级" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>报名开始</label>
+              <input v-model="form.reg_start" type="date" />
+            </div>
+            <div class="form-group">
+              <label>报名截止</label>
+              <input v-model="form.reg_end" type="date" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>考试日期</label>
+              <input v-model="form.exam_date" type="date" />
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <select v-model="form.status">
+                <option value="报名中">报名中</option>
+                <option value="已截止">已截止</option>
+                <option value="已完成">已完成</option>
+              </select>
+            </div>
           </div>
           <div class="form-group">
-            <label>考试等级</label>
-            <input v-model="form.exam_level" placeholder="如：初级/中级/高级" />
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>报名开始</label>
-            <input v-model="form.reg_start" type="date" />
+            <label>考试地点</label>
+            <input v-model="form.location" placeholder="考试地点" />
           </div>
           <div class="form-group">
-            <label>报名截止</label>
-            <input v-model="form.reg_end" type="date" />
+            <label>备注说明</label>
+            <textarea v-model="form.description" rows="3" placeholder="备注说明"></textarea>
           </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>考试日期</label>
-            <input v-model="form.exam_date" type="date" />
+          <div class="modal-actions">
+            <button class="cancel-btn" @click="showModal = false">取消</button>
+            <button class="confirm-btn" @click="handleSubmit">{{ editing ? '保存' : '创建' }}</button>
           </div>
-          <div class="form-group">
-            <label>状态</label>
-            <select v-model="form.status">
-              <option value="报名中">报名中</option>
-              <option value="已截止">已截止</option>
-              <option value="已完成">已完成</option>
-            </select>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>考试地点</label>
-          <input v-model="form.location" placeholder="考试地点" />
-        </div>
-        <div class="form-group">
-          <label>备注说明</label>
-          <textarea v-model="form.description" rows="3" placeholder="备注说明"></textarea>
-        </div>
-        <div class="modal-actions">
-          <button class="cancel-btn" @click="showModal = false">取消</button>
-          <button class="confirm-btn" @click="handleSubmit">{{ editing ? '保存' : '创建' }}</button>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

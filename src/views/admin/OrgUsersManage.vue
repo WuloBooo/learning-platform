@@ -43,41 +43,43 @@
     </div>
 
     <!-- 创建/编辑弹窗 -->
-    <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-      <div class="modal">
-        <h3>{{ editingUser ? '编辑机构账号' : '创建机构账号' }}</h3>
-        <div class="form-group" v-if="!editingUser">
-          <label>所属机构</label>
-          <select v-model="form.org_id">
-            <option value="">请选择机构</option>
-            <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
-          </select>
-        </div>
-        <div class="form-group" v-if="!editingUser">
-          <label>登录账号</label>
-          <input v-model="form.username" placeholder="请输入登录账号" />
-        </div>
-        <div class="form-group">
-          <label>{{ editingUser ? '新密码（留空不修改）' : '登录密码' }}</label>
-          <input v-model="form.password" type="password" :placeholder="editingUser ? '留空不修改' : '请输入密码'" />
-        </div>
-        <div class="form-group">
-          <label>联系人姓名</label>
-          <input v-model="form.contact_name" placeholder="请输入联系人姓名" />
-        </div>
-        <div class="form-group">
-          <label>状态</label>
-          <select v-model="form.status">
-            <option value="active">启用</option>
-            <option value="disabled">禁用</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button class="cancel-btn" @click="showModal = false">取消</button>
-          <button class="confirm-btn" @click="handleSubmit">{{ editingUser ? '保存' : '创建' }}</button>
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
+        <div class="modal">
+          <h3>{{ editingUser ? '编辑机构账号' : '创建机构账号' }}</h3>
+          <div class="form-group" v-if="!editingUser">
+            <label>所属机构</label>
+            <select v-model="form.org_id">
+              <option value="">请选择机构</option>
+              <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
+            </select>
+          </div>
+          <div class="form-group" v-if="!editingUser">
+            <label>登录账号</label>
+            <input v-model="form.username" placeholder="请输入登录账号" />
+          </div>
+          <div class="form-group">
+            <label>{{ editingUser ? '新密码（留空不修改）' : '登录密码' }}</label>
+            <input v-model="form.password" type="password" :placeholder="editingUser ? '留空不修改' : '请输入密码'" />
+          </div>
+          <div class="form-group">
+            <label>联系人姓名</label>
+            <input v-model="form.contact_name" placeholder="请输入联系人姓名" />
+          </div>
+          <div class="form-group">
+            <label>状态</label>
+            <select v-model="form.status">
+              <option value="active">启用</option>
+              <option value="disabled">禁用</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="cancel-btn" @click="showModal = false">取消</button>
+            <button class="confirm-btn" @click="handleSubmit">{{ editingUser ? '保存' : '创建' }}</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

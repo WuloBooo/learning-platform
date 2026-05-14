@@ -78,77 +78,81 @@
     <div class="loading-state" v-else>加载中...</div>
 
     <!-- 详情弹窗 -->
-    <div class="modal-overlay" v-if="showDetail" @click.self="showDetail = false">
-      <div class="modal-content modal-lg">
-        <div class="modal-header">
-          <h3>学员详情 - {{ detailData.name }}</h3>
-          <button class="modal-close" @click="showDetail = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="detail-grid">
-            <div class="detail-item" v-for="col in COLUMNS" :key="col.key">
-              <label>{{ col.label }}</label>
-              <span v-if="col.key === 'status'" :class="['status-tag', getStatusClass(detailData.status)]">{{ detailData[col.key] || '-' }}</span>
-              <span v-else>{{ detailData[col.key] || '-' }}</span>
-            </div>
-            <div class="detail-item"><label>提交时间</label><span>{{ formatDate(detailData.created_at) }}</span></div>
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showDetail" @click.self="showDetail = false">
+        <div class="modal-content modal-lg">
+          <div class="modal-header">
+            <h3>学员详情 - {{ detailData.name }}</h3>
+            <button class="modal-close" @click="showDetail = false">&times;</button>
           </div>
-          <h4 class="history-title">状态变更记录</h4>
-          <div class="timeline" v-if="statusHistory.length > 0">
-            <div v-for="h in statusHistory" :key="h.id" class="timeline-item">
-              <div class="timeline-dot"></div>
-              <div class="timeline-content">
-                <span class="timeline-stage">{{ h.stage }}</span>
-                <span class="timeline-operator">{{ h.operator }}</span>
-                <span class="timeline-note" v-if="h.note">{{ h.note }}</span>
-                <span class="timeline-time">{{ formatDate(h.created_at) }}</span>
+          <div class="modal-body">
+            <div class="detail-grid">
+              <div class="detail-item" v-for="col in COLUMNS" :key="col.key">
+                <label>{{ col.label }}</label>
+                <span v-if="col.key === 'status'" :class="['status-tag', getStatusClass(detailData.status)]">{{ detailData[col.key] || '-' }}</span>
+                <span v-else>{{ detailData[col.key] || '-' }}</span>
+              </div>
+              <div class="detail-item"><label>提交时间</label><span>{{ formatDate(detailData.created_at) }}</span></div>
+            </div>
+            <h4 class="history-title">状态变更记录</h4>
+            <div class="timeline" v-if="statusHistory.length > 0">
+              <div v-for="h in statusHistory" :key="h.id" class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <span class="timeline-stage">{{ h.stage }}</span>
+                  <span class="timeline-operator">{{ h.operator }}</span>
+                  <span class="timeline-note" v-if="h.note">{{ h.note }}</span>
+                  <span class="timeline-time">{{ formatDate(h.created_at) }}</span>
+                </div>
               </div>
             </div>
+            <div v-else class="empty-state">暂无状态记录</div>
           </div>
-          <div v-else class="empty-state">暂无状态记录</div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- 手动添加学员弹窗 -->
-    <div class="modal-overlay" v-if="showAddModal" @click.self="showAddModal = false">
-      <div class="modal-content modal-lg">
-        <div class="modal-header">
-          <h3>手动添加学员</h3>
-          <button class="modal-close" @click="showAddModal = false">&times;</button>
-        </div>
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>姓名 <span class="required">*</span></label>
-              <input v-model="addForm.name" placeholder="学员姓名" />
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showAddModal" @click.self="showAddModal = false">
+        <div class="modal-content modal-lg">
+          <div class="modal-header">
+            <h3>手动添加学员</h3>
+            <button class="modal-close" @click="showAddModal = false">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label>姓名 <span class="required">*</span></label>
+                <input v-model="addForm.name" placeholder="学员姓名" />
+              </div>
+              <div class="form-group">
+                <label>手机号 <span class="required">*</span></label>
+                <input v-model="addForm.phone" placeholder="手机号" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group" v-for="col in ADD_FORM_COLS" :key="col.key">
+                <label>{{ col.label }}</label>
+                <select v-if="col.type === 'select'" v-model="addForm[col.key]">
+                  <option value="">请选择</option>
+                  <option v-for="opt in col.options" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+                <input v-else v-model="addForm[col.key]" :type="col.type || 'text'" :placeholder="col.label" />
+              </div>
             </div>
             <div class="form-group">
-              <label>手机号 <span class="required">*</span></label>
-              <input v-model="addForm.phone" placeholder="手机号" />
+              <label>备注</label>
+              <textarea v-model="addForm.remark" placeholder="备注信息" rows="2"></textarea>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group" v-for="col in ADD_FORM_COLS" :key="col.key">
-              <label>{{ col.label }}</label>
-              <select v-if="col.type === 'select'" v-model="addForm[col.key]">
-                <option value="">请选择</option>
-                <option v-for="opt in col.options" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
-              <input v-else v-model="addForm[col.key]" :type="col.type || 'text'" :placeholder="col.label" />
-            </div>
+          <div class="modal-footer">
+            <button class="btn-secondary" @click="showAddModal = false">取消</button>
+            <button class="btn-primary" @click="submitAddStudent">添加学员</button>
           </div>
-          <div class="form-group">
-            <label>备注</label>
-            <textarea v-model="addForm.remark" placeholder="备注信息" rows="2"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn-secondary" @click="showAddModal = false">取消</button>
-          <button class="btn-primary" @click="submitAddStudent">添加学员</button>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

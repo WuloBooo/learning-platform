@@ -54,114 +54,120 @@
     </div>
 
     <!-- 查看表格数据弹窗 -->
-    <div class="modal-overlay large" v-if="viewingSheet" @click.self="viewingSheet = null">
-      <div class="modal large-modal">
-        <div class="modal-header">
-          <h3>{{ viewingSheet.sheet_name }} — {{ viewingSheet.org_name }}</h3>
-          <button class="close-btn" @click="viewingSheet = null">✕</button>
-        </div>
-        <div class="table-scroll">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>姓名</th>
-                <th>电话</th>
-                <th>身份证号</th>
-                <th>工种</th>
-                <th>级别</th>
-                <th>报名日期</th>
-                <th>考试日期</th>
-                <th>报考条件</th>
-                <th>专业/岗位</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in sheetStudents" :key="row.id">
-                <td>{{ row.name }}</td>
-                <td>{{ row.phone }}</td>
-                <td>{{ row.id_card }}</td>
-                <td>{{ row.job_type }}</td>
-                <td>{{ row.level }}</td>
-                <td>{{ row.reg_date || '-' }}</td>
-                <td>{{ row.exam_date || '-' }}</td>
-                <td>{{ row.condition }}</td>
-                <td>{{ row.major }}</td>
-              </tr>
-              <tr v-if="sheetStudents.length === 0">
-                <td colspan="9" class="empty-row">暂无学员数据</td>
-              </tr>
-            </tbody>
-          </table>
+    <Teleport to="body">
+      <div class="modal-overlay large" v-if="viewingSheet" @click.self="viewingSheet = null">
+        <div class="modal large-modal">
+          <div class="modal-header">
+            <h3>{{ viewingSheet.sheet_name }} — {{ viewingSheet.org_name }}</h3>
+            <button class="close-btn" @click="viewingSheet = null">✕</button>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>姓名</th>
+                  <th>电话</th>
+                  <th>身份证号</th>
+                  <th>工种</th>
+                  <th>级别</th>
+                  <th>报名日期</th>
+                  <th>考试日期</th>
+                  <th>报考条件</th>
+                  <th>专业/岗位</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in sheetStudents" :key="row.id">
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.phone }}</td>
+                  <td>{{ row.id_card }}</td>
+                  <td>{{ row.job_type }}</td>
+                  <td>{{ row.level }}</td>
+                  <td>{{ row.reg_date || '-' }}</td>
+                  <td>{{ row.exam_date || '-' }}</td>
+                  <td>{{ row.condition }}</td>
+                  <td>{{ row.major }}</td>
+                </tr>
+                <tr v-if="sheetStudents.length === 0">
+                  <td colspan="9" class="empty-row">暂无学员数据</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- 创建弹窗 -->
-    <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
-      <div class="modal">
-        <h3>{{ editing ? '编辑数据表' : '创建数据表' }}</h3>
-        <div class="form-group" v-if="!editing">
-          <label>所属机构 *</label>
-          <select v-model="form.org_id">
-            <option value="">请选择机构</option>
-            <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>关联考试计划</label>
-          <select v-model="form.exam_plan_id">
-            <option value="">无</option>
-            <option v-for="plan in examPlans" :key="plan.id" :value="plan.id">{{ plan.title }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>表名 *</label>
-          <input v-model="form.sheet_name" placeholder="如：3月报名表" />
-        </div>
-        <div class="form-group">
-          <label>描述</label>
-          <input v-model="form.description" placeholder="表格描述" />
-        </div>
-        <div class="form-group" v-if="editing">
-          <label>状态</label>
-          <select v-model="form.status">
-            <option value="active">使用中</option>
-            <option value="archived">已归档</option>
-          </select>
-        </div>
-        <div class="modal-actions">
-          <button class="cancel-btn" @click="showModal = false">取消</button>
-          <button class="confirm-btn" @click="handleSubmit">{{ editing ? '保存' : '创建' }}</button>
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showModal" @click.self="showModal = false">
+        <div class="modal">
+          <h3>{{ editing ? '编辑数据表' : '创建数据表' }}</h3>
+          <div class="form-group" v-if="!editing">
+            <label>所属机构 *</label>
+            <select v-model="form.org_id">
+              <option value="">请选择机构</option>
+              <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>关联考试计划</label>
+            <select v-model="form.exam_plan_id">
+              <option value="">无</option>
+              <option v-for="plan in examPlans" :key="plan.id" :value="plan.id">{{ plan.title }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>表名 *</label>
+            <input v-model="form.sheet_name" placeholder="如：3月报名表" />
+          </div>
+          <div class="form-group">
+            <label>描述</label>
+            <input v-model="form.description" placeholder="表格描述" />
+          </div>
+          <div class="form-group" v-if="editing">
+            <label>状态</label>
+            <select v-model="form.status">
+              <option value="active">使用中</option>
+              <option value="archived">已归档</option>
+            </select>
+          </div>
+          <div class="modal-actions">
+            <button class="cancel-btn" @click="showModal = false">取消</button>
+            <button class="confirm-btn" @click="handleSubmit">{{ editing ? '保存' : '创建' }}</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
 
     <!-- 批量创建弹窗 -->
-    <div class="modal-overlay" v-if="showBatchModal" @click.self="showBatchModal = false">
-      <div class="modal">
-        <h3>批量为所有机构创建数据表</h3>
-        <p class="hint">将为所有启用的机构创建相同名称的数据表</p>
-        <div class="form-group">
-          <label>关联考试计划</label>
-          <select v-model="batchForm.exam_plan_id">
-            <option value="">无</option>
-            <option v-for="plan in examPlans" :key="plan.id" :value="plan.id">{{ plan.title }}</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>表名 *</label>
-          <input v-model="batchForm.sheet_name" placeholder="如：5月报名表" />
-        </div>
-        <div class="form-group">
-          <label>描述</label>
-          <input v-model="batchForm.description" placeholder="表格描述" />
-        </div>
-        <div class="modal-actions">
-          <button class="cancel-btn" @click="showBatchModal = false">取消</button>
-          <button class="confirm-btn" @click="handleBatchCreate">批量创建</button>
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="showBatchModal" @click.self="showBatchModal = false">
+        <div class="modal">
+          <h3>批量为所有机构创建数据表</h3>
+          <p class="hint">将为所有启用的机构创建相同名称的数据表</p>
+          <div class="form-group">
+            <label>关联考试计划</label>
+            <select v-model="batchForm.exam_plan_id">
+              <option value="">无</option>
+              <option v-for="plan in examPlans" :key="plan.id" :value="plan.id">{{ plan.title }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>表名 *</label>
+            <input v-model="batchForm.sheet_name" placeholder="如：5月报名表" />
+          </div>
+          <div class="form-group">
+            <label>描述</label>
+            <input v-model="batchForm.description" placeholder="表格描述" />
+          </div>
+          <div class="modal-actions">
+            <button class="cancel-btn" @click="showBatchModal = false">取消</button>
+            <button class="confirm-btn" @click="handleBatchCreate">批量创建</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

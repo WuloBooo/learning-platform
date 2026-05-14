@@ -45,53 +45,55 @@
     <div class="loading-state" v-else>加载中...</div>
 
     <!-- 添加/编辑弹窗 -->
-    <div class="exam-modal" v-if="showModal" @click.self="showModal = false">
-      <div class="exam-modal-content">
-        <div class="exam-modal-header">
-          <h3>{{ isEdit ? '编辑机构' : '添加机构' }}</h3>
-          <button class="exam-modal-close" @click="showModal = false">&times;</button>
-        </div>
-        <div class="exam-modal-body">
-          <div class="form-group">
-            <label>机构名称 <span class="required">*</span></label>
-            <input v-model="form.name" placeholder="如：XX培训学校" />
+    <Teleport to="body">
+      <div class="exam-modal" v-if="showModal" @click.self="showModal = false">
+        <div class="exam-modal-content">
+          <div class="exam-modal-header">
+            <h3>{{ isEdit ? '编辑机构' : '添加机构' }}</h3>
+            <button class="exam-modal-close" @click="showModal = false">&times;</button>
           </div>
-          <div class="form-group">
-            <label>联系人</label>
-            <input v-model="form.contact_person" placeholder="联系人姓名" />
+          <div class="exam-modal-body">
+            <div class="form-group">
+              <label>机构名称 <span class="required">*</span></label>
+              <input v-model="form.name" placeholder="如：XX培训学校" />
+            </div>
+            <div class="form-group">
+              <label>联系人</label>
+              <input v-model="form.contact_person" placeholder="联系人姓名" />
+            </div>
+            <div class="form-group">
+              <label>联系电话</label>
+              <input v-model="form.contact_phone" placeholder="联系电话" />
+            </div>
+            <div class="form-group">
+              <label>地址</label>
+              <input v-model="form.address" placeholder="机构地址" />
+            </div>
+            <div class="form-group">
+              <label>合作类型</label>
+              <select v-model="form.cooperation_type">
+                <option value="">请选择</option>
+                <option value="渠道合作">渠道合作</option>
+                <option value="直营">直营</option>
+                <option value="代理">代理</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <select v-model="form.status">
+                <option value="active">启用</option>
+                <option value="inactive">停用</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>联系电话</label>
-            <input v-model="form.contact_phone" placeholder="联系电话" />
+          <div class="exam-modal-footer">
+            <button class="btn-cancel" @click="showModal = false">取消</button>
+            <button class="btn-primary" @click="submitForm">{{ isEdit ? '保存' : '添加' }}</button>
           </div>
-          <div class="form-group">
-            <label>地址</label>
-            <input v-model="form.address" placeholder="机构地址" />
-          </div>
-          <div class="form-group">
-            <label>合作类型</label>
-            <select v-model="form.cooperation_type">
-              <option value="">请选择</option>
-              <option value="渠道合作">渠道合作</option>
-              <option value="直营">直营</option>
-              <option value="代理">代理</option>
-              <option value="其他">其他</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>状态</label>
-            <select v-model="form.status">
-              <option value="active">启用</option>
-              <option value="inactive">停用</option>
-            </select>
-          </div>
-        </div>
-        <div class="exam-modal-footer">
-          <button class="btn-cancel" @click="showModal = false">取消</button>
-          <button class="btn-primary" @click="submitForm">{{ isEdit ? '保存' : '添加' }}</button>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 

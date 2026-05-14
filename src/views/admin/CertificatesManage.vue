@@ -43,59 +43,61 @@
     <div class="loading-state" v-else>加载中...</div>
 
     <!-- 添加/编辑弹窗 -->
-    <div class="exam-modal" v-if="showModal" @click.self="showModal = false">
-      <div class="exam-modal-content">
-        <div class="exam-modal-header">
-          <h3>{{ isEdit ? '编辑证书' : '添加证书' }}</h3>
-          <button class="exam-modal-close" @click="showModal = false">&times;</button>
-        </div>
-        <div class="exam-modal-body">
-          <div class="form-group" v-if="!isEdit">
-            <label>选择学员 <span class="required">*</span></label>
-            <select v-model="form.student_id">
-              <option value="">请选择学员</option>
-              <option v-for="s in students" :key="s.id" :value="s.id">{{ s.name }}（{{ s.phone }}）</option>
-            </select>
+    <Teleport to="body">
+      <div class="exam-modal" v-if="showModal" @click.self="showModal = false">
+        <div class="exam-modal-content">
+          <div class="exam-modal-header">
+            <h3>{{ isEdit ? '编辑证书' : '添加证书' }}</h3>
+            <button class="exam-modal-close" @click="showModal = false">&times;</button>
           </div>
-          <div class="form-group" v-else>
-            <label>学员</label>
-            <input :value="editStudentName" disabled />
+          <div class="exam-modal-body">
+            <div class="form-group" v-if="!isEdit">
+              <label>选择学员 <span class="required">*</span></label>
+              <select v-model="form.student_id">
+                <option value="">请选择学员</option>
+                <option v-for="s in students" :key="s.id" :value="s.id">{{ s.name }}（{{ s.phone }}）</option>
+              </select>
+            </div>
+            <div class="form-group" v-else>
+              <label>学员</label>
+              <input :value="editStudentName" disabled />
+            </div>
+            <div class="form-group">
+              <label>证书类型</label>
+              <input v-model="form.cert_type" placeholder="如：职业技能等级证书" />
+            </div>
+            <div class="form-group">
+              <label>证书等级</label>
+              <select v-model="form.cert_level">
+                <option value="">请选择</option>
+                <option value="初级">初级</option>
+                <option value="中级">中级</option>
+                <option value="高级">高级</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>证书编号</label>
+              <input v-model="form.cert_number" placeholder="证书编号" />
+            </div>
+            <div class="form-group">
+              <label>发证日期</label>
+              <input v-model="form.issue_date" type="date" />
+            </div>
+            <div class="form-group">
+              <label>状态</label>
+              <select v-model="form.status">
+                <option value="pending">待发放</option>
+                <option value="issued">已发放</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group">
-            <label>证书类型</label>
-            <input v-model="form.cert_type" placeholder="如：职业技能等级证书" />
+          <div class="exam-modal-footer">
+            <button class="btn-cancel" @click="showModal = false">取消</button>
+            <button class="btn-primary" @click="submitForm">{{ isEdit ? '保存' : '添加' }}</button>
           </div>
-          <div class="form-group">
-            <label>证书等级</label>
-            <select v-model="form.cert_level">
-              <option value="">请选择</option>
-              <option value="初级">初级</option>
-              <option value="中级">中级</option>
-              <option value="高级">高级</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>证书编号</label>
-            <input v-model="form.cert_number" placeholder="证书编号" />
-          </div>
-          <div class="form-group">
-            <label>发证日期</label>
-            <input v-model="form.issue_date" type="date" />
-          </div>
-          <div class="form-group">
-            <label>状态</label>
-            <select v-model="form.status">
-              <option value="pending">待发放</option>
-              <option value="issued">已发放</option>
-            </select>
-          </div>
-        </div>
-        <div class="exam-modal-footer">
-          <button class="btn-cancel" @click="showModal = false">取消</button>
-          <button class="btn-primary" @click="submitForm">{{ isEdit ? '保存' : '添加' }}</button>
         </div>
       </div>
-    </div>
+    </Teleport>
   </div>
 </template>
 
