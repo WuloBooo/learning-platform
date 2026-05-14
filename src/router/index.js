@@ -31,6 +31,12 @@ import StudentsManage from '../views/admin/StudentsManage.vue'
 import MajorsManage from '../views/admin/MajorsManage.vue'
 import OrganizationsManage from '../views/admin/OrganizationsManage.vue'
 import CertificatesManage from '../views/admin/CertificatesManage.vue'
+import OrgUsersManage from '../views/admin/OrgUsersManage.vue'
+import ExamPlansManage from '../views/admin/ExamPlansManage.vue'
+import DataSheetsManage from '../views/admin/DataSheetsManage.vue'
+
+import OrgLogin from '../views/org/OrgLogin.vue'
+import OrgLayout from '../views/org/OrgLayout.vue'
 
 const routes = [
   {
@@ -105,6 +111,17 @@ const routes = [
     path: '/admin/login',
     name: 'AdminLogin',
     component: AdminLogin
+  },
+  {
+    path: '/org/login',
+    name: 'OrgLogin',
+    component: OrgLogin
+  },
+  {
+    path: '/org/dashboard',
+    name: 'OrgDashboard',
+    component: OrgLayout,
+    meta: { requiresOrg: true }
   },
   {
     path: '/admin',
@@ -190,6 +207,21 @@ const routes = [
         path: 'certificates',
         name: 'CertificatesManage',
         component: CertificatesManage
+      },
+      {
+        path: 'org-users',
+        name: 'OrgUsersManage',
+        component: OrgUsersManage
+      },
+      {
+        path: 'exam-plans',
+        name: 'ExamPlansManage',
+        component: ExamPlansManage
+      },
+      {
+        path: 'data-sheets',
+        name: 'DataSheetsManage',
+        component: DataSheetsManage
       }
     ]
   }
@@ -206,6 +238,11 @@ router.beforeEach((to, from, next) => {
 
   // 管理员登录页始终放行，不跳转
   if (to.path === '/admin/login') {
+    return next()
+  }
+
+  // 机构登录页始终放行
+  if (to.path === '/org/login') {
     return next()
   }
 
@@ -229,6 +266,23 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAdmin) {
     if (!token || isTokenExpired() || user?.role !== 'admin') {
       return next('/admin/login')
+    }
+  } else if (to.meta.requiresOrg) {
+    const orgToken = localStorage.getItem('org_token')
+    if (!orgToken) {
+      return next('/org/login')
+    }
+    try {
+      const payload = JSON.parse(atob(orgToken.split('.')[1]))
+      if (payload.exp * 1000 < Date.now()) {
+        localStorage.removeItem('org_token')
+        localStorage.removeItem('org_user')
+        return next('/org/login')
+      }
+    } catch {
+      localStorage.removeItem('org_token')
+      localStorage.removeItem('org_user')
+      return next('/org/login')
     }
   } else if (to.meta.requiresAuth) {
     if (!token || isTokenExpired()) {

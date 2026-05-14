@@ -180,3 +180,95 @@ export const publicAPI = {
   getMaterials: (params) => api.get(`/public/materials?${new URLSearchParams(params || {})}`, { includeAuth: false }),
   getMaterialDetail: (id) => api.get(`/public/materials/${id}`, { includeAuth: false })
 }
+
+// 机构端API
+export const orgAPI = {
+  login: (data) => api.post('/org/login', data, { includeAuth: false }),
+  getMe: () => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/me`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json())
+  },
+  getSheets: () => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json())
+  },
+  getSheetStudents: (sheetId) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/students`, {
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json())
+  },
+  addStudent: (sheetId, data) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/students`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(data)
+    }).then(r => r.json())
+  },
+  updateStudent: (sheetId, rowId, data) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/students/${rowId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(data)
+    }).then(r => r.json())
+  },
+  deleteStudent: (sheetId, rowId) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/students/${rowId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    }).then(r => r.json())
+  },
+  batchSave: (sheetId, rows) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/batch-save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ rows })
+    }).then(r => r.json())
+  },
+  setCellColor: (sheetId, data) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/colors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(data)
+    }).then(r => r.json())
+  },
+  removeCellColor: (sheetId, data) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/colors`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(data)
+    }).then(r => r.json())
+  }
+}
+
+// 管理员工作流API
+export const workflowAPI = {
+  getOrgUsers: () => api.get('/workflow/admin/org-users'),
+  createOrgUser: (data) => api.post('/workflow/admin/org-users', data),
+  updateOrgUser: (id, data) => api.put(`/workflow/admin/org-users/${id}`, data),
+  deleteOrgUser: (id) => api.delete(`/workflow/admin/org-users/${id}`),
+
+  getExamPlans: () => api.get('/workflow/admin/exam-plans'),
+  createExamPlan: (data) => api.post('/workflow/admin/exam-plans', data),
+  updateExamPlan: (id, data) => api.put(`/workflow/admin/exam-plans/${id}`, data),
+  deleteExamPlan: (id) => api.delete(`/workflow/admin/exam-plans/${id}`),
+
+  getSheets: (params) => api.get(`/workflow/admin/sheets?${new URLSearchParams(params || {})}`),
+  createSheet: (data) => api.post('/workflow/admin/sheets', data),
+  batchCreateSheets: (data) => api.post('/workflow/admin/sheets/batch-create', data),
+  updateSheet: (id, data) => api.put(`/workflow/admin/sheets/${id}`, data),
+  deleteSheet: (id) => api.delete(`/workflow/admin/sheets/${id}`),
+  getSheetStudents: (sheetId) => api.get(`/workflow/admin/sheets/${sheetId}/students`),
+  addSheetStudent: (sheetId, data) => api.post(`/workflow/admin/sheets/${sheetId}/students`, data),
+  removeSheetStudent: (sheetId, rowId) => api.delete(`/workflow/admin/sheets/${sheetId}/students/${rowId}`)
+}

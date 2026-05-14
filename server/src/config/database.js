@@ -440,6 +440,11 @@ export async function initDatabase() {
     db.run('ALTER TABLE student_profiles ADD COLUMN source TEXT DEFAULT \'网站\'')
   } catch (e) {}
 
+  // 兼容旧表：如果没有 org_id 列则添加
+  try {
+    db.run('ALTER TABLE student_profiles ADD COLUMN org_id INTEGER')
+  } catch (e) {}
+
   // 学员状态跟踪表
   db.run(`
     CREATE TABLE IF NOT EXISTS student_status (
@@ -482,6 +487,95 @@ export async function initDatabase() {
       status TEXT DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES student_profiles(id)
+    )
+  `)
+
+  // ===== 多租户 & 考试计划 & 数据表管理 =====
+
+  // 机构账号表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS org_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      org_id INTEGER NOT NULL,
+      username TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      contact_name TEXT,
+      status TEXT DEFAULT 'active',
+      last_login DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (org_id) REFERENCES organizations(id)
+    )
+  `)
+
+  // 考试计划表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS exam_plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      exam_type TEXT,
+      exam_level TEXT,
+      reg_start DATE,
+      reg_end DATE,
+      exam_date DATE,
+      location TEXT,
+      description TEXT,
+      status TEXT DEFAULT '报名中',
+      created_by TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+  `)
+
+  // 机构数据表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS org_sheets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      org_id INTEGER NOT NULL,
+      exam_plan_id INTEGER,
+      sheet_name TEXT NOT NULL,
+      description TEXT,
+      created_by TEXT,
+      status TEXT DEFAULT 'active',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (org_id) REFERENCES organizations(id),
+      FOREIGN KEY (exam_plan_id) REFERENCES exam_plans(id)
+    )
+  `)
+
+  // 表格学员关联表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS org_sheet_students (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sheet_id INTEGER NOT NULL,
+      student_id INTEGER NOT NULL,
+      name TEXT,
+      phone TEXT,
+      id_card TEXT,
+      job_type TEXT,
+      level TEXT,
+      reg_date DATE,
+      exam_date DATE,
+      condition TEXT,
+      major TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE,
+      FOREIGN KEY (student_id) REFERENCES student_profiles(id) ON DELETE CASCADE,
+      UNIQUE(sheet_id, student_id)
+    )
+  `)
+
+  // 单元格颜色标记表
+  db.run(`
+    CREATE TABLE IF NOT EXISTS cell_colors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sheet_id INTEGER NOT NULL,
+      row_id INTEGER NOT NULL,
+      column_key TEXT NOT NULL,
+      color TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
     )
   `)
 

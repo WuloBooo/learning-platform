@@ -1,4 +1,5 @@
 import express from 'express'
+import bcrypt from 'bcryptjs'
 import { query, getOne, insert, update, remove } from '../config/database.js'
 import * as xlsx from 'xlsx'
 
@@ -332,6 +333,283 @@ router.post('/admin/students/import', (req, res) => {
     res.json(result)
   } catch (error) {
     res.status(500).json({ message: '导入失败：' + error.message })
+  }
+})
+
+// ===== 机构账号管理接口 =====
+
+// 管理员：获取机构账号列表
+router.get('/admin/org-users', (req, res) => {
+  try {
+    const users = query(`
+      SELECT ou.*, o.name as org_name
+      FROM org_users ou
+      LEFT JOIN organizations o ON ou.org_id = o.id
+      ORDER BY ou.created_at DESC
+    `)
+    // 不返回密码
+    const safe = users.map(u => ({ ...u, password: undefined }))
+    res.json({ data: safe })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：创建机构账号
+router.post('/admin/org-users', async (req, res) => {
+  try {
+    const { org_id, username, password, contact_name, status } = req.body
+    if (!org_id || !username || !password) {
+      return res.status(400).json({ message: '请填写机构、账号和密码' })
+    }
+
+    // 检查用户名是否已存在
+    const existing = getOne('SELECT id FROM org_users WHERE username = ?', [username])
+    if (existing) {
+      return res.status(400).json({ message: '账号已存在' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const id = insert('org_users', {
+      org_id,
+      username,
+      password: hashedPassword,
+      contact_name: contact_name || '',
+      status: status || 'active'
+    })
+
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '创建失败' })
+  }
+})
+
+// 管理员：更新机构账号
+router.put('/admin/org-users/:id', async (req, res) => {
+  try {
+    const { contact_name, status, password } = req.body
+    const data = { contact_name, status }
+
+    // 如果提供了新密码，则更新
+    if (password && password.trim()) {
+      data.password = await bcrypt.hash(password, 10)
+    }
+
+    update('org_users', data, 'id = ?', [req.params.id])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：删除机构账号
+router.delete('/admin/org-users/:id', (req, res) => {
+  try {
+    remove('org_users', 'id = ?', [req.params.id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败' })
+  }
+})
+
+// ===== 考试计划管理接口 =====
+
+// 管理员：获取考试计划列表
+router.get('/admin/exam-plans', (req, res) => {
+  try {
+    const plans = query('SELECT * FROM exam_plans ORDER BY exam_date DESC')
+    res.json({ data: plans })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：创建考试计划
+router.post('/admin/exam-plans', (req, res) => {
+  try {
+    const { title, exam_type, exam_level, reg_start, reg_end, exam_date, location, description, status, created_by } = req.body
+    if (!title) return res.status(400).json({ message: '请填写考试计划名称' })
+
+    const id = insert('exam_plans', {
+      title, exam_type, exam_level, reg_start, reg_end, exam_date,
+      location, description, status: status || '报名中', created_by: created_by || '管理员'
+    })
+
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '创建失败' })
+  }
+})
+
+// 管理员：更新考试计划
+router.put('/admin/exam-plans/:id', (req, res) => {
+  try {
+    const { title, exam_type, exam_level, reg_start, reg_end, exam_date, location, description, status } = req.body
+    update('exam_plans', { title, exam_type, exam_level, reg_start, reg_end, exam_date, location, description, status }, 'id = ?', [req.params.id])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：删除考试计划
+router.delete('/admin/exam-plans/:id', (req, res) => {
+  try {
+    remove('exam_plans', 'id = ?', [req.params.id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败' })
+  }
+})
+
+// ===== 数据表管理接口 =====
+
+// 管理员：获取数据表列表（可按机构筛选）
+router.get('/admin/sheets', (req, res) => {
+  try {
+    const { org_id, exam_plan_id } = req.query
+    let sql = `
+      SELECT s.*, o.name as org_name, ep.title as exam_plan_name
+      FROM org_sheets s
+      LEFT JOIN organizations o ON s.org_id = o.id
+      LEFT JOIN exam_plans ep ON s.exam_plan_id = ep.id
+      WHERE 1=1
+    `
+    const params = []
+    if (org_id) {
+      sql += ' AND s.org_id = ?'
+      params.push(org_id)
+    }
+    if (exam_plan_id) {
+      sql += ' AND s.exam_plan_id = ?'
+      params.push(exam_plan_id)
+    }
+    sql += ' ORDER BY s.created_at DESC'
+
+    const sheets = query(sql, params)
+    // 统计每个表的学员数
+    for (const sheet of sheets) {
+      const result = getOne('SELECT COUNT(*) as count FROM org_sheet_students WHERE sheet_id = ?', [sheet.id])
+      sheet.student_count = result?.count || 0
+    }
+
+    res.json({ data: sheets })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：为单个机构创建数据表
+router.post('/admin/sheets', (req, res) => {
+  try {
+    const { org_id, exam_plan_id, sheet_name, description, created_by } = req.body
+    if (!org_id || !sheet_name) return res.status(400).json({ message: '请选择机构和填写表名' })
+
+    const id = insert('org_sheets', {
+      org_id,
+      exam_plan_id: exam_plan_id || null,
+      sheet_name,
+      description: description || '',
+      created_by: created_by || '管理员',
+      status: 'active'
+    })
+
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '创建失败' })
+  }
+})
+
+// 管理员：批量为所有机构创建同名数据表
+router.post('/admin/sheets/batch-create', (req, res) => {
+  try {
+    const { exam_plan_id, sheet_name, description, created_by } = req.body
+    if (!sheet_name) return res.status(400).json({ message: '请填写表名' })
+
+    const orgs = query('SELECT id FROM organizations WHERE status = ?', ['active'])
+    const created = []
+
+    for (const org of orgs) {
+      const id = insert('org_sheets', {
+        org_id: org.id,
+        exam_plan_id: exam_plan_id || null,
+        sheet_name,
+        description: description || '',
+        created_by: created_by || '管理员',
+        status: 'active'
+      })
+      created.push({ org_id: org.id, sheet_id: id })
+    }
+
+    res.json({ message: `成功为 ${created.length} 个机构创建数据表`, data: created })
+  } catch (error) {
+    res.status(500).json({ message: '批量创建失败' })
+  }
+})
+
+// 管理员：更新数据表
+router.put('/admin/sheets/:id', (req, res) => {
+  try {
+    const { sheet_name, description, status } = req.body
+    update('org_sheets', { sheet_name, description, status }, 'id = ?', [req.params.id])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：删除数据表（级联删除关联学员和颜色）
+router.delete('/admin/sheets/:id', (req, res) => {
+  try {
+    remove('cell_colors', 'sheet_id = ?', [req.params.id])
+    remove('org_sheet_students', 'sheet_id = ?', [req.params.id])
+    remove('org_sheets', 'id = ?', [req.params.id])
+    res.json({ message: '删除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '删除失败' })
+  }
+})
+
+// 管理员：查看表格中的学员数据
+router.get('/admin/sheets/:sheetId/students', (req, res) => {
+  try {
+    const students = query('SELECT * FROM org_sheet_students WHERE sheet_id = ? ORDER BY id', [req.params.sheetId])
+    const colors = query('SELECT * FROM cell_colors WHERE sheet_id = ?', [req.params.sheetId])
+    res.json({ data: { students, colors } })
+  } catch (error) {
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
+// 管理员：向表格添加学员
+router.post('/admin/sheets/:sheetId/students', (req, res) => {
+  try {
+    const id = insert('org_sheet_students', {
+      sheet_id: req.params.sheetId,
+      student_id: req.body.student_id || null,
+      name: req.body.name || '',
+      phone: req.body.phone || '',
+      id_card: req.body.id_card || '',
+      job_type: req.body.job_type || '',
+      level: req.body.level || '',
+      reg_date: req.body.reg_date || null,
+      exam_date: req.body.exam_date || null,
+      condition: req.body.condition || '',
+      major: req.body.major || ''
+    })
+    res.status(201).json({ data: { id } })
+  } catch (error) {
+    res.status(500).json({ message: '添加失败' })
+  }
+})
+
+// 管理员：从表格移除学员
+router.delete('/admin/sheets/:sheetId/students/:rowId', (req, res) => {
+  try {
+    remove('org_sheet_students', 'id = ? AND sheet_id = ?', [req.params.rowId, req.params.sheetId])
+    res.json({ message: '移除成功' })
+  } catch (error) {
+    res.status(500).json({ message: '移除失败' })
   }
 })
 

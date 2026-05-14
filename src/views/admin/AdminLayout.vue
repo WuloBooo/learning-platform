@@ -70,6 +70,18 @@
           <span class="icon">📜</span>
           <span>证书管理</span>
         </router-link>
+        <router-link to="/admin/org-users" class="nav-item" active-class="active">
+          <span class="icon">🔑</span>
+          <span>机构账号管理</span>
+        </router-link>
+        <router-link to="/admin/exam-plans" class="nav-item" active-class="active">
+          <span class="icon">📋</span>
+          <span>考试计划</span>
+        </router-link>
+        <router-link to="/admin/data-sheets" class="nav-item" active-class="active">
+          <span class="icon">📊</span>
+          <span>数据表管理</span>
+        </router-link>
       </nav>
       <div class="sidebar-footer">
         <router-link to="/" class="back-link">← 返回前台</router-link>
@@ -119,7 +131,10 @@ const pageTitle = computed(() => {
     '/admin/students': '学员管理',
     '/admin/majors': '专业目录管理',
     '/admin/organizations': '机构管理',
-    '/admin/certificates': '证书管理'
+    '/admin/certificates': '证书管理',
+    '/admin/org-users': '机构账号管理',
+    '/admin/exam-plans': '考试计划',
+    '/admin/data-sheets': '数据表管理'
   }
   return titles[route.path] || '管理后台'
 })
