@@ -44,9 +44,11 @@ const handleLogin = async () => {
 
   try {
     const res = await authAPI.login(form.value)
-    if (res.data?.user?.role === 'admin') {
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('user', JSON.stringify(res.data.user))
+    const user = res.user
+    const token = res.token
+    if (user?.role === 'admin') {
+      localStorage.setItem('token', token)
+      localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('workflow_auth', 'true')
       router.push('/workflow')
     } else {
