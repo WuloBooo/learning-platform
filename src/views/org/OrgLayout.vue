@@ -95,65 +95,69 @@ const BASE_COLS = [
 
 const allCols = computed(() => [...BASE_COLS, ...customCols.value])
 
-const buildSettings = () => ({
-  data: tableData.value,
-  colHeaders: allCols.value.map(c => c.label),
-  columns: allCols.value.map(c => ({
-    data: c.key,
-    type: 'text',
-    width: c.width
-  })),
-  rowHeaders: true,
-  height: Math.max(500, window.innerHeight - 200),
-  minRows: 30,
-  stretchH: 'all',
-  language: 'zh-CN',
-  contextMenu: {
-    items: {
-      'row_above': { name: '在上方插入行' },
-      'row_below': { name: '在下方插入行' },
-      'remove_row': { name: '删除行' },
-      'sep1': '---------',
-      'copy': { name: '复制' },
-      'cut': { name: '剪切' },
-      'sep2': '---------',
-      'col_left': { name: '在左侧插入列' },
-      'col_right': { name: '在右侧插入列' },
-      'remove_col': { name: '删除列' }
+const buildSettings = () => {
+  const sheetId = currentSheet.value?.id
+  const cols = [...BASE_COLS, ...customCols.value]
+  const customKeys = customCols.value.map(c => c.key)
+
+  return {
+    data: tableData.value,
+    colHeaders: cols.map(c => c.label),
+    columns: cols.map(c => ({
+      data: c.key,
+      type: 'text',
+      width: c.width
+    })),
+    rowHeaders: true,
+    height: Math.max(500, window.innerHeight - 200),
+    minRows: 30,
+    stretchH: 'all',
+    language: 'zh-CN',
+    contextMenu: {
+      items: {
+        'row_above': { name: '在上方插入行' },
+        'row_below': { name: '在下方插入行' },
+        'remove_row': { name: '删除行' },
+        'sep1': '---------',
+        'copy': { name: '复制' },
+        'cut': { name: '剪切' },
+        'sep2': '---------',
+        'col_left': { name: '在左侧插入列' },
+        'col_right': { name: '在右侧插入列' },
+        'remove_col': { name: '删除列' }
+      }
+    },
+    manualColumnResize: true,
+    manualRowResize: true,
+    filters: true,
+    dropdownMenu: true,
+    licenseKey: 'non-commercial-and-evaluation',
+    afterChange(changes, source) {
+      if (source === 'loadData' || !changes || !sheetId) return
+      changes.forEach(([row, prop, oldVal, newVal]) => {
+        const rowData = this.getSourceDataAtRow(row)
+        if (!rowData || !rowData.id) return
+        if (customKeys.includes(prop)) {
+          const extra = JSON.parse(rowData.extra_data || '{}')
+          extra[prop] = newVal
+          orgAPI.updateStudent(sheetId, rowData.id, { extra_data: JSON.stringify(extra) })
+          rowData.extra_data = JSON.stringify(extra)
+        } else {
+          orgAPI.updateStudent(sheetId, rowData.id, { [prop]: newVal })
+        }
+      })
+    },
+    afterRemoveRow(index, amount, physicalRows) {
+      if (!sheetId) return
+      physicalRows.forEach(ri => {
+        const rowData = this.getSourceDataAtRow(ri)
+        if (rowData && rowData.id) {
+          orgAPI.deleteStudent(sheetId, rowData.id)
+        }
+      })
     }
-  },
-  manualColumnResize: true,
-  manualRowResize: true,
-  filters: true,
-  dropdownMenu: true,
-  licenseKey: 'non-commercial-and-evaluation',
-  afterChange(changes, source) {
-    if (source === 'loadData' || !changes || !currentSheet.value) return
-    const hot = hotRef.value?.hotInstance
-    if (!hot) return
-    changes.forEach(([row, prop, oldVal, newVal]) => {
-      const rowData = hot.getSourceDataAtRow(row)
-      if (!rowData || !rowData.id) return
-      const isCustom = customCols.value.some(c => c.key === prop)
-      if (isCustom) {
-        const extra = JSON.parse(rowData.extra_data || '{}')
-        extra[prop] = newVal
-        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { extra_data: JSON.stringify(extra) })
-        rowData.extra_data = JSON.stringify(extra)
-      } else {
-        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal })
-      }
-    })
-  },
-  afterRemoveRow(index, amount, physicalRows) {
-    if (!currentSheet.value) return
-    physicalRows.forEach(ri => {
-      if (tableData.value[ri]) {
-        orgAPI.deleteStudent(currentSheet.value.id, tableData.value[ri].id)
-      }
-    })
   }
-})
+}
 
 const hotSettings = ref({})
 
