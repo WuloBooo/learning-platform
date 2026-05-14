@@ -179,9 +179,11 @@ onMounted(loadOrganizations)
 .status-badge.active { background: #d1fae5; color: #065f46; }
 .status-badge.inactive { background: #f3f4f6; color: #6b7280; }
 .required { color: #ef4444; }
-.form-group { margin-bottom: 16px; }
-.form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
-.form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; }
+.btn-view { padding: 4px 10px; border: 1px solid var(--primary-color); background: transparent; color: var(--primary-color); border-radius: 4px; cursor: pointer; font-size: 12px; }
+.btn-view:hover { background: var(--primary-color); color: white; }
+</style>
+
+<style>
 .exam-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .exam-modal-content { background: var(--bg-primary); border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
 .exam-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid var(--border-color); }
@@ -189,7 +191,8 @@ onMounted(loadOrganizations)
 .exam-modal-close { background: none; border: none; font-size: 24px; color: var(--text-secondary); cursor: pointer; }
 .exam-modal-body { padding: 24px; }
 .exam-modal-footer { display: flex; justify-content: flex-end; gap: 12px; padding: 16px 24px; border-top: 1px solid var(--border-color); }
-.btn-cancel { padding: 8px 20px; border: 1px solid var(--border-color); background: var(--bg-primary); border-radius: var(--radius-md); cursor: pointer; }
-.btn-view { padding: 4px 10px; border: 1px solid var(--primary-color); background: transparent; color: var(--primary-color); border-radius: 4px; cursor: pointer; font-size: 12px; }
-.btn-view:hover { background: var(--primary-color); color: white; }
+.exam-modal .form-group { margin-bottom: 16px; }
+.exam-modal .form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.exam-modal .form-group input, .exam-modal .form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; }
+.exam-modal .btn-cancel { padding: 8px 20px; border: 1px solid var(--border-color); background: var(--bg-primary); border-radius: var(--radius-md); cursor: pointer; }
 </style>

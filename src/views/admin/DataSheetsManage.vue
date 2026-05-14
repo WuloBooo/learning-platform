@@ -368,6 +368,10 @@ onMounted(() => {
 .action-btn.edit { color: #667eea; border-color: #667eea; }
 .action-btn.delete { color: #e74c3c; border-color: #e74c3c; }
 
+.empty-row { text-align: center; padding: 40px !important; color: #999; }
+</style>
+
+<style>
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -378,7 +382,7 @@ onMounted(() => {
   z-index: 1000;
 }
 
-.modal {
+.modal-overlay .modal {
   background: white;
   border-radius: 12px;
   padding: 32px;
@@ -386,7 +390,7 @@ onMounted(() => {
   max-width: 90vw;
 }
 
-.large-modal {
+.modal-overlay .large-modal {
   width: 90vw;
   max-width: 1100px;
   max-height: 80vh;
@@ -394,16 +398,16 @@ onMounted(() => {
   flex-direction: column;
 }
 
-.modal-header {
+.modal-overlay .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
 }
 
-.modal-header h3 { margin: 0; }
+.modal-overlay .modal-header h3 { margin: 0; }
 
-.close-btn {
+.modal-overlay .close-btn {
   background: none;
   border: none;
   font-size: 20px;
@@ -411,20 +415,21 @@ onMounted(() => {
   color: #999;
 }
 
-.table-scroll { overflow: auto; }
+.modal-overlay .table-scroll { overflow: auto; }
 
-.modal h3 { margin: 0 0 20px; font-size: 18px; }
-.hint { font-size: 13px; color: #999; margin: 0 0 16px; }
+.modal-overlay .modal h3 { margin: 0 0 20px; font-size: 18px; }
+.modal-overlay .hint { font-size: 13px; color: #999; margin: 0 0 16px; }
 
-.form-group { margin-bottom: 14px; }
-.form-group label {
+.modal-overlay .form-group { margin-bottom: 14px; }
+.modal-overlay .form-group label {
   display: block;
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
   color: #333;
 }
-.form-group input, .form-group select {
+.modal-overlay .form-group input,
+.modal-overlay .form-group select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
@@ -433,21 +438,21 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.modal-actions {
+.modal-overlay .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   margin-top: 20px;
 }
 
-.cancel-btn {
+.modal-overlay .cancel-btn {
   padding: 10px 20px;
   background: #f0f0f0;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
-.confirm-btn {
+.modal-overlay .confirm-btn {
   padding: 10px 20px;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: white;
@@ -455,6 +460,4 @@ onMounted(() => {
   border-radius: 6px;
   cursor: pointer;
 }
-
-.empty-row { text-align: center; padding: 40px !important; color: #999; }
 </style>
