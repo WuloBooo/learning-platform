@@ -180,7 +180,7 @@ const handleLogout = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .workflow-header {
