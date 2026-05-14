@@ -65,6 +65,7 @@ import { HotTable } from '@handsontable/vue3'
 import { registerAllModules } from 'handsontable/registry'
 import 'handsontable/styles/handsontable.min.css'
 import 'handsontable/styles/ht-theme-main.min.css'
+import 'handsontable-languages/zh-CN'
 import * as XLSX from 'xlsx'
 
 registerAllModules()
@@ -96,13 +97,24 @@ const hotSettings = computed(() => ({
     data: c.key,
     type: c.type === 'date' ? 'date' : 'text',
     dateFormat: 'YYYY-MM-DD',
+    correctFormat: true,
     width: c.width
   })),
   rowHeaders: true,
-  height: 'auto',
-  minRows: 20,
+  height: Math.max(500, window.innerHeight - 200),
+  minRows: 30,
   stretchH: 'all',
-  contextMenu: ['row_above', 'row_below', 'remove_row', '---------', 'copy', 'cut'],
+  language: 'zh-CN',
+  contextMenu: {
+    items: {
+      'row_above': { name: '在上方插入行' },
+      'row_below': { name: '在下方插入行' },
+      'remove_row': { name: '删除行' },
+      'sep1': '---------',
+      'copy': { name: '复制' },
+      'cut': { name: '剪切' }
+    }
+  },
   manualColumnResize: true,
   manualRowResize: true,
   filters: true,
