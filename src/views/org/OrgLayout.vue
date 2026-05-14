@@ -47,32 +47,7 @@
             删除选中 ({{ selectedRows.length }})
           </button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
-          <button class="tool-btn outline" @click="showAddCol = true">+ 添加列</button>
         </div>
-
-        <!-- 添加列弹窗 -->
-        <Teleport to="body">
-          <div class="modal-mask" v-if="showAddCol" @click.self="showAddCol = false">
-            <div class="modal-card-sm">
-              <h3>添加自定义列</h3>
-              <div class="form-group">
-                <label>列名称</label>
-                <input v-model="newColName" placeholder="如：备注、邮箱" @keyup.enter="confirmAddCol" />
-              </div>
-              <div class="modal-actions">
-                <button class="tool-btn outline" @click="showAddCol = false">取消</button>
-                <button class="tool-btn" @click="confirmAddCol">确定</button>
-              </div>
-              <div class="col-list" v-if="customCols.length > 0">
-                <h4>已有自定义列</h4>
-                <div class="col-item" v-for="(col, idx) in customCols" :key="col.key">
-                  <span>{{ col.label }}</span>
-                  <button class="col-del" @click="removeCol(idx)">删除</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Teleport>
 
         <div class="hot-wrapper">
           <hot-table ref="hotRef" :settings="hotSettings"></hot-table>
