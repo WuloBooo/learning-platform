@@ -132,13 +132,69 @@
               </div>
             </div>
             <div class="form-row">
-              <div class="form-group" v-for="col in ADD_FORM_COLS" :key="col.key">
-                <label>{{ col.label }}</label>
-                <select v-if="col.type === 'select'" v-model="addForm[col.key]">
+              <div class="form-group">
+                <label>性别</label>
+                <select v-model="addForm.gender">
                   <option value="">请选择</option>
-                  <option v-for="opt in col.options" :key="opt" :value="opt">{{ opt }}</option>
+                  <option value="男">男</option>
+                  <option value="女">女</option>
                 </select>
-                <input v-else v-model="addForm[col.key]" :type="col.type || 'text'" :placeholder="col.label" />
+              </div>
+              <div class="form-group">
+                <label>年龄</label>
+                <input v-model="addForm.age" type="number" placeholder="年龄" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>学历</label>
+                <select v-model="addForm.education">
+                  <option value="">请选择</option>
+                  <option v-for="opt in ['初中', '高中', '大专', '本科', '硕士', '博士']" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>专业</label>
+                <input v-model="addForm.major" placeholder="专业" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>工作年限</label>
+                <input v-model="addForm.work_years" type="number" placeholder="工作年限" />
+              </div>
+              <div class="form-group">
+                <label>社保年限</label>
+                <input v-model="addForm.social_security_years" type="number" placeholder="社保年限" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>目标等级</label>
+                <select v-model="addForm.target_level">
+                  <option value="">请选择</option>
+                  <option v-for="opt in ['初级', '中级', '高级']" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>来源渠道</label>
+                <select v-model="addForm.source">
+                  <option value="">请选择</option>
+                  <option v-for="opt in ['网站', '微信', '电话', '机构', '其他']" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>所属机构</label>
+                <input v-model="addForm.organization" placeholder="所属机构" />
+              </div>
+              <div class="form-group">
+                <label>初始状态</label>
+                <select v-model="addForm.status">
+                  <option value="">请选择</option>
+                  <option v-for="opt in ['意向', '已报名', '资料审核', '实名认证', '已缴费']" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
