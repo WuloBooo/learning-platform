@@ -93,7 +93,7 @@ const isAuthPage = computed(() => {
 })
 
 const hideLayout = computed(() => {
-  return route.path === '/survey'
+  return route.path === '/survey' || route.path === '/major-judge'
 })
 
 const goHome = () => {
