@@ -43,45 +43,34 @@
 
         <div class="table-toolbar">
           <button class="tool-btn" @click="addRow">+ 添加学员</button>
-          <button class="tool-btn danger" @click="batchDelete" :disabled="selectedRows.length === 0">
-            删除选中 ({{ selectedRows.length }})
-          </button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
         </div>
 
-        <div class="hot-wrapper">
-          <hot-table ref="hotRef" :settings="hotSettings"></hot-table>
-        </div>
+        <div class="hot-wrapper" ref="hotContainer"></div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { orgAPI } from '../../api'
-import { HotTable } from '@handsontable/vue3'
-import { registerAllModules } from 'handsontable/registry'
+import Handsontable from 'handsontable'
 import 'handsontable/styles/handsontable.min.css'
 import 'handsontable/styles/ht-theme-main.min.css'
 import 'handsontable-languages/zh-CN'
 import * as XLSX from 'xlsx'
 
-registerAllModules()
-
 const router = useRouter()
 const orgUser = ref(JSON.parse(localStorage.getItem('org_user') || '{}'))
 const sheets = ref([])
 const currentSheet = ref(null)
-const tableData = ref([])
-const selectedRows = ref([])
-const hotRef = ref(null)
-const showAddCol = ref(false)
-const newColName = ref('')
-const customCols = ref([])
+const hotContainer = ref(null)
+let hotInstance = null
+let rawRows = []
 
-const BASE_COLS = [
+const COLS = [
   { key: 'name', label: '姓名', width: 90 },
   { key: 'phone', label: '电话', width: 120 },
   { key: 'id_card', label: '身份证号', width: 170 },
@@ -93,76 +82,64 @@ const BASE_COLS = [
   { key: 'major', label: '专业/岗位', width: 120 }
 ]
 
-const allCols = computed(() => [...BASE_COLS, ...customCols.value])
+const saveCell = async (rowId, prop, value) => {
+  if (!currentSheet.value || !rowId) return
+  try {
+    await orgAPI.updateStudent(currentSheet.value.id, rowId, { [prop]: value })
+    console.log('已保存:', prop, '=', value)
+  } catch (e) {
+    console.error('保存失败:', e)
+  }
+}
 
-const buildSettings = () => {
-  const sheetId = currentSheet.value?.id
-  const cols = [...BASE_COLS, ...customCols.value]
-  const customKeys = customCols.value.map(c => c.key)
+const createHot = () => {
+  if (!hotContainer.value) return
+  destroyHot()
 
-  return {
-    data: tableData.value,
-    colHeaders: cols.map(c => c.label),
-    columns: cols.map(c => ({
+  hotInstance = new Handsontable(hotContainer.value, {
+    data: rawRows,
+    colHeaders: COLS.map(c => c.label),
+    columns: COLS.map(c => ({
       data: c.key,
       type: 'text',
       width: c.width
     })),
     rowHeaders: true,
     height: Math.max(500, window.innerHeight - 200),
-    minRows: 30,
+    minRows: 20,
+    minSpareRows: 1,
     stretchH: 'all',
     language: 'zh-CN',
-    contextMenu: {
-      items: {
-        'row_above': { name: '在上方插入行' },
-        'row_below': { name: '在下方插入行' },
-        'remove_row': { name: '删除行' },
-        'sep1': '---------',
-        'copy': { name: '复制' },
-        'cut': { name: '剪切' },
-        'sep2': '---------',
-        'col_left': { name: '在左侧插入列' },
-        'col_right': { name: '在右侧插入列' },
-        'remove_col': { name: '删除列' }
-      }
-    },
+    contextMenu: ['row_above', 'row_below', 'remove_row', '---------', 'copy', 'cut'],
     manualColumnResize: true,
-    manualRowResize: true,
-    filters: true,
-    dropdownMenu: true,
     licenseKey: 'non-commercial-and-evaluation',
     afterChange(changes, source) {
-      if (source === 'loadData' || !changes || !sheetId) return
+      if (source === 'loadData' || !changes) return
       changes.forEach(([row, prop, oldVal, newVal]) => {
         const rowData = this.getSourceDataAtRow(row)
         if (!rowData || !rowData.id) return
-        if (customKeys.includes(prop)) {
-          const extra = JSON.parse(rowData.extra_data || '{}')
-          extra[prop] = newVal
-          orgAPI.updateStudent(sheetId, rowData.id, { extra_data: JSON.stringify(extra) })
-          rowData.extra_data = JSON.stringify(extra)
-        } else {
-          orgAPI.updateStudent(sheetId, rowData.id, { [prop]: newVal })
-        }
+        saveCell(rowData.id, prop, newVal)
       })
     },
     afterRemoveRow(index, amount, physicalRows) {
-      if (!sheetId) return
       physicalRows.forEach(ri => {
         const rowData = this.getSourceDataAtRow(ri)
         if (rowData && rowData.id) {
-          orgAPI.deleteStudent(sheetId, rowData.id)
+          orgAPI.deleteStudent(currentSheet.value.id, rowData.id)
         }
       })
+    },
+    afterCreateRow(index, amount, source) {
+      // 自动创建的空行不需要处理
     }
-  }
+  })
 }
 
-const hotSettings = ref({})
-
-const applySettings = () => {
-  hotSettings.value = buildSettings()
+const destroyHot = () => {
+  if (hotInstance) {
+    hotInstance.destroy()
+    hotInstance = null
+  }
 }
 
 const loadSheets = async () => {
@@ -176,41 +153,25 @@ const loadSheets = async () => {
 
 const openSheet = async (sheet) => {
   currentSheet.value = sheet
-  selectedRows.value = []
   await loadSheetData()
+  await nextTick()
+  createHot()
 }
 
 const loadSheetData = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.getSheetStudents(currentSheet.value.id)
-    tableData.value = res.data?.students || []
-    // 展开自定义列数据
-    tableData.value.forEach(row => {
-      if (row.extra_data) {
-        try {
-          const extra = JSON.parse(row.extra_data)
-          Object.assign(row, extra)
-        } catch {}
-      }
-    })
-    // 从 localStorage 恢复自定义列配置
-    const saved = localStorage.getItem(`custom_cols_${currentSheet.value.id}`)
-    if (saved) {
-      try { customCols.value = JSON.parse(saved) } catch {}
-    } else {
-      customCols.value = []
-    }
-    applySettings()
+    rawRows = res.data?.students || []
   } catch (e) {
     console.error('加载表格数据失败', e)
   }
 }
 
 const closeSheet = () => {
+  destroyHot()
   currentSheet.value = null
-  tableData.value = []
-  selectedRows.value = []
+  rawRows = []
 }
 
 const addRow = async () => {
@@ -218,60 +179,34 @@ const addRow = async () => {
   try {
     const res = await orgAPI.addStudent(currentSheet.value.id, {})
     if (res.data) {
-      tableData.value.push({
+      const newRow = {
         id: res.data.id,
         sheet_id: currentSheet.value.id,
         name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: null, exam_date: null, condition: '', major: ''
-      })
-      nextTick(() => {
-        const hot = hotRef.value?.hotInstance
-        if (hot) hot.selectCell(tableData.value.length - 1, 0)
-      })
+        reg_date: '', exam_date: '', condition: '', major: ''
+      }
+      rawRows.push(newRow)
+      if (hotInstance) {
+        hotInstance.loadData(rawRows)
+        hotInstance.selectCell(rawRows.length - 1, 0)
+      }
     }
   } catch (e) {
     console.error('添加失败', e)
   }
 }
 
-const batchDelete = async () => {
-  if (selectedRows.value.length === 0) return
-  if (!confirm(`确定删除 ${selectedRows.value.length} 条记录？`)) return
-  if (!currentSheet.value) return
-
-  for (const rowId of selectedRows.value) {
-    await orgAPI.deleteStudent(currentSheet.value.id, rowId)
-  }
-  tableData.value = tableData.value.filter(r => !selectedRows.value.includes(r.id))
-  selectedRows.value = []
-}
-
 const exportExcel = () => {
-  const data = tableData.value.map(r => {
+  if (!hotInstance) return
+  const data = hotInstance.getData().map(rowArr => {
     const row = {}
-    allCols.value.forEach(c => { row[c.label] = r[c.key] || '' })
+    COLS.forEach((c, i) => { row[c.label] = rowArr[i] || '' })
     return row
   })
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '学员数据')
   XLSX.writeFile(wb, `${currentSheet.value.sheet_name || '数据表'}.xlsx`)
-}
-
-const confirmAddCol = () => {
-  if (!newColName.value.trim()) return
-  const key = 'custom_' + Date.now()
-  customCols.value.push({ key, label: newColName.value.trim(), width: 120 })
-  localStorage.setItem(`custom_cols_${currentSheet.value.id}`, JSON.stringify(customCols.value))
-  newColName.value = ''
-  showAddCol.value = false
-  applySettings()
-}
-
-const removeCol = (idx) => {
-  customCols.value.splice(idx, 1)
-  localStorage.setItem(`custom_cols_${currentSheet.value.id}`, JSON.stringify(customCols.value))
-  applySettings()
 }
 
 const handleLogout = () => {
@@ -282,6 +217,10 @@ const handleLogout = () => {
 
 onMounted(() => {
   loadSheets()
+})
+
+onBeforeUnmount(() => {
+  destroyHot()
 })
 </script>
 
@@ -468,91 +407,5 @@ onMounted(() => {
   border-radius: 12px;
   border: 1px solid #eee;
   overflow: hidden;
-}
-</style>
-
-<style>
-.modal-mask {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-card-sm {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  width: 400px;
-  max-width: 90vw;
-}
-
-.modal-card-sm h3 {
-  margin: 0 0 16px;
-  font-size: 18px;
-}
-
-.modal-card-sm .form-group {
-  margin-bottom: 12px;
-}
-
-.modal-card-sm .form-group label {
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.modal-card-sm .form-group input {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.tool-btn.outline {
-  background: white;
-  color: #667eea;
-  border: 1px solid #667eea;
-}
-
-.col-list {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
-}
-
-.col-list h4 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: #666;
-}
-
-.col-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 14px;
-}
-
-.col-del {
-  background: none;
-  border: none;
-  color: #e74c3c;
-  cursor: pointer;
-  font-size: 12px;
 }
 </style>
