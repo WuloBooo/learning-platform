@@ -80,7 +80,7 @@
     <!-- 详情弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showDetail" @click.self="showDetail = false">
-        <div class="modal-content modal-lg">
+        <div class="modal-card modal-lg">
           <div class="modal-header">
             <h3>学员详情 - {{ detailData.name }}</h3>
             <button class="modal-close" @click="showDetail = false">&times;</button>
@@ -115,7 +115,7 @@
     <!-- 手动添加学员弹窗 -->
     <Teleport to="body">
       <div class="modal-overlay" v-if="showAddModal" @click.self="showAddModal = false">
-        <div class="modal-content modal-lg">
+        <div class="modal-card modal-lg">
           <div class="modal-header">
             <h3>手动添加学员</h3>
             <button class="modal-close" @click="showAddModal = false">&times;</button>
@@ -475,7 +475,7 @@ onMounted(loadStudents)
 <style>
 /* 弹窗（Teleport 到 body，不能用 scoped） */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-overlay .modal-content {
+.modal-overlay .modal-card {
   padding: 0;
   text-align: left;
   background: white;
