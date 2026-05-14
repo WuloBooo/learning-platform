@@ -249,7 +249,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   padding: 32px;
-  width: 480px;
+  width: 600px;
   max-width: 90vw;
 }
 
