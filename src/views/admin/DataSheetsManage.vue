@@ -383,6 +383,8 @@ onMounted(() => {
 }
 
 .modal-overlay .modal {
+  position: relative;
+  inset: auto;
   background: white;
   border-radius: 12px;
   padding: 32px;

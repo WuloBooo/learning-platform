@@ -475,7 +475,18 @@ onMounted(loadStudents)
 <style>
 /* 弹窗（Teleport 到 body，不能用 scoped） */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.modal-overlay .modal-content { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-overlay .modal-content {
+  padding: 0;
+  text-align: left;
+  background: white;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: none;
+}
 .modal-overlay .modal-lg { max-width: 700px; }
 .modal-overlay .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; }
 .modal-overlay .modal-header h3 { font-size: 17px; font-weight: 600; margin: 0; }
