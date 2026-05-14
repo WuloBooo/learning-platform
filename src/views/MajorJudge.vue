@@ -5,37 +5,31 @@
       <p class="subtitle">人工智能训练师 — 查询您的专业是否符合报名条件</p>
 
       <div class="form-section">
-        <div class="form-group">
-          <label>学历层次</label>
-          <div class="level-tabs">
-            <button
-              v-for="l in levels"
-              :key="l"
-              :class="['level-btn', { active: selectedLevel === l }]"
-              @click="selectedLevel = l"
-            >{{ l }}</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>输入专业名称</label>
+        <div class="search-row">
           <input
             v-model="searchText"
-            placeholder="请输入专业名称，如：计算机科学与技术"
-            @input="handleSearch"
+            placeholder="请输入专业名称或专业代码"
+            @keyup.enter="handleSearch"
           />
+          <button class="search-btn" @click="handleSearch" :disabled="loading">
+            {{ loading ? '搜索中...' : '搜索' }}
+          </button>
         </div>
 
-        <!-- 搜索建议 -->
+        <!-- 搜索建议（输入时出现） -->
         <div class="suggestions" v-if="suggestions.length > 0 && showSuggestions">
           <div
             v-for="item in suggestions"
-            :key="item.code + item.name"
+            :key="item.level + item.code + item.name"
             class="suggestion-item"
             @click="selectMajor(item)"
           >
             <span class="sug-name">{{ item.name }}</span>
-            <span class="sug-meta">{{ item.level }} · {{ item.className }}</span>
+            <span class="sug-meta">
+              <span :class="['level-tag', item.level]">{{ item.level }}</span>
+              {{ item.className }}
+              <span class="sug-code" v-if="item.code">（{{ item.code }}）</span>
+            </span>
           </div>
         </div>
       </div>
@@ -46,17 +40,32 @@
           <div class="result-icon">{{ result.qualified ? '✅' : '❌' }}</div>
           <div class="result-info">
             <h3>{{ result.qualified ? '符合报名条件' : '不符合报名条件' }}</h3>
-            <p>{{ selectedMajor.name }}（{{ selectedMajor.level }} · {{ selectedMajor.className }}）</p>
-            <p v-if="result.qualified" class="detail">匹配条件：{{ result.matchedKeywords.join('、') }}</p>
-            <p v-else class="detail">{{ result.reason }}</p>
+            <div class="result-detail">
+              <p><strong>专业名称：</strong>{{ selectedMajor.name }}</p>
+              <p><strong>学历层次：</strong>{{ selectedMajor.level }}</p>
+              <p><strong>所属专业类：</strong>{{ selectedMajor.className }}</p>
+              <p v-if="selectedMajor.code"><strong>专业代码：</strong>{{ selectedMajor.code }}</p>
+              <p v-if="result.qualified && result.matchedCode" class="match-info">
+                匹配条件：专业类代码 {{ result.matchedCode }}
+              </p>
+              <p v-if="result.qualified && result.matchedName" class="match-info">
+                匹配条件：{{ result.matchedName }}
+              </p>
+              <p v-if="!result.qualified" class="fail-reason">{{ result.reason }}</p>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- 多个专业提示 -->
+      <div class="multi-hint" v-if="searched && !result && !showSuggestions">
+        <p>未找到匹配的专业，请检查输入是否正确。</p>
       </div>
 
       <!-- 说明 -->
       <div class="info-section">
         <h3>报考条件说明</h3>
-        <p>人工智能训练师可报考的学历及专业范围：</p>
+        <p>人工智能训练师可报考的专业范围（按学历层次）：</p>
         <div class="info-grid">
           <div class="info-item">
             <h4>本科</h4>
@@ -82,15 +91,17 @@ import { ref } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
 import { checkQualification, relatedOccupations } from '../data/majorData'
 
-const levels = ['本科', '专科', '研究生']
-const selectedLevel = ref('本科')
 const searchText = ref('')
 const suggestions = ref([])
 const showSuggestions = ref(false)
 const selectedMajor = ref(null)
 const result = ref(null)
+const loading = ref(false)
+const searched = ref(false)
 
 const handleSearch = () => {
+  searched.value = true
+  showSuggestions.value = false
   result.value = null
   selectedMajor.value = null
 
@@ -101,11 +112,22 @@ const handleSearch = () => {
 
   const keyword = searchText.value.trim().toLowerCase()
   const filtered = majorCatalog.filter(m =>
-    m.level === selectedLevel.value &&
-    (m.name.toLowerCase().includes(keyword) || m.code.includes(keyword))
+    m.name.toLowerCase().includes(keyword) || String(m.code).includes(keyword)
   )
 
-  suggestions.value = filtered.slice(0, 20)
+  if (filtered.length === 0) {
+    suggestions.value = []
+    return
+  }
+
+  if (filtered.length === 1) {
+    // 只有一个结果，直接判断
+    selectMajor(filtered[0])
+    return
+  }
+
+  // 多个结果，显示候选列表
+  suggestions.value = filtered.slice(0, 30)
   showSuggestions.value = true
 }
 
@@ -114,8 +136,9 @@ const selectMajor = (item) => {
   searchText.value = item.name
   showSuggestions.value = false
   suggestions.value = []
+  searched.value = true
 
-  result.value = checkQualification(item.level, item.className, item.name)
+  result.value = checkQualification(item)
 }
 </script>
 
@@ -157,54 +180,39 @@ const selectMajor = (item) => {
   position: relative;
 }
 
-.form-group {
-  margin-bottom: 16px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #333;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 16px;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-
-.form-group input:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.level-tabs {
+.search-row {
   display: flex;
   gap: 8px;
 }
 
-.level-btn {
+.search-row input {
   flex: 1;
-  padding: 12px;
+  padding: 14px 16px;
   border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.2s;
 }
 
-.level-btn.active {
+.search-row input:focus {
+  outline: none;
   border-color: #667eea;
-  background: #667eea;
-  color: white;
 }
+
+.search-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.search-btn:hover { opacity: 0.9; }
+.search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .suggestions {
   position: absolute;
@@ -214,7 +222,7 @@ const selectMajor = (item) => {
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
   z-index: 100;
   box-shadow: 0 8px 24px rgba(0,0,0,0.12);
@@ -241,17 +249,30 @@ const selectMajor = (item) => {
 .sug-meta {
   font-size: 12px;
   color: #999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.result-section {
-  margin-bottom: 24px;
+.level-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: white;
 }
+
+.level-tag.本科 { background: #667eea; }
+.level-tag.专科 { background: #10b981; }
+.level-tag.研究生 { background: #f59e0b; }
+
+.sug-code { color: #bbb; }
+
+.result-section { margin-bottom: 24px; }
 
 .result-card {
   display: flex;
-  align-items: center;
   gap: 16px;
-  padding: 20px;
+  padding: 24px;
   border-radius: 12px;
 }
 
@@ -265,26 +286,36 @@ const selectMajor = (item) => {
   border: 1px solid #fca5a5;
 }
 
-.result-icon {
-  font-size: 36px;
-}
+.result-icon { font-size: 36px; flex-shrink: 0; }
 
 .result-info h3 {
-  margin: 0 0 4px;
+  margin: 0 0 12px;
   font-size: 18px;
 }
 
 .result-card.pass .result-info h3 { color: #166534; }
 .result-card.fail .result-info h3 { color: #991b1b; }
 
-.result-info p {
+.result-detail p {
   margin: 4px 0;
   font-size: 14px;
-  color: #666;
+  color: #555;
 }
 
-.detail {
-  font-size: 13px !important;
+.match-info {
+  color: #166534 !important;
+  font-weight: 500;
+}
+
+.fail-reason {
+  color: #991b1b !important;
+}
+
+.multi-hint {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
 }
 
 .info-section {
@@ -338,7 +369,9 @@ const selectMajor = (item) => {
 }
 
 @media (max-width: 600px) {
-  .check-card { padding: 24px; }
+  .check-card { padding: 24px 16px; }
+  .search-row { flex-direction: column; }
   .info-grid { grid-template-columns: 1fr; }
+  .suggestion-item { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 </style>
