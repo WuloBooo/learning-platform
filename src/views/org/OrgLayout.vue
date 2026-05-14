@@ -47,7 +47,32 @@
             删除选中 ({{ selectedRows.length }})
           </button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
+          <button class="tool-btn outline" @click="showAddCol = true">+ 添加列</button>
         </div>
+
+        <!-- 添加列弹窗 -->
+        <Teleport to="body">
+          <div class="modal-mask" v-if="showAddCol" @click.self="showAddCol = false">
+            <div class="modal-card-sm">
+              <h3>添加自定义列</h3>
+              <div class="form-group">
+                <label>列名称</label>
+                <input v-model="newColName" placeholder="如：备注、邮箱" @keyup.enter="confirmAddCol" />
+              </div>
+              <div class="modal-actions">
+                <button class="tool-btn outline" @click="showAddCol = false">取消</button>
+                <button class="tool-btn" @click="confirmAddCol">确定</button>
+              </div>
+              <div class="col-list" v-if="customCols.length > 0">
+                <h4>已有自定义列</h4>
+                <div class="col-item" v-for="(col, idx) in customCols" :key="col.key">
+                  <span>{{ col.label }}</span>
+                  <button class="col-del" @click="removeCol(idx)">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Teleport>
 
         <div class="hot-wrapper">
           <hot-table ref="hotRef" :settings="hotSettings"></hot-table>
@@ -77,27 +102,30 @@ const currentSheet = ref(null)
 const tableData = ref([])
 const selectedRows = ref([])
 const hotRef = ref(null)
+const showAddCol = ref(false)
+const newColName = ref('')
+const customCols = ref([])
 
-const COLS = [
-  { key: 'name', label: '姓名', width: 100 },
-  { key: 'phone', label: '电话', width: 130 },
-  { key: 'id_card', label: '身份证号', width: 190 },
-  { key: 'job_type', label: '工种', width: 140 },
-  { key: 'level', label: '级别', width: 80 },
-  { key: 'reg_date', label: '报名日期', width: 120, type: 'date' },
-  { key: 'exam_date', label: '考试日期', width: 120, type: 'date' },
-  { key: 'condition', label: '报考条件', width: 140 },
-  { key: 'major', label: '专业/岗位', width: 140 }
+const BASE_COLS = [
+  { key: 'name', label: '姓名', width: 90 },
+  { key: 'phone', label: '电话', width: 120 },
+  { key: 'id_card', label: '身份证号', width: 170 },
+  { key: 'job_type', label: '工种', width: 120 },
+  { key: 'level', label: '级别', width: 70 },
+  { key: 'reg_date', label: '报名日期', width: 110 },
+  { key: 'exam_date', label: '考试日期', width: 110 },
+  { key: 'condition', label: '报考条件', width: 120 },
+  { key: 'major', label: '专业/岗位', width: 120 }
 ]
 
-const hotSettings = computed(() => ({
+const allCols = computed(() => [...BASE_COLS, ...customCols.value])
+
+const buildSettings = () => ({
   data: tableData.value,
-  colHeaders: COLS.map(c => c.label),
-  columns: COLS.map(c => ({
+  colHeaders: allCols.value.map(c => c.label),
+  columns: allCols.value.map(c => ({
     data: c.key,
-    type: c.type === 'date' ? 'date' : 'text',
-    dateFormat: 'YYYY-MM-DD',
-    correctFormat: true,
+    type: 'text',
     width: c.width
   })),
   rowHeaders: true,
@@ -112,7 +140,11 @@ const hotSettings = computed(() => ({
       'remove_row': { name: '删除行' },
       'sep1': '---------',
       'copy': { name: '复制' },
-      'cut': { name: '剪切' }
+      'cut': { name: '剪切' },
+      'sep2': '---------',
+      'col_left': { name: '在左侧插入列' },
+      'col_right': { name: '在右侧插入列' },
+      'remove_col': { name: '删除列' }
     }
   },
   manualColumnResize: true,
@@ -120,12 +152,20 @@ const hotSettings = computed(() => ({
   filters: true,
   dropdownMenu: true,
   licenseKey: 'non-commercial-and-evaluation',
-  afterChange(changes) {
-    if (!changes || !currentSheet.value) return
+  afterChange(changes, source) {
+    if (source === 'loadData' || !changes || !currentSheet.value) return
     changes.forEach(([row, prop, oldVal, newVal]) => {
       if (oldVal !== newVal && tableData.value[row]) {
         const rowData = tableData.value[row]
-        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal })
+        const isCustom = customCols.value.some(c => c.key === prop)
+        if (isCustom) {
+          const extra = JSON.parse(rowData.extra_data || '{}')
+          extra[prop] = newVal
+          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { extra_data: JSON.stringify(extra) })
+          rowData.extra_data = JSON.stringify(extra)
+        } else {
+          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal })
+        }
       }
     })
   },
@@ -137,7 +177,13 @@ const hotSettings = computed(() => ({
       }
     })
   }
-}))
+})
+
+const hotSettings = ref({})
+
+const applySettings = () => {
+  hotSettings.value = buildSettings()
+}
 
 const loadSheets = async () => {
   try {
@@ -159,6 +205,23 @@ const loadSheetData = async () => {
   try {
     const res = await orgAPI.getSheetStudents(currentSheet.value.id)
     tableData.value = res.data?.students || []
+    // 展开自定义列数据
+    tableData.value.forEach(row => {
+      if (row.extra_data) {
+        try {
+          const extra = JSON.parse(row.extra_data)
+          Object.assign(row, extra)
+        } catch {}
+      }
+    })
+    // 从 localStorage 恢复自定义列配置
+    const saved = localStorage.getItem(`custom_cols_${currentSheet.value.id}`)
+    if (saved) {
+      try { customCols.value = JSON.parse(saved) } catch {}
+    } else {
+      customCols.value = []
+    }
+    applySettings()
   } catch (e) {
     console.error('加载表格数据失败', e)
   }
@@ -206,13 +269,29 @@ const batchDelete = async () => {
 const exportExcel = () => {
   const data = tableData.value.map(r => {
     const row = {}
-    COLS.forEach(c => { row[c.label] = r[c.key] || '' })
+    allCols.value.forEach(c => { row[c.label] = r[c.key] || '' })
     return row
   })
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '学员数据')
   XLSX.writeFile(wb, `${currentSheet.value.sheet_name || '数据表'}.xlsx`)
+}
+
+const confirmAddCol = () => {
+  if (!newColName.value.trim()) return
+  const key = 'custom_' + Date.now()
+  customCols.value.push({ key, label: newColName.value.trim(), width: 120 })
+  localStorage.setItem(`custom_cols_${currentSheet.value.id}`, JSON.stringify(customCols.value))
+  newColName.value = ''
+  showAddCol.value = false
+  applySettings()
+}
+
+const removeCol = (idx) => {
+  customCols.value.splice(idx, 1)
+  localStorage.setItem(`custom_cols_${currentSheet.value.id}`, JSON.stringify(customCols.value))
+  applySettings()
 }
 
 const handleLogout = () => {
@@ -271,9 +350,7 @@ onMounted(() => {
 .logout-btn:hover { background: #e0e0e0; }
 
 .org-main {
-  padding: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 16px;
 }
 
 .sheets-view h2 {
@@ -411,5 +488,91 @@ onMounted(() => {
   border-radius: 12px;
   border: 1px solid #eee;
   overflow: hidden;
+}
+</style>
+
+<style>
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-card-sm {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90vw;
+}
+
+.modal-card-sm h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+}
+
+.modal-card-sm .form-group {
+  margin-bottom: 12px;
+}
+
+.modal-card-sm .form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.modal-card-sm .form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tool-btn.outline {
+  background: white;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+.col-list {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.col-list h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.col-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.col-del {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 12px;
 }
 </style>

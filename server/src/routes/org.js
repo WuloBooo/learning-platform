@@ -145,7 +145,7 @@ router.put('/sheets/:sheetId/students/:rowId', orgAuth, (req, res) => {
     const sheet = getOne('SELECT * FROM org_sheets WHERE id = ? AND org_id = ?', [req.params.sheetId, req.orgUser.org_id])
     if (!sheet) return res.status(404).json({ message: '表格不存在' })
 
-    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major']
+    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data']
     const data = {}
     for (const key of allowed) {
       if (req.body[key] !== undefined) data[key] = req.body[key]
@@ -215,7 +215,7 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
         if (row.id) {
           // 更新已有行
           const data = {}
-          const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major']
+          const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data']
           for (const key of allowed) {
             if (row[key] !== undefined) data[key] = row[key]
           }

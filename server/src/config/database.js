@@ -559,6 +559,7 @@ export async function initDatabase() {
       exam_date DATE,
       condition TEXT,
       major TEXT,
+      extra_data TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE,
       FOREIGN KEY (student_id) REFERENCES student_profiles(id) ON DELETE CASCADE,
