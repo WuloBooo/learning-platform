@@ -71,6 +71,7 @@ const tableData = ref([])
 const selectedRows = ref([])
 const saving = ref(false)
 let hot = null
+let savePromise = Promise.resolve()
 
 const MIN_EMPTY_ROWS = 500
 
@@ -218,27 +219,30 @@ const initHot = () => {
 
       if (updates.length > 0) {
         saving.value = true
-        orgAPI.batchSave(currentSheet.value.id, updates)
+        savePromise = orgAPI.batchSave(currentSheet.value.id, updates)
           .then(() => { saving.value = false })
           .catch(e => { console.error('保存失败:', e); saving.value = false })
       }
     },
     afterPaste(data, coords) {
-      // 粘贴后检查是否需要补充空行
-      setTimeout(async () => {
+      // 粘贴后等保存完成，再检查是否需要补充空行
+      savePromise.then(async () => {
+        // 等待一小段时间确保所有 afterChange 都处理完
+        await new Promise(r => setTimeout(r, 1500))
         const empty = countEmptyRows(tableData.value)
         if (empty < 50) {
           const need = MIN_EMPTY_ROWS - empty
           saving.value = true
           try {
             await orgAPI.batchCreateEmpty(currentSheet.value.id, need)
-            await loadSheetData()
+            // 注意：不调 loadSheetData，因为会覆盖当前编辑的数据
+            // 只在用户手动点"刷新数据"时才重新加载
           } catch (e) {
             console.error('补充空行失败:', e)
           }
           saving.value = false
         }
-      }, 1000)
+      })
     },
     afterRemoveRow(index, amount, physicalRows) {
       for (const r of physicalRows) {
