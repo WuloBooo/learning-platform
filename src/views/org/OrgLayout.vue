@@ -42,123 +42,78 @@
         </div>
 
         <div class="table-toolbar">
-          <button class="tool-btn" @click="addRow">+ 添加学员</button>
+          <button class="tool-btn" @click="addRow">+ 添加空行</button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
+          <button class="tool-btn outline" @click="loadSheetData">刷新数据</button>
         </div>
 
-        <div class="hot-wrapper" ref="hotContainer"></div>
+        <div class="table-scroll">
+          <table class="edit-table">
+            <thead>
+              <tr>
+                <th class="col-idx">#</th>
+                <th v-for="col in columns" :key="col.key" :style="{ minWidth: col.width }">{{ col.label }}</th>
+                <th class="col-act">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, idx) in rows" :key="row.id">
+                <td class="col-idx">{{ idx + 1 }}</td>
+                <td v-for="col in columns" :key="col.key"
+                    :class="{ editing: editingCell === `${row.id}-${col.key}` }"
+                    @dblclick="startEdit(row, col.key)">
+                  <template v-if="editingCell === `${row.id}-${col.key}`">
+                    <input :value="row[col.key]"
+                      @blur="saveEdit(row, col.key, $event)"
+                      @keyup.enter="$event.target.blur()"
+                      @keyup.escape="cancelEdit"
+                      class="cell-input"
+                      ref="editInput" />
+                  </template>
+                  <template v-else>
+                    {{ row[col.key] || '' }}
+                  </template>
+                </td>
+                <td class="col-act">
+                  <button class="row-del" @click="deleteRow(row)">删除</button>
+                </td>
+              </tr>
+              <tr v-if="rows.length === 0">
+                <td :colspan="columns.length + 2" class="empty-row">暂无数据，点击"添加空行"开始录入</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { orgAPI } from '../../api'
-import Handsontable from 'handsontable'
-import 'handsontable/styles/handsontable.min.css'
-import 'handsontable/styles/ht-theme-main.min.css'
-import 'handsontable-languages/zh-CN'
 import * as XLSX from 'xlsx'
 
 const router = useRouter()
 const orgUser = ref(JSON.parse(localStorage.getItem('org_user') || '{}'))
 const sheets = ref([])
 const currentSheet = ref(null)
-const hotContainer = ref(null)
-let hotInstance = null
-let rawRows = []
+const rows = ref([])
+const editingCell = ref(null)
+const editInput = ref(null)
 
-const COLS = [
-  { key: 'name', label: '姓名', width: 90 },
-  { key: 'phone', label: '电话', width: 120 },
-  { key: 'id_card', label: '身份证号', width: 170 },
-  { key: 'job_type', label: '工种', width: 120 },
-  { key: 'level', label: '级别', width: 70 },
-  { key: 'reg_date', label: '报名日期', width: 110 },
-  { key: 'exam_date', label: '考试日期', width: 110 },
-  { key: 'condition', label: '报考条件', width: 120 },
-  { key: 'major', label: '专业/岗位', width: 120 }
+const columns = [
+  { key: 'name', label: '姓名', width: '90px' },
+  { key: 'phone', label: '电话', width: '120px' },
+  { key: 'id_card', label: '身份证号', width: '180px' },
+  { key: 'job_type', label: '工种', width: '120px' },
+  { key: 'level', label: '级别', width: '70px' },
+  { key: 'reg_date', label: '报名日期', width: '120px' },
+  { key: 'exam_date', label: '考试日期', width: '120px' },
+  { key: 'condition', label: '报考条件', width: '120px' },
+  { key: 'major', label: '专业/岗位', width: '120px' }
 ]
-
-const saveCell = async (rowId, prop, value) => {
-  if (!currentSheet.value || !rowId) return
-  try {
-    await orgAPI.updateStudent(currentSheet.value.id, rowId, { [prop]: value })
-    console.log('已保存:', prop, '=', value)
-  } catch (e) {
-    console.error('保存失败:', e)
-  }
-}
-
-const createHot = () => {
-  if (!hotContainer.value) return
-  destroyHot()
-
-  hotInstance = new Handsontable(hotContainer.value, {
-    data: rawRows,
-    colHeaders: COLS.map(c => c.label),
-    columns: COLS.map(c => ({
-      data: c.key,
-      type: 'text',
-      width: c.width
-    })),
-    rowHeaders: true,
-    height: Math.max(500, window.innerHeight - 200),
-    minRows: 20,
-    minSpareRows: 1,
-    stretchH: 'all',
-    language: 'zh-CN',
-    contextMenu: ['row_above', 'row_below', 'remove_row', '---------', 'copy', 'cut'],
-    manualColumnResize: true,
-    licenseKey: 'non-commercial-and-evaluation',
-    afterBeginEditing(row, col) {
-      console.log('开始编辑:', row, col)
-    },
-    afterChange(changes, source) {
-      console.log('afterChange触发, source:', source, 'changes:', changes)
-      if (source === 'loadData') return
-      if (!changes) return
-      changes.forEach(([row, prop, oldVal, newVal]) => {
-        const rowData = this.getSourceDataAtRow(row)
-        console.log('行数据:', JSON.stringify(rowData), 'prop:', prop, 'newVal:', newVal)
-        if (!rowData) return
-        // 新行没有id，先创建再保存
-        if (!rowData.id && newVal) {
-          orgAPI.addStudent(currentSheet.value.id, {}).then(res => {
-            if (res.data) {
-              rowData.id = res.data.id
-              saveCell(rowData.id, prop, newVal)
-            }
-          })
-          return
-        }
-        if (rowData.id) {
-          saveCell(rowData.id, prop, newVal)
-        }
-      })
-    },
-    afterRemoveRow(index, amount, physicalRows) {
-      physicalRows.forEach(ri => {
-        const rowData = this.getSourceDataAtRow(ri)
-        if (rowData && rowData.id) {
-          orgAPI.deleteStudent(currentSheet.value.id, rowData.id)
-        }
-      })
-    },
-    afterCreateRow(index, amount, source) {
-      // 自动创建的空行不需要处理
-    }
-  })
-}
-
-const destroyHot = () => {
-  if (hotInstance) {
-    hotInstance.destroy()
-    hotInstance = null
-  }
-}
 
 const loadSheets = async () => {
   try {
@@ -172,53 +127,84 @@ const loadSheets = async () => {
 const openSheet = async (sheet) => {
   currentSheet.value = sheet
   await loadSheetData()
-  await nextTick()
-  createHot()
 }
 
 const loadSheetData = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.getSheetStudents(currentSheet.value.id)
-    rawRows = res.data?.students || []
+    rows.value = res.data?.students || []
   } catch (e) {
-    console.error('加载表格数据失败', e)
+    console.error('加载失败', e)
   }
 }
 
 const closeSheet = () => {
-  destroyHot()
   currentSheet.value = null
-  rawRows = []
+  rows.value = []
+  editingCell.value = null
+}
+
+const startEdit = (row, colKey) => {
+  editingCell.value = `${row.id}-${colKey}`
+  nextTick(() => {
+    const inputs = document.querySelectorAll('.cell-input')
+    if (inputs.length > 0) inputs[inputs.length - 1].focus()
+  })
+}
+
+const saveEdit = async (row, colKey, event) => {
+  editingCell.value = null
+  const newVal = event.target.value.trim()
+  if (newVal === (row[colKey] || '')) return
+  row[colKey] = newVal
+
+  if (!currentSheet.value || !row.id) return
+  try {
+    await orgAPI.updateStudent(currentSheet.value.id, row.id, { [colKey]: newVal })
+    console.log('保存成功:', colKey, '=', newVal)
+  } catch (e) {
+    console.error('保存失败:', e)
+    alert('保存失败，请重试')
+  }
+}
+
+const cancelEdit = () => {
+  editingCell.value = null
 }
 
 const addRow = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.addStudent(currentSheet.value.id, {})
-    if (res.data) {
-      const newRow = {
+    if (res.data?.id) {
+      rows.value.push({
         id: res.data.id,
         sheet_id: currentSheet.value.id,
         name: '', phone: '', id_card: '', job_type: '', level: '',
         reg_date: '', exam_date: '', condition: '', major: ''
-      }
-      rawRows.push(newRow)
-      if (hotInstance) {
-        hotInstance.loadData(rawRows)
-        hotInstance.selectCell(rawRows.length - 1, 0)
-      }
+      })
     }
   } catch (e) {
     console.error('添加失败', e)
+    alert('添加失败')
+  }
+}
+
+const deleteRow = async (row) => {
+  if (!confirm('确定删除该行？')) return
+  try {
+    await orgAPI.deleteStudent(currentSheet.value.id, row.id)
+    rows.value = rows.value.filter(r => r.id !== row.id)
+  } catch (e) {
+    console.error('删除失败', e)
   }
 }
 
 const exportExcel = () => {
-  if (!hotInstance) return
-  const data = hotInstance.getData().map(rowArr => {
+  const data = rows.value.map(r => {
     const row = {}
-    COLS.forEach((c, i) => { row[c.label] = rowArr[i] || '' })
+    columns.forEach(c => { row[c.label] = r[c.key] || '' })
     return row
   })
   const ws = XLSX.utils.json_to_sheet(data)
@@ -235,10 +221,6 @@ const handleLogout = () => {
 
 onMounted(() => {
   loadSheets()
-})
-
-onBeforeUnmount(() => {
-  destroyHot()
 })
 </script>
 
@@ -269,10 +251,7 @@ onBeforeUnmount(() => {
   gap: 16px;
 }
 
-.user-info {
-  font-size: 14px;
-  color: #666;
-}
+.user-info { font-size: 14px; color: #666; }
 
 .logout-btn {
   padding: 6px 16px;
@@ -283,17 +262,11 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: #666;
 }
-
 .logout-btn:hover { background: #e0e0e0; }
 
-.org-main {
-  padding: 16px;
-}
+.org-main { padding: 16px; }
 
-.sheets-view h2 {
-  margin-bottom: 20px;
-  color: #1a1a2e;
-}
+.sheets-view h2 { margin-bottom: 20px; color: #1a1a2e; }
 
 .sheets-grid {
   display: grid;
@@ -312,65 +285,21 @@ onBeforeUnmount(() => {
   transition: box-shadow 0.2s, transform 0.1s;
   border: 1px solid #eee;
 }
+.sheet-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
 
-.sheet-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  transform: translateY(-2px);
-}
+.sheet-icon { font-size: 32px; }
+.sheet-info { flex: 1; }
+.sheet-info h3 { margin: 0 0 4px; font-size: 16px; color: #333; }
+.sheet-info p { margin: 0; font-size: 13px; color: #999; }
 
-.sheet-icon {
-  font-size: 32px;
-}
+.sheet-status { font-size: 12px; padding: 4px 10px; border-radius: 12px; }
+.sheet-status.active { background: #d1fae5; color: #065f46; }
+.sheet-status.archived { background: #f3f4f6; color: #9ca3af; }
 
-.sheet-info {
-  flex: 1;
-}
+.empty-state { text-align: center; padding: 60px 20px; color: #999; }
+.empty-state .hint { font-size: 13px; margin-top: 8px; }
 
-.sheet-info h3 {
-  margin: 0 0 4px;
-  font-size: 16px;
-  color: #333;
-}
-
-.sheet-info p {
-  margin: 0;
-  font-size: 13px;
-  color: #999;
-}
-
-.sheet-status {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.sheet-status.active {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.sheet-status.archived {
-  background: #f3f4f6;
-  color: #9ca3af;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #999;
-}
-
-.empty-state .hint {
-  font-size: 13px;
-  margin-top: 8px;
-}
-
-.editor-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-}
+.editor-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
 
 .back-btn {
   padding: 8px 16px;
@@ -380,20 +309,11 @@ onBeforeUnmount(() => {
   cursor: pointer;
   font-size: 14px;
 }
-
 .back-btn:hover { background: #e0e0e0; }
 
-.editor-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #1a1a2e;
-}
+.editor-header h2 { margin: 0; font-size: 20px; color: #1a1a2e; }
 
-.table-toolbar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
+.table-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
 
 .tool-btn {
   padding: 8px 16px;
@@ -404,26 +324,68 @@ onBeforeUnmount(() => {
   background: #667eea;
   color: white;
 }
-
 .tool-btn:hover { opacity: 0.9; }
+.tool-btn.secondary { background: #10b981; }
+.tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
 
-.tool-btn.danger {
-  background: #e74c3c;
-}
-
-.tool-btn.secondary {
-  background: #10b981;
-}
-
-.tool-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.hot-wrapper {
+.table-scroll {
   background: white;
   border-radius: 12px;
   border: 1px solid #eee;
-  overflow: hidden;
+  overflow: auto;
 }
+
+.edit-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+
+.edit-table th {
+  background: #f8f9fa;
+  padding: 12px 10px;
+  text-align: left;
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.edit-table td {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.edit-table tbody tr:hover td { background: #f8f9ff; }
+
+.col-idx { width: 40px; text-align: center; color: #999; font-size: 13px; }
+.col-act { width: 60px; text-align: center; }
+
+.edit-table td.editing {
+  padding: 4px;
+  background: #fef3c7 !important;
+}
+
+.cell-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 2px solid #667eea;
+  border-radius: 4px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.row-del {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+.row-del:hover { text-decoration: underline; }
+
+.empty-row { text-align: center; padding: 40px !important; color: #999; }
 </style>
