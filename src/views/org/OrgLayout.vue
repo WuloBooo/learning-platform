@@ -99,58 +99,63 @@ const hotColumns = colKeys.map(key => ({
 let batchTimer = null
 const pendingChanges = []
 
+function isRowEmpty(rowData) {
+  if (!rowData) return true
+  for (const key of colKeys) {
+    if (rowData[key] && String(rowData[key]).trim()) return false
+  }
+  return true
+}
+
 function flushBatchSave() {
   if (pendingChanges.length === 0) return
   const changes = [...pendingChanges]
   pendingChanges.length = 0
 
-  // 分为：已有行的更新 和 新增行的创建
-  const updates = []
-  const newRows = []
+  // 按行索引分组，合并同行的多个字段变更
+  const updateMap = new Map() // id -> { id, ...data }
+  const newRowsMap = new Map() // rowIndex -> { _rowIndex, ...data }
 
   for (const c of changes) {
     if (c.rowData.id) {
-      updates.push({ id: c.rowData.id, [c.prop]: c.newVal || '' })
-    } else {
-      // 合并同一行的多个字段变更
-      const existing = newRows.find(r => r._rowIndex === c.rowIndex)
-      if (existing) {
-        existing[c.prop] = c.newVal || ''
-      } else {
-        newRows.push({ _rowIndex: c.rowIndex, ...c.rowData, [c.prop]: c.newVal || '' })
+      if (!updateMap.has(c.rowData.id)) {
+        updateMap.set(c.rowData.id, { id: c.rowData.id })
       }
+      updateMap.get(c.rowData.id)[c.prop] = c.newVal || ''
+    } else {
+      if (!newRowsMap.has(c.rowIndex)) {
+        newRowsMap.set(c.rowIndex, { _rowIndex: c.rowIndex })
+      }
+      newRowsMap.get(c.rowIndex)[c.prop] = c.newVal || ''
     }
   }
 
-  // 逐条更新已有行
-  for (const u of updates) {
-    const { id, ...data } = u
-    orgAPI.updateStudent(currentSheet.value.id, id, data)
-      .catch(e => console.error('更新失败:', e))
-  }
+  // 过滤掉完全空的新行（minSpareRows 产生的）
+  const realNewRows = [...newRowsMap.values()].filter(r => {
+    const { _rowIndex, ...data } = r
+    return Object.values(data).some(v => v && String(v).trim())
+  })
 
-  // 批量创建新行
-  if (newRows.length > 0) {
-    const rowsToSave = newRows.map(r => {
-      const { _rowIndex, id, ...rest } = r
-      return rest
-    })
-    orgAPI.batchSave(currentSheet.value.id, rowsToSave)
-      .then(res => {
-        // 创建成功后刷新数据，让新行获得 id
+  // 全部用 batch-save 一次性提交（更新+新增混合）
+  const allRows = [...updateMap.values(), ...realNewRows]
+  if (allRows.length === 0) return
+
+  orgAPI.batchSave(currentSheet.value.id, allRows)
+    .then(res => {
+      if (realNewRows.length > 0) {
+        // 有新行创建，刷新数据让新行获得 id
         loadSheetData()
-      })
-      .catch(e => {
-        console.error('批量创建失败:', e)
-        alert('部分数据保存失败，请点击"刷新数据"重试')
-      })
-  }
+      }
+    })
+    .catch(e => {
+      console.error('批量保存失败:', e)
+    })
 }
 
 function scheduleBatchSave(rowData, rowIndex, prop, newVal) {
   pendingChanges.push({ rowData, rowIndex, prop, newVal })
   clearTimeout(batchTimer)
-  batchTimer = setTimeout(flushBatchSave, 500)
+  batchTimer = setTimeout(flushBatchSave, 800)
 }
 
 const loadSheets = async () => {
