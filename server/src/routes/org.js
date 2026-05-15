@@ -165,7 +165,7 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
     const sheet = getOne('SELECT * FROM org_sheets WHERE id = ? AND org_id = ?', [req.params.sheetId, req.orgUser.org_id])
     if (!sheet) return res.status(404).json({ message: '表格不存在' })
 
-    const id = insert('org_sheet_students', {
+    const data = {
       sheet_id: req.params.sheetId,
       student_id: req.body.student_id || null,
       name: req.body.name || '',
@@ -177,11 +177,15 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
       exam_date: req.body.exam_date || null,
       condition: req.body.condition || '',
       major: req.body.major || ''
-    })
+    }
+    console.log('addStudent 插入数据:', JSON.stringify(data))
+    const id = insert('org_sheet_students', data)
+    console.log('addStudent 插入成功, id:', id)
 
     res.status(201).json({ data: { id } })
   } catch (error) {
-    res.status(500).json({ message: '添加失败' })
+    console.error('addStudent 错误:', error.message)
+    res.status(500).json({ message: '添加失败: ' + error.message })
   }
 })
 

@@ -450,23 +450,32 @@ export async function initDatabase() {
     const cols = query("PRAGMA table_info(org_sheet_students)").map(c => c.name)
     if (!cols.includes('extra_data')) {
       db.run('ALTER TABLE org_sheet_students ADD COLUMN extra_data TEXT')
+      console.log('org_sheet_students: 添加 extra_data 列')
     }
-    // 检查是否有旧的 UNIQUE 约束，需要重建表
+    // 检查是否有旧的 NOT NULL 或 UNIQUE 约束，需要重建表
     const tableSql = getOne("SELECT sql FROM sqlite_master WHERE name='org_sheet_students'")
-    if (tableSql && tableSql.sql && tableSql.sql.includes('UNIQUE(sheet_id, student_id)')) {
-      db.run('ALTER TABLE org_sheet_students RENAME TO org_sheet_students_old')
-      db.run(`CREATE TABLE org_sheet_students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sheet_id INTEGER NOT NULL,
-        student_id INTEGER,
-        name TEXT, phone TEXT, id_card TEXT, job_type TEXT, level TEXT,
-        reg_date DATE, exam_date DATE, condition TEXT, major TEXT, extra_data TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
-      )`)
-      db.run('INSERT INTO org_sheet_students SELECT id, sheet_id, student_id, name, phone, id_card, job_type, level, reg_date, exam_date, condition, major, extra_data, created_at FROM org_sheet_students_old')
-      db.run('DROP TABLE org_sheet_students_old')
-      console.log('org_sheet_students 表已重建，移除 UNIQUE 约束')
+    if (tableSql && tableSql.sql) {
+      const needRebuild = tableSql.sql.includes('UNIQUE(sheet_id, student_id)') ||
+        tableSql.sql.includes('student_id INTEGER NOT NULL')
+      if (needRebuild) {
+        db.run('ALTER TABLE org_sheet_students RENAME TO org_sheet_students_old')
+        db.run(`CREATE TABLE org_sheet_students (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          sheet_id INTEGER NOT NULL,
+          student_id INTEGER,
+          name TEXT, phone TEXT, id_card TEXT, job_type TEXT, level TEXT,
+          reg_date DATE, exam_date DATE, condition TEXT, major TEXT, extra_data TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
+        )`)
+        // 动态获取旧表列，只 INSERT 共同的列
+        const oldCols = query("PRAGMA table_info(org_sheet_students_old)").map(c => c.name)
+        const newCols = query("PRAGMA table_info(org_sheet_students)").map(c => c.name)
+        const commonCols = oldCols.filter(c => newCols.includes(c))
+        db.run(`INSERT INTO org_sheet_students (${commonCols.join(', ')}) SELECT ${commonCols.join(', ')} FROM org_sheet_students_old`)
+        db.run('DROP TABLE org_sheet_students_old')
+        console.log('org_sheet_students 表已重建，移除 NOT NULL/UNIQUE 约束')
+      }
     }
   } catch (e) {
     console.log('org_sheet_students 迁移:', e.message)
