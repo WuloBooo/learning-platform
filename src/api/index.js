@@ -241,6 +241,14 @@ export const orgAPI = {
       body: JSON.stringify({ count })
     }).then(r => r.json())
   },
+  importExcel: (sheetId, fileData) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/import`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ fileData })
+    }).then(r => r.json())
+  },
   setCellColor: (sheetId, data) => {
     const token = localStorage.getItem('org_token')
     return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/colors`, {

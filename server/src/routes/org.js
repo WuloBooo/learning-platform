@@ -1,6 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import * as xlsx from 'xlsx'
 import { query, getOne, insert, update, remove, getDB, saveDatabase } from '../config/database.js'
 
 const router = express.Router()
@@ -319,6 +320,75 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
     res.json(result)
   } catch (error) {
     res.status(500).json({ message: '批量保存失败: ' + error.message })
+  }
+})
+
+// ===== 机构端：Excel导入 =====
+
+router.post('/sheets/:sheetId/import', orgAuth, (req, res) => {
+  try {
+    const sheet = getOne('SELECT * FROM org_sheets WHERE id = ? AND org_id = ?', [req.params.sheetId, req.orgUser.org_id])
+    if (!sheet) return res.status(404).json({ message: '表格不存在' })
+
+    const { fileData } = req.body
+    if (!fileData) return res.status(400).json({ message: '请上传文件' })
+
+    const buffer = Buffer.from(fileData, 'base64')
+    const workbook = xlsx.read(buffer, { type: 'buffer' })
+    const ws = workbook.Sheets[workbook.SheetNames[0]]
+    const rows = xlsx.utils.sheet_to_json(ws)
+
+    if (rows.length === 0) return res.status(400).json({ message: '文件中没有数据' })
+
+    // 列名映射：中文表头 → 数据库字段
+    const colMap = {
+      '姓名': 'name', '电话': 'phone', '手机': 'phone', '手机号': 'phone',
+      '身份证号': 'id_card', '身份证': 'id_card',
+      '工种': 'job_type', '级别': 'level',
+      '报名日期': 'reg_date', '考试日期': 'exam_date',
+      '报考条件': 'condition', '专业': 'major', '专业/岗位': 'major', '岗位': 'major',
+      '是否提交资料': 'submitted', '提交资料': 'submitted',
+      '审核结果': 'audit_result',
+      '是否实名': 'verified', '实名': 'verified',
+      '支付情况': 'payment_status', '支付': 'payment_status',
+      '审核不通过理由': 'reject_reason',
+      '是否开通学习账号': 'account_opened', '开通学习账号': 'account_opened',
+      '备注': 'remark',
+      '是否补考': 'is_retest', '补考': 'is_retest',
+      '线下集训': 'offline_training'
+    }
+
+    const allowed = new Set(Object.values(colMap))
+    const db = getDB()
+    let success = 0, failed = 0
+
+    for (const row of rows) {
+      try {
+        const data = { sheet_id: req.params.sheetId }
+        for (const [header, value] of Object.entries(row)) {
+          const key = colMap[header]
+          if (key && allowed.has(key)) {
+            data[key] = value != null ? String(value) : ''
+          }
+        }
+
+        const keys = Object.keys(data)
+        const vals = Object.values(data)
+        const placeholders = keys.map(() => '?').join(', ')
+        const stmt = db.prepare(`INSERT INTO org_sheet_students (${keys.join(', ')}) VALUES (${placeholders})`)
+        stmt.bind(vals)
+        stmt.run()
+        stmt.free()
+        success++
+      } catch (e) {
+        failed++
+      }
+    }
+
+    saveDatabase()
+    res.json({ message: `成功导入 ${success} 条${failed > 0 ? '，失败 ' + failed + ' 条' : ''}`, data: { success, failed } })
+  } catch (error) {
+    res.status(500).json({ message: '导入失败: ' + error.message })
   }
 })
 

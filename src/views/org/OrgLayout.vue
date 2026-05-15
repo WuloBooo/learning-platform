@@ -44,8 +44,10 @@
 
         <div class="table-toolbar">
           <button class="tool-btn danger" @click="deleteSelectedRows" v-if="selectedRows.length > 0">删除选中行 ({{ selectedRows.length }})</button>
+          <button class="tool-btn import" @click="triggerImport">导入 Excel</button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
           <button class="tool-btn outline" @click="loadSheetData">刷新数据</button>
+          <input ref="fileInput" type="file" accept=".xlsx,.xls,.csv" style="display:none" @change="handleImport" />
         </div>
 
         <div id="hot-container" class="table-scroll"></div>
@@ -70,6 +72,7 @@ const currentSheet = ref(null)
 const tableData = ref([])
 const selectedRows = ref([])
 const saving = ref(false)
+const fileInput = ref(null)
 let hot = null
 let savePromise = Promise.resolve()
 
@@ -315,6 +318,38 @@ const exportExcel = () => {
   XLSX.writeFile(wb, `${currentSheet.value.sheet_name || '数据表'}.xlsx`)
 }
 
+const triggerImport = () => {
+  fileInput.value?.click()
+}
+
+const handleImport = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file || !currentSheet.value) return
+
+  saving.value = true
+  try {
+    const reader = new FileReader()
+    const base64 = await new Promise((resolve) => {
+      reader.onload = () => {
+        const result = reader.result.split(',')[1]
+        resolve(result)
+      }
+      reader.readAsDataURL(file)
+    })
+
+    const res = await orgAPI.importExcel(currentSheet.value.id, base64)
+    if (res.message) {
+      alert(res.message)
+    }
+    await loadSheetData()
+  } catch (err) {
+    alert('导入失败: ' + (err.message || '未知错误'))
+  }
+  saving.value = false
+  // 清空 input 以便重复选择同一文件
+  if (fileInput.value) fileInput.value.value = ''
+}
+
 const handleLogout = () => {
   localStorage.removeItem('org_token')
   localStorage.removeItem('org_user')
@@ -443,6 +478,7 @@ onBeforeUnmount(() => {
 .tool-btn.secondary { background: #10b981; }
 .tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
 .tool-btn.danger { background: #e74c3c; }
+.tool-btn.import { background: #f59e0b; }
 
 .table-scroll {
   background: white;
