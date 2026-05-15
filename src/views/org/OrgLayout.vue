@@ -145,7 +145,11 @@ const loadSheetData = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.getSheetStudents(currentSheet.value.id)
-    tableData.value = (res.data?.students || []).map(r => ({ ...r }))
+    const students = (res.data?.students || []).map(r => ({ ...r }))
+    // 有内容的行排前面，空行排后面
+    const hasContent = students.filter(r => colKeys.some(k => r[k] && String(r[k]).trim()))
+    const empty = students.filter(r => !colKeys.some(k => r[k] && String(r[k]).trim()))
+    tableData.value = [...hasContent, ...empty]
     if (hot) {
       hot.loadData(tableData.value)
     }
