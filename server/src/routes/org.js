@@ -255,6 +255,8 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
     const { rows } = req.body
     if (!rows || !Array.isArray(rows)) return res.status(400).json({ message: '无数据' })
 
+    console.log(`[batch-save] 收到 ${rows.length} 条，第1条:`, JSON.stringify(rows[0]))
+
     const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
 
     // 按id合并同行的多个字段更新
@@ -313,6 +315,7 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
     // 最后只写一次磁盘
     saveDatabase()
 
+    console.log(`[batch-save] 完成: success=${result.success}, failed=${result.failed}`)
     res.json(result)
   } catch (error) {
     res.status(500).json({ message: '批量保存失败: ' + error.message })

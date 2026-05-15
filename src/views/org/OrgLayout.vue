@@ -213,14 +213,21 @@ const initHot = () => {
       for (const [row, prop, oldVal, newVal] of changes) {
         if (oldVal === newVal) continue
         const rowData = hot.getSourceDataAtRow(row)
-        if (!rowData || !rowData.id) continue
+        if (!rowData || !rowData.id) {
+          console.warn(`[afterChange] 跳过无id行: row=${row}, prop=${prop}, id=${rowData?.id}`)
+          continue
+        }
         updates.push({ id: rowData.id, [prop]: newVal || '' })
       }
 
       if (updates.length > 0) {
+        console.log(`[afterChange] source=${source}, 发送 ${updates.length} 条更新, source=${source}`)
         saving.value = true
         savePromise = orgAPI.batchSave(currentSheet.value.id, updates)
-          .then(() => { saving.value = false })
+          .then(res => {
+            saving.value = false
+            console.log(`[batchSave] 响应:`, res)
+          })
           .catch(e => { console.error('保存失败:', e); saving.value = false })
       }
     },
