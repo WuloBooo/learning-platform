@@ -113,12 +113,30 @@ const createHot = () => {
     contextMenu: ['row_above', 'row_below', 'remove_row', '---------', 'copy', 'cut'],
     manualColumnResize: true,
     licenseKey: 'non-commercial-and-evaluation',
+    afterBeginEditing(row, col) {
+      console.log('开始编辑:', row, col)
+    },
     afterChange(changes, source) {
-      if (source === 'loadData' || !changes) return
+      console.log('afterChange触发, source:', source, 'changes:', changes)
+      if (source === 'loadData') return
+      if (!changes) return
       changes.forEach(([row, prop, oldVal, newVal]) => {
         const rowData = this.getSourceDataAtRow(row)
-        if (!rowData || !rowData.id) return
-        saveCell(rowData.id, prop, newVal)
+        console.log('行数据:', JSON.stringify(rowData), 'prop:', prop, 'newVal:', newVal)
+        if (!rowData) return
+        // 新行没有id，先创建再保存
+        if (!rowData.id && newVal) {
+          orgAPI.addStudent(currentSheet.value.id, {}).then(res => {
+            if (res.data) {
+              rowData.id = res.data.id
+              saveCell(rowData.id, prop, newVal)
+            }
+          })
+          return
+        }
+        if (rowData.id) {
+          saveCell(rowData.id, prop, newVal)
+        }
       })
     },
     afterRemoveRow(index, amount, physicalRows) {
