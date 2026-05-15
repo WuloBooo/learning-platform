@@ -270,5 +270,6 @@ export const workflowAPI = {
   deleteSheet: (id) => api.delete(`/workflow/admin/sheets/${id}`),
   getSheetStudents: (sheetId) => api.get(`/workflow/admin/sheets/${sheetId}/students`),
   addSheetStudent: (sheetId, data) => api.post(`/workflow/admin/sheets/${sheetId}/students`, data),
+  updateSheetStudent: (sheetId, rowId, data) => api.put(`/workflow/admin/sheets/${sheetId}/students/${rowId}`, data),
   removeSheetStudent: (sheetId, rowId) => api.delete(`/workflow/admin/sheets/${sheetId}/students/${rowId}`)
 }

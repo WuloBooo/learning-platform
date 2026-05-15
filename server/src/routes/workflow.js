@@ -595,11 +595,35 @@ router.post('/admin/sheets/:sheetId/students', (req, res) => {
       reg_date: req.body.reg_date || null,
       exam_date: req.body.exam_date || null,
       condition: req.body.condition || '',
-      major: req.body.major || ''
+      major: req.body.major || '',
+      submitted: req.body.submitted || '',
+      audit_result: req.body.audit_result || '',
+      verified: req.body.verified || '',
+      payment_status: req.body.payment_status || '',
+      reject_reason: req.body.reject_reason || '',
+      account_opened: req.body.account_opened || '',
+      remark: req.body.remark || '',
+      is_retest: req.body.is_retest || '',
+      offline_training: req.body.offline_training || ''
     })
     res.status(201).json({ data: { id } })
   } catch (error) {
     res.status(500).json({ message: '添加失败' })
+  }
+})
+
+// 管理员：更新表格中的学员行
+router.put('/admin/sheets/:sheetId/students/:rowId', (req, res) => {
+  try {
+    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
+    const data = {}
+    for (const key of allowed) {
+      if (req.body[key] !== undefined) data[key] = req.body[key]
+    }
+    update('org_sheet_students', data, 'id = ? AND sheet_id = ?', [req.params.rowId, req.params.sheetId])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
   }
 })
 

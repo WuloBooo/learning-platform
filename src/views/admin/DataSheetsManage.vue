@@ -41,7 +41,7 @@
             </td>
             <td>{{ formatDate(sheet.created_at) }}</td>
             <td class="actions">
-              <button class="action-btn edit" @click="viewSheet(sheet)">查看数据</button>
+              <button class="action-btn edit" @click="openSheetEditor(sheet)">编辑数据</button>
               <button class="action-btn" @click="openEdit(sheet)">编辑</button>
               <button class="action-btn delete" @click="handleDelete(sheet)">删除</button>
             </td>
@@ -53,47 +53,21 @@
       </table>
     </div>
 
-    <!-- 查看表格数据弹窗 -->
+    <!-- Handsontable 编辑弹窗 -->
     <Teleport to="body">
-      <div class="modal-overlay large" v-if="viewingSheet" @click.self="viewingSheet = null">
+      <div class="modal-overlay large" v-if="editorSheet" @click.self="closeSheetEditor">
         <div class="modal-card large-modal">
           <div class="modal-header">
-            <h3>{{ viewingSheet.sheet_name }} — {{ viewingSheet.org_name }}</h3>
-            <button class="close-btn" @click="viewingSheet = null">✕</button>
+            <h3>{{ editorSheet.sheet_name }} — {{ editorSheet.org_name }}</h3>
+            <button class="close-btn" @click="closeSheetEditor">✕</button>
           </div>
-          <div class="table-scroll">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>姓名</th>
-                  <th>电话</th>
-                  <th>身份证号</th>
-                  <th>工种</th>
-                  <th>级别</th>
-                  <th>报名日期</th>
-                  <th>考试日期</th>
-                  <th>报考条件</th>
-                  <th>专业/岗位</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in sheetStudents" :key="row.id">
-                  <td>{{ row.name }}</td>
-                  <td>{{ row.phone }}</td>
-                  <td>{{ row.id_card }}</td>
-                  <td>{{ row.job_type }}</td>
-                  <td>{{ row.level }}</td>
-                  <td>{{ row.reg_date || '-' }}</td>
-                  <td>{{ row.exam_date || '-' }}</td>
-                  <td>{{ row.condition }}</td>
-                  <td>{{ row.major }}</td>
-                </tr>
-                <tr v-if="sheetStudents.length === 0">
-                  <td colspan="9" class="empty-row">暂无学员数据</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="editor-toolbar">
+            <button class="tool-btn" @click="adminAddRow">+ 添加空行</button>
+            <button class="tool-btn danger" @click="adminDeleteRows" v-if="adminSelectedRows.length > 0">删除选中行</button>
+            <button class="tool-btn secondary" @click="adminExportExcel">导出 Excel</button>
+            <button class="tool-btn outline" @click="loadEditorData">刷新数据</button>
           </div>
+          <div :id="'admin-hot-' + editorSheet.id" class="admin-hot-container"></div>
         </div>
       </div>
     </Teleport>
@@ -172,8 +146,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import { workflowAPI, api } from '../../api'
+import Handsontable from 'handsontable'
+import 'handsontable/styles/handsontable.min.css'
+import 'handsontable/styles/ht-theme-main.min.css'
+import * as XLSX from 'xlsx'
 
 const sheets = ref([])
 const organizations = ref([])
@@ -182,11 +160,28 @@ const filterOrgId = ref('')
 const showModal = ref(false)
 const showBatchModal = ref(false)
 const editing = ref(null)
-const viewingSheet = ref(null)
-const sheetStudents = ref([])
+
+// Handsontable editor state
+const editorSheet = ref(null)
+const adminTableData = ref([])
+const adminSelectedRows = ref([])
+let adminHot = null
 
 const form = ref({ org_id: '', exam_plan_id: '', sheet_name: '', description: '', status: 'active' })
 const batchForm = ref({ exam_plan_id: '', sheet_name: '', description: '' })
+
+const colHeaders = [
+  '姓名', '电话', '身份证号', '工种', '级别', '报名日期', '考试日期',
+  '是否提交资料', '审核结果', '是否实名', '支付情况', '审核不通过理由',
+  '是否开通学习账号', '报考条件', '专业/岗位', '备注', '是否补考', '线下集训'
+]
+const colKeys = [
+  'name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date',
+  'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason',
+  'account_opened', 'condition', 'major', 'remark', 'is_retest', 'offline_training'
+]
+
+const hotColumns = colKeys.map(key => ({ data: key, type: 'text' }))
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('zh-CN') : '-'
 
@@ -218,15 +213,154 @@ const loadExamPlans = async () => {
   }
 }
 
-const viewSheet = async (sheet) => {
-  viewingSheet.value = sheet
+// ===== Handsontable editor =====
+
+const openSheetEditor = async (sheet) => {
+  editorSheet.value = sheet
+  await loadEditorData()
+  await nextTick()
+  initAdminHot()
+}
+
+const loadEditorData = async () => {
+  if (!editorSheet.value) return
   try {
-    const res = await workflowAPI.getSheetStudents(sheet.id)
-    sheetStudents.value = res.data?.students || []
+    const res = await workflowAPI.getSheetStudents(editorSheet.value.id)
+    adminTableData.value = (res.data?.students || []).map(r => ({ ...r }))
+    if (adminHot) {
+      adminHot.loadData(adminTableData.value)
+    }
   } catch (e) {
     console.error('加载学员数据失败', e)
   }
 }
+
+const closeSheetEditor = () => {
+  if (adminHot) {
+    adminHot.destroy()
+    adminHot = null
+  }
+  editorSheet.value = null
+  adminTableData.value = []
+  adminSelectedRows.value = []
+}
+
+const initAdminHot = () => {
+  const container = document.getElementById('admin-hot-' + editorSheet.value.id)
+  if (!container) return
+  if (adminHot) {
+    adminHot.destroy()
+    adminHot = null
+  }
+
+  adminHot = new Handsontable(container, {
+    data: adminTableData.value,
+    colHeaders,
+    columns: hotColumns,
+    rowHeaders: true,
+    height: Math.max(400, window.innerHeight - 280),
+    stretchH: 'all',
+    language: 'zh-CN',
+    licenseKey: 'non-commercial-and-evaluation',
+    contextMenu: {
+      items: {
+        'row_above': { name: '在上方插入行' },
+        'row_below': { name: '在下方插入行' },
+        'sep1': '---------',
+        'remove_row': { name: '删除该行' },
+        'sep2': '---------',
+        'copy': { name: '复制' },
+        'cut': { name: '剪切' }
+      }
+    },
+    manualColumnResize: true,
+    autoWrapRow: true,
+    autoWrapCol: true,
+    afterChange(changes, source) {
+      if (source === 'loadData') return
+      if (!changes) return
+      for (const [row, prop, oldVal, newVal] of changes) {
+        const rowData = adminHot.getSourceDataAtRow(row)
+        if (!rowData || !rowData.id) continue
+        if (oldVal === newVal) continue
+        workflowAPI.updateSheetStudent(editorSheet.value.id, rowData.id, { [prop]: newVal || '' })
+          .catch(e => console.error('保存失败:', e))
+      }
+    },
+    afterRemoveRow(index, amount, physicalRows) {
+      for (const r of physicalRows) {
+        const rowData = adminHot.getSourceDataAtRow(r)
+        if (rowData && rowData.id) {
+          workflowAPI.removeSheetStudent(editorSheet.value.id, rowData.id)
+            .catch(e => console.error('删除失败:', e))
+        }
+      }
+    },
+    afterSelectionEnd() {
+      const selected = adminHot.getSelected()
+      if (!selected) { adminSelectedRows.value = []; return }
+      const rows = new Set()
+      for (const [startRow, , endRow] of selected) {
+        const from = Math.min(startRow, endRow)
+        const to = Math.max(startRow, endRow)
+        for (let i = from; i <= to; i++) rows.add(i)
+      }
+      adminSelectedRows.value = [...rows]
+    }
+  })
+}
+
+const adminAddRow = async () => {
+  if (!editorSheet.value) return
+  try {
+    const res = await workflowAPI.addSheetStudent(editorSheet.value.id, {})
+    if (res.data?.id) {
+      const newRow = {
+        id: res.data.id,
+        sheet_id: editorSheet.value.id,
+        name: '', phone: '', id_card: '', job_type: '', level: '',
+        reg_date: '', exam_date: '', submitted: '', audit_result: '',
+        verified: '', payment_status: '', reject_reason: '',
+        account_opened: '', condition: '', major: '', remark: '',
+        is_retest: '', offline_training: ''
+      }
+      const rowIndex = adminHot.countRows()
+      adminHot.alter('insert_row_below', rowIndex - 1)
+      Object.assign(adminHot.getSourceDataAtRow(rowIndex), newRow)
+      adminHot.render()
+      adminHot.selectCell(rowIndex, 0)
+    }
+  } catch (e) {
+    alert('添加失败: ' + e.message)
+  }
+}
+
+const adminDeleteRows = async () => {
+  if (adminSelectedRows.value.length === 0) return
+  if (!confirm(`确定删除选中的 ${adminSelectedRows.value.length} 行？`)) return
+  for (const idx of adminSelectedRows.value.sort((a, b) => b - a)) {
+    const rowData = adminHot.getSourceDataAtRow(idx)
+    if (rowData && rowData.id) {
+      await workflowAPI.removeSheetStudent(editorSheet.value.id, rowData.id).catch(e => console.error(e))
+    }
+  }
+  adminHot.alter('remove_row', adminSelectedRows.value.sort((a, b) => b - a))
+  adminSelectedRows.value = []
+}
+
+const adminExportExcel = () => {
+  const data = adminTableData.value.map(r => {
+    const row = {}
+    colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
+    return row
+  })
+  const ws = XLSX.utils.json_to_sheet(data)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, '学员数据')
+  XLSX.writeFile(wb, `${editorSheet.value.sheet_name || '数据表'}.xlsx`)
+}
+
+// ===== Sheet CRUD =====
 
 const openCreate = () => {
   editing.value = null
@@ -293,6 +427,13 @@ onMounted(() => {
   loadSheets()
   loadOrganizations()
   loadExamPlans()
+})
+
+onBeforeUnmount(() => {
+  if (adminHot) {
+    adminHot.destroy()
+    adminHot = null
+  }
 })
 </script>
 
@@ -369,6 +510,29 @@ onMounted(() => {
 .action-btn.delete { color: #e74c3c; border-color: #e74c3c; }
 
 .empty-row { text-align: center; padding: 40px !important; color: #999; }
+
+.editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+
+.tool-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  background: #667eea;
+  color: white;
+}
+.tool-btn:hover { opacity: 0.9; }
+.tool-btn.secondary { background: #10b981; }
+.tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
+.tool-btn.danger { background: #e74c3c; }
+
+.admin-hot-container {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  overflow: hidden;
+}
 </style>
 
 <style>
@@ -393,9 +557,9 @@ onMounted(() => {
 }
 
 .modal-overlay .large-modal {
-  width: 90vw;
-  max-width: 1100px;
-  max-height: 80vh;
+  width: 95vw;
+  max-width: 1400px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
 }
@@ -416,8 +580,6 @@ onMounted(() => {
   cursor: pointer;
   color: #999;
 }
-
-.modal-overlay .table-scroll { overflow: auto; }
 
 .modal-overlay .modal-card h3 { margin: 0 0 20px; font-size: 18px; }
 .modal-overlay .hint { font-size: 13px; color: #999; margin: 0 0 16px; }
