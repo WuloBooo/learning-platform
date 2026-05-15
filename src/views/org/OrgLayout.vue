@@ -95,6 +95,29 @@ const hotColumns = colKeys.map(key => ({
   className: editableKeys.has(key) ? '' : 'htReadOnly'
 }))
 
+// 确保粘贴/新增的行在数据库中有 id
+const rowCreating = new Map()
+async function ensureRowCreated(row, rowData) {
+  if (rowData.id) return
+  if (rowCreating.has(row)) return rowCreating.get(row)
+
+  const promise = (async () => {
+    try {
+      const res = await orgAPI.addStudent(currentSheet.value.id, {})
+      if (res.data?.id) {
+        rowData.id = res.data.id
+        rowData.sheet_id = currentSheet.value.id
+      }
+    } catch (e) {
+      console.error('创建行失败:', e)
+    } finally {
+      rowCreating.delete(row)
+    }
+  })()
+  rowCreating.set(row, promise)
+  return promise
+}
+
 const loadSheets = async () => {
   try {
     const res = await orgAPI.getSheets()
@@ -170,10 +193,18 @@ const initHot = () => {
       if (!changes) return
       for (const [row, prop, oldVal, newVal] of changes) {
         const rowData = hot.getSourceDataAtRow(row)
-        if (!rowData || !rowData.id) continue
+        if (!rowData) continue
         if (oldVal === newVal) continue
-        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
-          .catch(e => console.error('保存失败:', e))
+        if (!rowData.id) {
+          // 新粘贴的行还没有 id，先创建再更新
+          ensureRowCreated(row, rowData).then(() => {
+            orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
+              .catch(e => console.error('保存失败:', e))
+          })
+        } else {
+          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
+            .catch(e => console.error('保存失败:', e))
+        }
       }
     },
     afterRemoveRow(index, amount, physicalRows) {
