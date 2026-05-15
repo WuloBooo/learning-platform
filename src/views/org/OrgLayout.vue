@@ -71,10 +71,29 @@ const tableData = ref([])
 const selectedRows = ref([])
 let hot = null
 
-const colHeaders = ['姓名', '电话', '身份证号', '工种', '级别', '报名日期', '考试日期', '报考条件', '专业/岗位']
-const colKeys = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major']
+const colHeaders = [
+  '姓名', '电话', '身份证号', '工种', '级别', '报名日期', '考试日期',
+  '是否提交资料', '审核结果', '是否实名', '支付情况', '审核不通过理由',
+  '是否开通学习账号', '报考条件', '专业/岗位', '备注', '是否补考', '线下集训'
+]
+const colKeys = [
+  'name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date',
+  'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason',
+  'account_opened', 'condition', 'major', 'remark', 'is_retest', 'offline_training'
+]
 
-const hotColumns = colKeys.map(key => ({ data: key, type: 'text' }))
+// 机构可编辑列（前9列：name~exam_date, condition, major）
+const editableKeys = new Set([
+  'name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date',
+  'condition', 'major'
+])
+
+const hotColumns = colKeys.map(key => ({
+  data: key,
+  type: 'text',
+  readOnly: !editableKeys.has(key),
+  className: editableKeys.has(key) ? '' : 'htReadOnly'
+}))
 
 const loadSheets = async () => {
   try {
@@ -189,7 +208,10 @@ const addRow = async () => {
         id: res.data.id,
         sheet_id: currentSheet.value.id,
         name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: '', exam_date: '', condition: '', major: ''
+        reg_date: '', exam_date: '', submitted: '', audit_result: '',
+        verified: '', payment_status: '', reject_reason: '',
+        account_opened: '', condition: '', major: '', remark: '',
+        is_retest: '', offline_training: ''
       }
       const rowIndex = hot.countRows()
       hot.alter('insert_row_below', rowIndex - 1)
@@ -359,5 +381,10 @@ onBeforeUnmount(() => {
   border-radius: 12px;
   border: 1px solid #eee;
   overflow: hidden;
+}
+
+:deep(.htReadOnly) {
+  background: #f5f5f5 !important;
+  color: #888;
 }
 </style>

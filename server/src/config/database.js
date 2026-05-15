@@ -494,6 +494,22 @@ export async function initDatabase() {
     console.error('org_sheet_students 迁移失败:', e.message)
   }
 
+  // org_sheet_students 新增列（18列扩展）
+  const newColumns = [
+    'submitted TEXT DEFAULT \'\'',
+    'audit_result TEXT DEFAULT \'\'',
+    'verified TEXT DEFAULT \'\'',
+    'payment_status TEXT DEFAULT \'\'',
+    'reject_reason TEXT DEFAULT \'\'',
+    'account_opened TEXT DEFAULT \'\'',
+    'remark TEXT DEFAULT \'\'',
+    'is_retest TEXT DEFAULT \'\'',
+    'offline_training TEXT DEFAULT \'\''
+  ]
+  for (const col of newColumns) {
+    try { db.run(`ALTER TABLE org_sheet_students ADD COLUMN ${col}`) } catch (e) {}
+  }
+
   // 学员状态跟踪表
   db.run(`
     CREATE TABLE IF NOT EXISTS student_status (

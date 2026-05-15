@@ -145,7 +145,7 @@ router.put('/sheets/:sheetId/students/:rowId', orgAuth, (req, res) => {
     const sheet = getOne('SELECT * FROM org_sheets WHERE id = ? AND org_id = ?', [req.params.sheetId, req.orgUser.org_id])
     if (!sheet) return res.status(404).json({ message: '表格不存在' })
 
-    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data']
+    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
     const data = {}
     for (const key of allowed) {
       if (req.body[key] !== undefined) data[key] = req.body[key]
@@ -175,7 +175,16 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
       reg_date: req.body.reg_date || null,
       exam_date: req.body.exam_date || null,
       condition: req.body.condition || '',
-      major: req.body.major || ''
+      major: req.body.major || '',
+      submitted: req.body.submitted || '',
+      audit_result: req.body.audit_result || '',
+      verified: req.body.verified || '',
+      payment_status: req.body.payment_status || '',
+      reject_reason: req.body.reject_reason || '',
+      account_opened: req.body.account_opened || '',
+      remark: req.body.remark || '',
+      is_retest: req.body.is_retest || '',
+      offline_training: req.body.offline_training || ''
     }
     // 只在有值时传 student_id，避免 NOT NULL 约束冲突
     if (req.body.student_id) data.student_id = req.body.student_id
@@ -220,7 +229,7 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
         if (row.id) {
           // 更新已有行
           const data = {}
-          const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data']
+          const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
           for (const key of allowed) {
             if (row[key] !== undefined) data[key] = row[key]
           }
@@ -238,7 +247,16 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
             reg_date: row.reg_date || null,
             exam_date: row.exam_date || null,
             condition: row.condition || '',
-            major: row.major || ''
+            major: row.major || '',
+            submitted: row.submitted || '',
+            audit_result: row.audit_result || '',
+            verified: row.verified || '',
+            payment_status: row.payment_status || '',
+            reject_reason: row.reject_reason || '',
+            account_opened: row.account_opened || '',
+            remark: row.remark || '',
+            is_retest: row.is_retest || '',
+            offline_training: row.offline_training || ''
           })
         }
         result.success++
