@@ -1,7 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { query, getOne, insert, update, remove } from '../config/database.js'
+import { query, getOne, insert, update, remove, getDB, saveDatabase } from '../config/database.js'
 
 const router = express.Router()
 const JWT_SECRET = process.env.JWT_SECRET || 'learning_platform_secret'
@@ -207,17 +207,24 @@ router.post('/sheets/:sheetId/batch-create-empty', orgAuth, (req, res) => {
     if (!sheet) return res.status(404).json({ message: '表格不存在' })
 
     const count = Math.min(parseInt(req.body.count) || 50, 1000)
+    const db = getDB()
     const ids = []
+
+    const stmt = db.prepare(
+      `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, condition, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '')`
+    )
+
     for (let i = 0; i < count; i++) {
-      const id = insert('org_sheet_students', {
-        sheet_id: req.params.sheetId,
-        name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: '', exam_date: '', condition: '', major: '',
-        submitted: '', audit_result: '', verified: '', payment_status: '',
-        reject_reason: '', account_opened: '', remark: '', is_retest: '', offline_training: ''
-      })
-      ids.push(id)
+      stmt.bind([req.params.sheetId])
+      stmt.run()
+      stmt.free()
+
+      const idStmt = db.prepare("SELECT last_insert_rowid() as id")
+      if (idStmt.step()) ids.push(idStmt.getAsObject().id)
+      idStmt.free()
     }
+
+    saveDatabase()
     res.json({ data: { ids, count: ids.length } })
   } catch (error) {
     res.status(500).json({ message: '批量创建失败' })
@@ -248,51 +255,67 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, (req, res) => {
     const { rows } = req.body
     if (!rows || !Array.isArray(rows)) return res.status(400).json({ message: '无数据' })
 
-    const result = { success: 0, failed: 0 }
+    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
+
+    // 按id合并同行的多个字段更新
+    const merged = new Map()
     for (const row of rows) {
-      try {
-        if (row.id) {
-          // 更新已有行
-          const data = {}
-          const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'extra_data', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
-          for (const key of allowed) {
-            if (row[key] !== undefined) data[key] = row[key]
-          }
-          update('org_sheet_students', data, 'id = ? AND sheet_id = ?', [row.id, req.params.sheetId])
-        } else {
-          // 新增行
-          insert('org_sheet_students', {
-            sheet_id: req.params.sheetId,
-            student_id: row.student_id || null,
-            name: row.name || '',
-            phone: row.phone || '',
-            id_card: row.id_card || '',
-            job_type: row.job_type || '',
-            level: row.level || '',
-            reg_date: row.reg_date || null,
-            exam_date: row.exam_date || null,
-            condition: row.condition || '',
-            major: row.major || '',
-            submitted: row.submitted || '',
-            audit_result: row.audit_result || '',
-            verified: row.verified || '',
-            payment_status: row.payment_status || '',
-            reject_reason: row.reject_reason || '',
-            account_opened: row.account_opened || '',
-            remark: row.remark || '',
-            is_retest: row.is_retest || '',
-            offline_training: row.offline_training || ''
-          })
+      if (row.id) {
+        if (!merged.has(row.id)) merged.set(row.id, { id: row.id })
+        const target = merged.get(row.id)
+        for (const key of allowed) {
+          if (row[key] !== undefined) target[key] = row[key]
         }
+      }
+    }
+
+    const result = { success: 0, failed: 0 }
+
+    // 批量更新：直接用 db 对象操作，最后只写一次磁盘
+    const db = getDB()
+
+    for (const row of merged.values()) {
+      try {
+        const { id, ...data } = row
+        const setClause = Object.keys(data).map(key => `${key} = ?`).join(', ')
+        const values = [...Object.values(data), id, req.params.sheetId]
+        const stmt = db.prepare(`UPDATE org_sheet_students SET ${setClause} WHERE id = ? AND sheet_id = ?`)
+        stmt.bind(values)
+        stmt.run()
+        stmt.free()
         result.success++
       } catch (e) {
         result.failed++
       }
     }
 
+    // 处理新增行（没有id的）
+    for (const row of rows) {
+      if (!row.id) {
+        try {
+          const keys = ['sheet_id']
+          const vals = [req.params.sheetId]
+          for (const key of allowed) {
+            if (row[key] !== undefined) { keys.push(key); vals.push(row[key] || '') }
+          }
+          const placeholders = keys.map(() => '?').join(', ')
+          const stmt = db.prepare(`INSERT INTO org_sheet_students (${keys.join(', ')}) VALUES (${placeholders})`)
+          stmt.bind(vals)
+          stmt.run()
+          stmt.free()
+          result.success++
+        } catch (e) {
+          result.failed++
+        }
+      }
+    }
+
+    // 最后只写一次磁盘
+    saveDatabase()
+
     res.json(result)
   } catch (error) {
-    res.status(500).json({ message: '批量保存失败' })
+    res.status(500).json({ message: '批量保存失败: ' + error.message })
   }
 })
 

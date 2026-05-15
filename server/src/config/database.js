@@ -742,3 +742,7 @@ export function remove(table, where, whereParams = []) {
 }
 
 export default { initDatabase, query, getOne, insert, update, remove, saveDatabase }
+
+export function getDB() {
+  return db
+}

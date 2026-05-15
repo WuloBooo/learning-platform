@@ -1,6 +1,6 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
-import { query, getOne, insert, update, remove } from '../config/database.js'
+import { query, getOne, insert, update, remove, getDB, saveDatabase } from '../config/database.js'
 import * as xlsx from 'xlsx'
 
 const router = express.Router()
@@ -631,17 +631,24 @@ router.put('/admin/sheets/:sheetId/students/:rowId', (req, res) => {
 router.post('/admin/sheets/:sheetId/batch-create-empty', (req, res) => {
   try {
     const count = Math.min(parseInt(req.body.count) || 50, 1000)
+    const db = getDB()
     const ids = []
+
+    const stmt = db.prepare(
+      `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, condition, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '')`
+    )
+
     for (let i = 0; i < count; i++) {
-      const id = insert('org_sheet_students', {
-        sheet_id: req.params.sheetId,
-        name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: '', exam_date: '', condition: '', major: '',
-        submitted: '', audit_result: '', verified: '', payment_status: '',
-        reject_reason: '', account_opened: '', remark: '', is_retest: '', offline_training: ''
-      })
-      ids.push(id)
+      stmt.bind([req.params.sheetId])
+      stmt.run()
+      stmt.free()
+
+      const idStmt = db.prepare("SELECT last_insert_rowid() as id")
+      if (idStmt.step()) ids.push(idStmt.getAsObject().id)
+      idStmt.free()
     }
+
+    saveDatabase()
     res.json({ data: { ids, count: ids.length } })
   } catch (error) {
     res.status(500).json({ message: '批量创建失败' })
