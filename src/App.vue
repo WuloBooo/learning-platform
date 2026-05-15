@@ -94,7 +94,7 @@ const isAuthPage = computed(() => {
 
 const hideLayout = computed(() => {
   return route.path === '/survey' || route.path === '/major-judge' ||
-    route.path.startsWith('/org/') || route.path.startsWith('/workflow/')
+    route.path.startsWith('/org/') || route.path === '/workflow' || route.path.startsWith('/workflow/')
 })
 
 const goHome = () => {
