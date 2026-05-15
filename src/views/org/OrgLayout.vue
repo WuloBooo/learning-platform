@@ -177,6 +177,7 @@ const addRow = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.addStudent(currentSheet.value.id, {})
+    console.log('addStudent响应:', res)
     if (res.data?.id) {
       rows.value.push({
         id: res.data.id,
@@ -184,10 +185,13 @@ const addRow = async () => {
         name: '', phone: '', id_card: '', job_type: '', level: '',
         reg_date: '', exam_date: '', condition: '', major: ''
       })
+    } else {
+      console.error('添加失败，返回数据:', res)
+      alert('添加失败: ' + (res.message || '未知错误'))
     }
   } catch (e) {
     console.error('添加失败', e)
-    alert('添加失败')
+    alert('添加失败: ' + e.message)
   }
 }
 
