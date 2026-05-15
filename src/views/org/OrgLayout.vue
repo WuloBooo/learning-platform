@@ -221,14 +221,27 @@ const initHot = () => {
       }
 
       if (updates.length > 0) {
-        console.log(`[afterChange] source=${source}, 发送 ${updates.length} 条更新, source=${source}`)
+        console.log(`[afterChange] source=${source}, 发送 ${updates.length} 条更新`)
         saving.value = true
-        savePromise = orgAPI.batchSave(currentSheet.value.id, updates)
-          .then(res => {
-            saving.value = false
-            console.log(`[batchSave] 响应:`, res)
-          })
-          .catch(e => { console.error('保存失败:', e); saving.value = false })
+        // 按id合并同行更新，减少数据量
+        const merged = new Map()
+        for (const u of updates) {
+          if (!merged.has(u.id)) merged.set(u.id, {})
+          Object.assign(merged.get(u.id), u)
+        }
+        const mergedUpdates = [...merged.values()]
+        console.log(`[afterChange] 合并后 ${mergedUpdates.length} 条`)
+        // 分批发送，每批最多200条
+        const batches = []
+        for (let i = 0; i < mergedUpdates.length; i += 200) {
+          batches.push(mergedUpdates.slice(i, i + 200))
+        }
+        savePromise = Promise.all(
+          batches.map(batch => orgAPI.batchSave(currentSheet.value.id, batch)
+            .then(res => console.log(`[batchSave] 批次完成:`, res))
+            .catch(e => console.error('保存失败:', e))
+          )
+        ).finally(() => { saving.value = false })
       }
     },
     afterPaste(data, coords) {
