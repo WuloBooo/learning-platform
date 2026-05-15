@@ -167,7 +167,6 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
 
     const data = {
       sheet_id: req.params.sheetId,
-      student_id: req.body.student_id || null,
       name: req.body.name || '',
       phone: req.body.phone || '',
       id_card: req.body.id_card || '',
@@ -178,6 +177,8 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
       condition: req.body.condition || '',
       major: req.body.major || ''
     }
+    // 只在有值时传 student_id，避免 NOT NULL 约束冲突
+    if (req.body.student_id) data.student_id = req.body.student_id
     console.log('addStudent 插入数据:', JSON.stringify(data))
     const id = insert('org_sheet_students', data)
     console.log('addStudent 插入成功, id:', id)

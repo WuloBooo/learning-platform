@@ -446,39 +446,52 @@ export async function initDatabase() {
   } catch (e) {}
 
   // 兼容旧表：org_sheet_students 重建（去掉 student_id NOT NULL 和 UNIQUE 约束）
+  // 使用 db 对象直接操作，不依赖 query/getOne（此时可能还未完全绑定）
   try {
-    const cols = query("PRAGMA table_info(org_sheet_students)").map(c => c.name)
-    if (!cols.includes('extra_data')) {
-      db.run('ALTER TABLE org_sheet_students ADD COLUMN extra_data TEXT')
-      console.log('org_sheet_students: 添加 extra_data 列')
+    const checkSql = db.prepare("SELECT sql FROM sqlite_master WHERE name='org_sheet_students'")
+    let tableDef = null
+    if (checkSql.step()) {
+      tableDef = checkSql.getAsObject().sql
     }
-    // 检查是否有旧的 NOT NULL 或 UNIQUE 约束，需要重建表
-    const tableSql = getOne("SELECT sql FROM sqlite_master WHERE name='org_sheet_students'")
-    if (tableSql && tableSql.sql) {
-      const needRebuild = tableSql.sql.includes('UNIQUE(sheet_id, student_id)') ||
-        tableSql.sql.includes('student_id INTEGER NOT NULL')
-      if (needRebuild) {
-        db.run('ALTER TABLE org_sheet_students RENAME TO org_sheet_students_old')
-        db.run(`CREATE TABLE org_sheet_students (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          sheet_id INTEGER NOT NULL,
-          student_id INTEGER,
-          name TEXT, phone TEXT, id_card TEXT, job_type TEXT, level TEXT,
-          reg_date DATE, exam_date DATE, condition TEXT, major TEXT, extra_data TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
-        )`)
-        // 动态获取旧表列，只 INSERT 共同的列
-        const oldCols = query("PRAGMA table_info(org_sheet_students_old)").map(c => c.name)
-        const newCols = query("PRAGMA table_info(org_sheet_students)").map(c => c.name)
-        const commonCols = oldCols.filter(c => newCols.includes(c))
-        db.run(`INSERT INTO org_sheet_students (${commonCols.join(', ')}) SELECT ${commonCols.join(', ')} FROM org_sheet_students_old`)
-        db.run('DROP TABLE org_sheet_students_old')
-        console.log('org_sheet_students 表已重建，移除 NOT NULL/UNIQUE 约束')
-      }
+    checkSql.free()
+
+    if (tableDef && (tableDef.includes('student_id INTEGER NOT NULL') || tableDef.includes('UNIQUE(sheet_id, student_id)'))) {
+      console.log('检测到 org_sheet_students 旧约束，开始重建...')
+
+      // 添加 extra_data 列（如果不存在）
+      try { db.run('ALTER TABLE org_sheet_students ADD COLUMN extra_data TEXT') } catch (e) {}
+
+      db.run('ALTER TABLE org_sheet_students RENAME TO org_sheet_students_old')
+      db.run(`CREATE TABLE org_sheet_students (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sheet_id INTEGER NOT NULL,
+        student_id INTEGER,
+        name TEXT, phone TEXT, id_card TEXT, job_type TEXT, level TEXT,
+        reg_date DATE, exam_date DATE, condition TEXT, major TEXT, extra_data TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
+      )`)
+
+      // 获取旧表列
+      const oldColsStmt = db.prepare("PRAGMA table_info(org_sheet_students_old)")
+      const oldCols = []
+      while (oldColsStmt.step()) { oldCols.push(oldColsStmt.getAsObject().name) }
+      oldColsStmt.free()
+
+      const newColsStmt = db.prepare("PRAGMA table_info(org_sheet_students)")
+      const newCols = []
+      while (newColsStmt.step()) { newCols.push(newColsStmt.getAsObject().name) }
+      newColsStmt.free()
+
+      const commonCols = oldCols.filter(c => newCols.includes(c))
+      db.run(`INSERT INTO org_sheet_students (${commonCols.join(', ')}) SELECT ${commonCols.join(', ')} FROM org_sheet_students_old`)
+      db.run('DROP TABLE org_sheet_students_old')
+      console.log('org_sheet_students 表已重建，移除 NOT NULL/UNIQUE 约束，迁移列:', commonCols.join(', '))
+    } else {
+      console.log('org_sheet_students 表结构正常，无需迁移')
     }
   } catch (e) {
-    console.log('org_sheet_students 迁移:', e.message)
+    console.error('org_sheet_students 迁移失败:', e.message)
   }
 
   // 学员状态跟踪表
