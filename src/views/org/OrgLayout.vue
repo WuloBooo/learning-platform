@@ -43,77 +43,38 @@
 
         <div class="table-toolbar">
           <button class="tool-btn" @click="addRow">+ 添加空行</button>
+          <button class="tool-btn danger" @click="deleteSelectedRows" v-if="selectedRows.length > 0">删除选中行</button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
           <button class="tool-btn outline" @click="loadSheetData">刷新数据</button>
         </div>
 
-        <div class="table-scroll">
-          <table class="edit-table">
-            <thead>
-              <tr>
-                <th class="col-idx">#</th>
-                <th v-for="col in columns" :key="col.key" :style="{ minWidth: col.width }">{{ col.label }}</th>
-                <th class="col-act">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(row, idx) in rows" :key="row.id">
-                <td class="col-idx">{{ idx + 1 }}</td>
-                <td v-for="col in columns" :key="col.key"
-                    :class="{ editing: editingCell === `${row.id}-${col.key}` }"
-                    @dblclick="startEdit(row, col.key)">
-                  <template v-if="editingCell === `${row.id}-${col.key}`">
-                    <input :value="row[col.key]"
-                      @blur="saveEdit(row, col.key, $event)"
-                      @keyup.enter="$event.target.blur()"
-                      @keyup.escape="cancelEdit"
-                      class="cell-input"
-                      ref="editInput" />
-                  </template>
-                  <template v-else>
-                    {{ row[col.key] || '' }}
-                  </template>
-                </td>
-                <td class="col-act">
-                  <button class="row-del" @click="deleteRow(row)">删除</button>
-                </td>
-              </tr>
-              <tr v-if="rows.length === 0">
-                <td :colspan="columns.length + 2" class="empty-row">暂无数据，点击"添加空行"开始录入</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="hot-container" class="table-scroll"></div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { orgAPI } from '../../api'
+import Handsontable from 'handsontable'
+import 'handsontable/styles/handsontable.min.css'
+import 'handsontable/styles/ht-theme-main.min.css'
 import * as XLSX from 'xlsx'
 
 const router = useRouter()
 const orgUser = ref(JSON.parse(localStorage.getItem('org_user') || '{}'))
 const sheets = ref([])
 const currentSheet = ref(null)
-const rows = ref([])
-const editingCell = ref(null)
-const editInput = ref(null)
+const tableData = ref([])
+const selectedRows = ref([])
+let hot = null
 
-const columns = [
-  { key: 'name', label: '姓名', width: '90px' },
-  { key: 'phone', label: '电话', width: '120px' },
-  { key: 'id_card', label: '身份证号', width: '180px' },
-  { key: 'job_type', label: '工种', width: '120px' },
-  { key: 'level', label: '级别', width: '70px' },
-  { key: 'reg_date', label: '报名日期', width: '120px' },
-  { key: 'exam_date', label: '考试日期', width: '120px' },
-  { key: 'condition', label: '报考条件', width: '120px' },
-  { key: 'major', label: '专业/岗位', width: '120px' }
-]
+const colHeaders = ['姓名', '电话', '身份证号', '工种', '级别', '报名日期', '考试日期', '报考条件', '专业/岗位']
+const colKeys = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major']
+
+const hotColumns = colKeys.map(key => ({ data: key, type: 'text' }))
 
 const loadSheets = async () => {
   try {
@@ -127,66 +88,115 @@ const loadSheets = async () => {
 const openSheet = async (sheet) => {
   currentSheet.value = sheet
   await loadSheetData()
+  await nextTick()
+  initHot()
 }
 
 const loadSheetData = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.getSheetStudents(currentSheet.value.id)
-    rows.value = res.data?.students || []
+    tableData.value = (res.data?.students || []).map(r => ({ ...r }))
+    if (hot) {
+      hot.loadData(tableData.value)
+    }
   } catch (e) {
     console.error('加载失败', e)
   }
 }
 
 const closeSheet = () => {
-  currentSheet.value = null
-  rows.value = []
-  editingCell.value = null
-}
-
-const startEdit = (row, colKey) => {
-  editingCell.value = `${row.id}-${colKey}`
-  nextTick(() => {
-    const inputs = document.querySelectorAll('.cell-input')
-    if (inputs.length > 0) inputs[inputs.length - 1].focus()
-  })
-}
-
-const saveEdit = async (row, colKey, event) => {
-  editingCell.value = null
-  const newVal = event.target.value.trim()
-  if (newVal === (row[colKey] || '')) return
-  row[colKey] = newVal
-
-  if (!currentSheet.value || !row.id) return
-  try {
-    await orgAPI.updateStudent(currentSheet.value.id, row.id, { [colKey]: newVal })
-    console.log('保存成功:', colKey, '=', newVal)
-  } catch (e) {
-    console.error('保存失败:', e)
-    alert('保存失败，请重试')
+  if (hot) {
+    hot.destroy()
+    hot = null
   }
+  currentSheet.value = null
+  tableData.value = []
+  selectedRows.value = []
 }
 
-const cancelEdit = () => {
-  editingCell.value = null
+const initHot = () => {
+  const container = document.getElementById('hot-container')
+  if (!container) return
+  if (hot) {
+    hot.destroy()
+    hot = null
+  }
+
+  hot = new Handsontable(container, {
+    data: tableData.value,
+    colHeaders,
+    columns: hotColumns,
+    rowHeaders: true,
+    height: Math.max(400, window.innerHeight - 220),
+    stretchH: 'all',
+    language: 'zh-CN',
+    licenseKey: 'non-commercial-and-evaluation',
+    contextMenu: {
+      items: {
+        'row_above': { name: '在上方插入行' },
+        'row_below': { name: '在下方插入行' },
+        'sep1': '---------',
+        'remove_row': { name: '删除该行' },
+        'sep2': '---------',
+        'copy': { name: '复制' },
+        'cut': { name: '剪切' }
+      }
+    },
+    manualColumnResize: true,
+    autoWrapRow: true,
+    autoWrapCol: true,
+    afterChange(changes, source) {
+      if (source === 'loadData') return
+      if (!changes) return
+      for (const [row, prop, oldVal, newVal] of changes) {
+        const rowData = hot.getSourceDataAtRow(row)
+        if (!rowData || !rowData.id) continue
+        if (oldVal === newVal) continue
+        orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
+          .catch(e => console.error('保存失败:', e))
+      }
+    },
+    afterRemoveRow(index, amount, physicalRows) {
+      for (const r of physicalRows) {
+        const rowData = hot.getSourceDataAtRow(r)
+        if (rowData && rowData.id) {
+          orgAPI.deleteStudent(currentSheet.value.id, rowData.id)
+            .catch(e => console.error('删除失败:', e))
+        }
+      }
+    },
+    afterSelectionEnd(r1) {
+      const selected = hot.getSelected()
+      if (!selected) { selectedRows.value = []; return }
+      const rows = new Set()
+      for (const [startRow, , endRow] of selected) {
+        const from = Math.min(startRow, endRow)
+        const to = Math.max(startRow, endRow)
+        for (let i = from; i <= to; i++) rows.add(i)
+      }
+      selectedRows.value = [...rows]
+    }
+  })
 }
 
 const addRow = async () => {
   if (!currentSheet.value) return
   try {
     const res = await orgAPI.addStudent(currentSheet.value.id, {})
-    console.log('addStudent响应:', res)
     if (res.data?.id) {
-      rows.value.push({
+      const newRow = {
         id: res.data.id,
         sheet_id: currentSheet.value.id,
         name: '', phone: '', id_card: '', job_type: '', level: '',
         reg_date: '', exam_date: '', condition: '', major: ''
-      })
+      }
+      tableData.value.push(newRow)
+      if (hot) {
+        hot.render()
+        hot.selectCell(hot.countRows() - 1, 0)
+      }
     } else {
-      console.error('添加失败，返回数据:', res)
       alert('添加失败: ' + (res.message || '未知错误'))
     }
   } catch (e) {
@@ -195,20 +205,23 @@ const addRow = async () => {
   }
 }
 
-const deleteRow = async (row) => {
-  if (!confirm('确定删除该行？')) return
-  try {
-    await orgAPI.deleteStudent(currentSheet.value.id, row.id)
-    rows.value = rows.value.filter(r => r.id !== row.id)
-  } catch (e) {
-    console.error('删除失败', e)
+const deleteSelectedRows = async () => {
+  if (selectedRows.value.length === 0) return
+  if (!confirm(`确定删除选中的 ${selectedRows.value.length} 行？`)) return
+  for (const idx of selectedRows.value.sort((a, b) => b - a)) {
+    const rowData = hot.getSourceDataAtRow(idx)
+    if (rowData && rowData.id) {
+      await orgAPI.deleteStudent(currentSheet.value.id, rowData.id).catch(e => console.error(e))
+    }
   }
+  hot.alter('remove_row', selectedRows.value.sort((a, b) => b - a))
+  selectedRows.value = []
 }
 
 const exportExcel = () => {
-  const data = rows.value.map(r => {
+  const data = tableData.value.map(r => {
     const row = {}
-    columns.forEach(c => { row[c.label] = r[c.key] || '' })
+    colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
     return row
   })
   const ws = XLSX.utils.json_to_sheet(data)
@@ -225,6 +238,13 @@ const handleLogout = () => {
 
 onMounted(() => {
   loadSheets()
+})
+
+onBeforeUnmount(() => {
+  if (hot) {
+    hot.destroy()
+    hot = null
+  }
 })
 </script>
 
@@ -331,65 +351,12 @@ onMounted(() => {
 .tool-btn:hover { opacity: 0.9; }
 .tool-btn.secondary { background: #10b981; }
 .tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
+.tool-btn.danger { background: #e74c3c; }
 
 .table-scroll {
   background: white;
   border-radius: 12px;
   border: 1px solid #eee;
-  overflow: auto;
+  overflow: hidden;
 }
-
-.edit-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-
-.edit-table th {
-  background: #f8f9fa;
-  padding: 12px 10px;
-  text-align: left;
-  font-weight: 600;
-  color: #555;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.edit-table td {
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  cursor: default;
-  white-space: nowrap;
-}
-
-.edit-table tbody tr:hover td { background: #f8f9ff; }
-
-.col-idx { width: 40px; text-align: center; color: #999; font-size: 13px; }
-.col-act { width: 60px; text-align: center; }
-
-.edit-table td.editing {
-  padding: 4px;
-  background: #fef3c7 !important;
-}
-
-.cell-input {
-  width: 100%;
-  padding: 6px 8px;
-  border: 2px solid #667eea;
-  border-radius: 4px;
-  font-size: 14px;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.row-del {
-  background: none;
-  border: none;
-  color: #e74c3c;
-  cursor: pointer;
-  font-size: 12px;
-  padding: 2px 6px;
-}
-.row-del:hover { text-decoration: underline; }
-
-.empty-row { text-align: center; padding: 40px !important; color: #999; }
 </style>
