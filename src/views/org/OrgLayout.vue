@@ -39,11 +39,11 @@
         <div class="editor-header">
           <button class="back-btn" @click="closeSheet">← 返回列表</button>
           <h2>{{ currentSheet.sheet_name }}</h2>
+          <span class="saving-hint" v-if="saving">保存中...</span>
         </div>
 
         <div class="table-toolbar">
-          <button class="tool-btn" @click="addRow">+ 添加空行</button>
-          <button class="tool-btn danger" @click="deleteSelectedRows" v-if="selectedRows.length > 0">删除选中行</button>
+          <button class="tool-btn danger" @click="deleteSelectedRows" v-if="selectedRows.length > 0">删除选中行 ({{ selectedRows.length }})</button>
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
           <button class="tool-btn outline" @click="loadSheetData">刷新数据</button>
         </div>
@@ -69,7 +69,10 @@ const sheets = ref([])
 const currentSheet = ref(null)
 const tableData = ref([])
 const selectedRows = ref([])
+const saving = ref(false)
 let hot = null
+
+const MIN_EMPTY_ROWS = 500
 
 const colHeaders = [
   '姓名', '电话', '身份证号', '工种', '级别', '报名日期', '考试日期',
@@ -82,7 +85,6 @@ const colKeys = [
   'account_opened', 'condition', 'major', 'remark', 'is_retest', 'offline_training'
 ]
 
-// 机构可编辑列（前9列：name~exam_date, condition, major）
 const editableKeys = new Set([
   'name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date',
   'condition', 'major'
@@ -95,67 +97,26 @@ const hotColumns = colKeys.map(key => ({
   className: editableKeys.has(key) ? '' : 'htReadOnly'
 }))
 
-// 批量保存队列：收集变更，延迟一次性提交
-let batchTimer = null
-const pendingChanges = []
+const emptyRow = () => ({
+  name: '', phone: '', id_card: '', job_type: '', level: '',
+  reg_date: '', exam_date: '', submitted: '', audit_result: '',
+  verified: '', payment_status: '', reject_reason: '',
+  account_opened: '', condition: '', major: '', remark: '',
+  is_retest: '', offline_training: ''
+})
 
-function isRowEmpty(rowData) {
-  if (!rowData) return true
-  for (const key of colKeys) {
-    if (rowData[key] && String(rowData[key]).trim()) return false
-  }
-  return true
-}
-
-function flushBatchSave() {
-  if (pendingChanges.length === 0) return
-  const changes = [...pendingChanges]
-  pendingChanges.length = 0
-
-  // 按行索引分组，合并同行的多个字段变更
-  const updateMap = new Map() // id -> { id, ...data }
-  const newRowsMap = new Map() // rowIndex -> { _rowIndex, ...data }
-
-  for (const c of changes) {
-    if (c.rowData.id) {
-      if (!updateMap.has(c.rowData.id)) {
-        updateMap.set(c.rowData.id, { id: c.rowData.id })
-      }
-      updateMap.get(c.rowData.id)[c.prop] = c.newVal || ''
-    } else {
-      if (!newRowsMap.has(c.rowIndex)) {
-        newRowsMap.set(c.rowIndex, { _rowIndex: c.rowIndex })
-      }
-      newRowsMap.get(c.rowIndex)[c.prop] = c.newVal || ''
+function countEmptyRows(data) {
+  let count = 0
+  for (let i = data.length - 1; i >= 0; i--) {
+    const r = data[i]
+    let empty = true
+    for (const key of colKeys) {
+      if (r[key] && String(r[key]).trim()) { empty = false; break }
     }
+    if (empty) count++
+    else break
   }
-
-  // 过滤掉完全空的新行（minSpareRows 产生的）
-  const realNewRows = [...newRowsMap.values()].filter(r => {
-    const { _rowIndex, ...data } = r
-    return Object.values(data).some(v => v && String(v).trim())
-  })
-
-  // 全部用 batch-save 一次性提交（更新+新增混合）
-  const allRows = [...updateMap.values(), ...realNewRows]
-  if (allRows.length === 0) return
-
-  orgAPI.batchSave(currentSheet.value.id, allRows)
-    .then(res => {
-      if (realNewRows.length > 0) {
-        // 有新行创建，刷新数据让新行获得 id
-        loadSheetData()
-      }
-    })
-    .catch(e => {
-      console.error('批量保存失败:', e)
-    })
-}
-
-function scheduleBatchSave(rowData, rowIndex, prop, newVal) {
-  pendingChanges.push({ rowData, rowIndex, prop, newVal })
-  clearTimeout(batchTimer)
-  batchTimer = setTimeout(flushBatchSave, 800)
+  return count
 }
 
 const loadSheets = async () => {
@@ -170,6 +131,8 @@ const loadSheets = async () => {
 const openSheet = async (sheet) => {
   currentSheet.value = sheet
   await loadSheetData()
+  // 确保有足够的空行
+  await ensureEmptyRows()
   await nextTick()
   initHot()
 }
@@ -187,9 +150,20 @@ const loadSheetData = async () => {
   }
 }
 
+const ensureEmptyRows = async () => {
+  const empty = countEmptyRows(tableData.value)
+  if (empty >= MIN_EMPTY_ROWS) return
+
+  const need = MIN_EMPTY_ROWS - empty
+  try {
+    await orgAPI.batchCreateEmpty(currentSheet.value.id, need)
+    await loadSheetData()
+  } catch (e) {
+    console.error('创建空行失败:', e)
+  }
+}
+
 const closeSheet = () => {
-  clearTimeout(batchTimer)
-  flushBatchSave()
   if (hot) {
     hot.destroy()
     hot = null
@@ -216,7 +190,6 @@ const initHot = () => {
     stretchH: 'all',
     language: 'zh-CN',
     licenseKey: 'non-commercial-and-evaluation',
-    minSpareRows: 10,
     contextMenu: {
       items: {
         'row_above': { name: '在上方插入行' },
@@ -234,12 +207,38 @@ const initHot = () => {
     afterChange(changes, source) {
       if (source === 'loadData') return
       if (!changes) return
+
+      const updates = []
       for (const [row, prop, oldVal, newVal] of changes) {
         if (oldVal === newVal) continue
         const rowData = hot.getSourceDataAtRow(row)
-        if (!rowData) continue
-        scheduleBatchSave(rowData, row, prop, newVal)
+        if (!rowData || !rowData.id) continue
+        updates.push({ id: rowData.id, [prop]: newVal || '' })
       }
+
+      if (updates.length > 0) {
+        saving.value = true
+        orgAPI.batchSave(currentSheet.value.id, updates)
+          .then(() => { saving.value = false })
+          .catch(e => { console.error('保存失败:', e); saving.value = false })
+      }
+    },
+    afterPaste(data, coords) {
+      // 粘贴后检查是否需要补充空行
+      setTimeout(async () => {
+        const empty = countEmptyRows(tableData.value)
+        if (empty < 50) {
+          const need = MIN_EMPTY_ROWS - empty
+          saving.value = true
+          try {
+            await orgAPI.batchCreateEmpty(currentSheet.value.id, need)
+            await loadSheetData()
+          } catch (e) {
+            console.error('补充空行失败:', e)
+          }
+          saving.value = false
+        }
+      }, 1000)
     },
     afterRemoveRow(index, amount, physicalRows) {
       for (const r of physicalRows) {
@@ -250,7 +249,7 @@ const initHot = () => {
         }
       }
     },
-    afterSelectionEnd(r1) {
+    afterSelectionEnd() {
       const selected = hot.getSelected()
       if (!selected) { selectedRows.value = []; return }
       const rows = new Set()
@@ -262,35 +261,6 @@ const initHot = () => {
       selectedRows.value = [...rows]
     }
   })
-}
-
-const addRow = async () => {
-  if (!currentSheet.value) return
-  try {
-    const res = await orgAPI.addStudent(currentSheet.value.id, {})
-    if (res.data?.id) {
-      const newRow = {
-        id: res.data.id,
-        sheet_id: currentSheet.value.id,
-        name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: '', exam_date: '', submitted: '', audit_result: '',
-        verified: '', payment_status: '', reject_reason: '',
-        account_opened: '', condition: '', major: '', remark: '',
-        is_retest: '', offline_training: ''
-      }
-      const rowIndex = hot.countRows()
-      hot.alter('insert_row_below', rowIndex - 1)
-      hot.getSourceDataAtRow(rowIndex).__proto__ = null
-      Object.assign(hot.getSourceDataAtRow(rowIndex), newRow)
-      hot.render()
-      hot.selectCell(rowIndex, 0)
-    } else {
-      alert('添加失败: ' + (res.message || '未知错误'))
-    }
-  } catch (e) {
-    console.error('添加失败', e)
-    alert('添加失败: ' + e.message)
-  }
 }
 
 const deleteSelectedRows = async () => {
@@ -307,11 +277,14 @@ const deleteSelectedRows = async () => {
 }
 
 const exportExcel = () => {
-  const data = tableData.value.map(r => {
-    const row = {}
-    colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
-    return row
-  })
+  // 只导出有内容的行
+  const data = tableData.value
+    .filter(r => colKeys.some(k => r[k] && String(r[k]).trim()))
+    .map(r => {
+      const row = {}
+      colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
+      return row
+    })
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '学员数据')
@@ -424,6 +397,12 @@ onBeforeUnmount(() => {
 .back-btn:hover { background: #e0e0e0; }
 
 .editor-header h2 { margin: 0; font-size: 20px; color: #1a1a2e; }
+
+.saving-hint {
+  font-size: 13px;
+  color: #667eea;
+  margin-left: auto;
+}
 
 .table-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
 

@@ -62,10 +62,10 @@
             <button class="close-btn" @click="closeSheetEditor">✕</button>
           </div>
           <div class="editor-toolbar">
-            <button class="tool-btn" @click="adminAddRow">+ 添加空行</button>
-            <button class="tool-btn danger" @click="adminDeleteRows" v-if="adminSelectedRows.length > 0">删除选中行</button>
+            <button class="tool-btn danger" @click="adminDeleteRows" v-if="adminSelectedRows.length > 0">删除选中行 ({{ adminSelectedRows.length }})</button>
             <button class="tool-btn secondary" @click="adminExportExcel">导出 Excel</button>
             <button class="tool-btn outline" @click="loadEditorData">刷新数据</button>
+            <span class="saving-hint" v-if="adminSaving">保存中...</span>
           </div>
           <div :id="'admin-hot-' + editorSheet.id" class="admin-hot-container"></div>
         </div>
@@ -165,7 +165,10 @@ const editing = ref(null)
 const editorSheet = ref(null)
 const adminTableData = ref([])
 const adminSelectedRows = ref([])
+const adminSaving = ref(false)
 let adminHot = null
+
+const MIN_EMPTY_ROWS = 500
 
 const form = ref({ org_id: '', exam_plan_id: '', sheet_name: '', description: '', status: 'active' })
 const batchForm = ref({ exam_plan_id: '', sheet_name: '', description: '' })
@@ -215,9 +218,24 @@ const loadExamPlans = async () => {
 
 // ===== Handsontable editor =====
 
+function countAdminEmptyRows(data) {
+  let count = 0
+  for (let i = data.length - 1; i >= 0; i--) {
+    const r = data[i]
+    let empty = true
+    for (const key of colKeys) {
+      if (r[key] && String(r[key]).trim()) { empty = false; break }
+    }
+    if (empty) count++
+    else break
+  }
+  return count
+}
+
 const openSheetEditor = async (sheet) => {
   editorSheet.value = sheet
   await loadEditorData()
+  await ensureAdminEmptyRows()
   await nextTick()
   initAdminHot()
 }
@@ -232,6 +250,18 @@ const loadEditorData = async () => {
     }
   } catch (e) {
     console.error('加载学员数据失败', e)
+  }
+}
+
+const ensureAdminEmptyRows = async () => {
+  const empty = countAdminEmptyRows(adminTableData.value)
+  if (empty >= MIN_EMPTY_ROWS) return
+  const need = MIN_EMPTY_ROWS - empty
+  try {
+    await workflowAPI.batchCreateEmpty(editorSheet.value.id, need)
+    await loadEditorData()
+  } catch (e) {
+    console.error('创建空行失败:', e)
   }
 }
 
@@ -279,13 +309,35 @@ const initAdminHot = () => {
     afterChange(changes, source) {
       if (source === 'loadData') return
       if (!changes) return
+
+      const updates = []
       for (const [row, prop, oldVal, newVal] of changes) {
+        if (oldVal === newVal) continue
         const rowData = adminHot.getSourceDataAtRow(row)
         if (!rowData || !rowData.id) continue
-        if (oldVal === newVal) continue
-        workflowAPI.updateSheetStudent(editorSheet.value.id, rowData.id, { [prop]: newVal || '' })
-          .catch(e => console.error('保存失败:', e))
+        updates.push({ id: rowData.id, [prop]: newVal || '' })
       }
+
+      if (updates.length > 0) {
+        adminSaving.value = true
+        orgAPI_batchSaveAdmin(updates)
+      }
+    },
+    afterPaste() {
+      setTimeout(async () => {
+        const empty = countAdminEmptyRows(adminTableData.value)
+        if (empty < 50) {
+          const need = MIN_EMPTY_ROWS - empty
+          adminSaving.value = true
+          try {
+            await workflowAPI.batchCreateEmpty(editorSheet.value.id, need)
+            await loadEditorData()
+          } catch (e) {
+            console.error('补充空行失败:', e)
+          }
+          adminSaving.value = false
+        }
+      }, 1000)
     },
     afterRemoveRow(index, amount, physicalRows) {
       for (const r of physicalRows) {
@@ -310,29 +362,20 @@ const initAdminHot = () => {
   })
 }
 
-const adminAddRow = async () => {
-  if (!editorSheet.value) return
-  try {
-    const res = await workflowAPI.addSheetStudent(editorSheet.value.id, {})
-    if (res.data?.id) {
-      const newRow = {
-        id: res.data.id,
-        sheet_id: editorSheet.value.id,
-        name: '', phone: '', id_card: '', job_type: '', level: '',
-        reg_date: '', exam_date: '', submitted: '', audit_result: '',
-        verified: '', payment_status: '', reject_reason: '',
-        account_opened: '', condition: '', major: '', remark: '',
-        is_retest: '', offline_training: ''
-      }
-      const rowIndex = adminHot.countRows()
-      adminHot.alter('insert_row_below', rowIndex - 1)
-      Object.assign(adminHot.getSourceDataAtRow(rowIndex), newRow)
-      adminHot.render()
-      adminHot.selectCell(rowIndex, 0)
-    }
-  } catch (e) {
-    alert('添加失败: ' + e.message)
+function orgAPI_batchSaveAdmin(updates) {
+  // 管理员用 workflow batch-save，但那个接口还没有。用逐条更新合并
+  // 简单方案：按 id 合并，逐条调 updateSheetStudent
+  const merged = new Map()
+  for (const u of updates) {
+    if (!merged.has(u.id)) merged.set(u.id, {})
+    Object.assign(merged.get(u.id), u)
   }
+  const promises = []
+  for (const [id, data] of merged) {
+    const { id: _, ...rest } = data
+    promises.push(workflowAPI.updateSheetStudent(editorSheet.value.id, id, rest).catch(e => console.error(e)))
+  }
+  Promise.all(promises).finally(() => { adminSaving.value = false })
 }
 
 const adminDeleteRows = async () => {
@@ -349,11 +392,13 @@ const adminDeleteRows = async () => {
 }
 
 const adminExportExcel = () => {
-  const data = adminTableData.value.map(r => {
-    const row = {}
-    colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
-    return row
-  })
+  const data = adminTableData.value
+    .filter(r => colKeys.some(k => r[k] && String(r[k]).trim()))
+    .map(r => {
+      const row = {}
+      colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
+      return row
+    })
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '学员数据')
@@ -526,6 +571,13 @@ onBeforeUnmount(() => {
 .tool-btn.secondary { background: #10b981; }
 .tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
 .tool-btn.danger { background: #e74c3c; }
+
+.saving-hint {
+  font-size: 13px;
+  color: #667eea;
+  margin-left: auto;
+  align-self: center;
+}
 
 .admin-hot-container {
   background: white;

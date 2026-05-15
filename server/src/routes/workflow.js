@@ -627,6 +627,27 @@ router.put('/admin/sheets/:sheetId/students/:rowId', (req, res) => {
   }
 })
 
+// 管理员：批量创建空行
+router.post('/admin/sheets/:sheetId/batch-create-empty', (req, res) => {
+  try {
+    const count = Math.min(parseInt(req.body.count) || 50, 1000)
+    const ids = []
+    for (let i = 0; i < count; i++) {
+      const id = insert('org_sheet_students', {
+        sheet_id: req.params.sheetId,
+        name: '', phone: '', id_card: '', job_type: '', level: '',
+        reg_date: '', exam_date: '', condition: '', major: '',
+        submitted: '', audit_result: '', verified: '', payment_status: '',
+        reject_reason: '', account_opened: '', remark: '', is_retest: '', offline_training: ''
+      })
+      ids.push(id)
+    }
+    res.json({ data: { ids, count: ids.length } })
+  } catch (error) {
+    res.status(500).json({ message: '批量创建失败' })
+  }
+})
+
 // 管理员：从表格移除学员
 router.delete('/admin/sheets/:sheetId/students/:rowId', (req, res) => {
   try {

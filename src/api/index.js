@@ -233,6 +233,14 @@ export const orgAPI = {
       body: JSON.stringify({ rows })
     }).then(r => r.json())
   },
+  batchCreateEmpty: (sheetId, count) => {
+    const token = localStorage.getItem('org_token')
+    return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/batch-create-empty`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ count })
+    }).then(r => r.json())
+  },
   setCellColor: (sheetId, data) => {
     const token = localStorage.getItem('org_token')
     return fetch(`${API_BASE_URL}/org/sheets/${sheetId}/colors`, {
@@ -271,5 +279,6 @@ export const workflowAPI = {
   getSheetStudents: (sheetId) => api.get(`/workflow/admin/sheets/${sheetId}/students`),
   addSheetStudent: (sheetId, data) => api.post(`/workflow/admin/sheets/${sheetId}/students`, data),
   updateSheetStudent: (sheetId, rowId, data) => api.put(`/workflow/admin/sheets/${sheetId}/students/${rowId}`, data),
-  removeSheetStudent: (sheetId, rowId) => api.delete(`/workflow/admin/sheets/${sheetId}/students/${rowId}`)
+  removeSheetStudent: (sheetId, rowId) => api.delete(`/workflow/admin/sheets/${sheetId}/students/${rowId}`),
+  batchCreateEmpty: (sheetId, count) => api.post(`/workflow/admin/sheets/${sheetId}/batch-create-empty`, { count }),
 }

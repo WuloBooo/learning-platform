@@ -199,6 +199,31 @@ router.post('/sheets/:sheetId/students', orgAuth, (req, res) => {
   }
 })
 
+// ===== 机构端：批量创建空行 =====
+
+router.post('/sheets/:sheetId/batch-create-empty', orgAuth, (req, res) => {
+  try {
+    const sheet = getOne('SELECT * FROM org_sheets WHERE id = ? AND org_id = ?', [req.params.sheetId, req.orgUser.org_id])
+    if (!sheet) return res.status(404).json({ message: '表格不存在' })
+
+    const count = Math.min(parseInt(req.body.count) || 50, 1000)
+    const ids = []
+    for (let i = 0; i < count; i++) {
+      const id = insert('org_sheet_students', {
+        sheet_id: req.params.sheetId,
+        name: '', phone: '', id_card: '', job_type: '', level: '',
+        reg_date: '', exam_date: '', condition: '', major: '',
+        submitted: '', audit_result: '', verified: '', payment_status: '',
+        reject_reason: '', account_opened: '', remark: '', is_retest: '', offline_training: ''
+      })
+      ids.push(id)
+    }
+    res.json({ data: { ids, count: ids.length } })
+  } catch (error) {
+    res.status(500).json({ message: '批量创建失败' })
+  }
+})
+
 // ===== 机构端：删除学员行 =====
 
 router.delete('/sheets/:sheetId/students/:rowId', orgAuth, (req, res) => {
