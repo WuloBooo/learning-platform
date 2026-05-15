@@ -191,11 +191,12 @@ const addRow = async () => {
         name: '', phone: '', id_card: '', job_type: '', level: '',
         reg_date: '', exam_date: '', condition: '', major: ''
       }
-      tableData.value.push(newRow)
-      if (hot) {
-        hot.render()
-        hot.selectCell(hot.countRows() - 1, 0)
-      }
+      const rowIndex = hot.countRows()
+      hot.alter('insert_row_below', rowIndex - 1)
+      hot.getSourceDataAtRow(rowIndex).__proto__ = null
+      Object.assign(hot.getSourceDataAtRow(rowIndex), newRow)
+      hot.render()
+      hot.selectCell(rowIndex, 0)
     } else {
       alert('添加失败: ' + (res.message || '未知错误'))
     }
