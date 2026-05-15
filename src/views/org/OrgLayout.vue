@@ -95,27 +95,62 @@ const hotColumns = colKeys.map(key => ({
   className: editableKeys.has(key) ? '' : 'htReadOnly'
 }))
 
-// 确保粘贴/新增的行在数据库中有 id
-const rowCreating = new Map()
-async function ensureRowCreated(row, rowData) {
-  if (rowData.id) return
-  if (rowCreating.has(row)) return rowCreating.get(row)
+// 批量保存队列：收集变更，延迟一次性提交
+let batchTimer = null
+const pendingChanges = []
 
-  const promise = (async () => {
-    try {
-      const res = await orgAPI.addStudent(currentSheet.value.id, {})
-      if (res.data?.id) {
-        rowData.id = res.data.id
-        rowData.sheet_id = currentSheet.value.id
+function flushBatchSave() {
+  if (pendingChanges.length === 0) return
+  const changes = [...pendingChanges]
+  pendingChanges.length = 0
+
+  // 分为：已有行的更新 和 新增行的创建
+  const updates = []
+  const newRows = []
+
+  for (const c of changes) {
+    if (c.rowData.id) {
+      updates.push({ id: c.rowData.id, [c.prop]: c.newVal || '' })
+    } else {
+      // 合并同一行的多个字段变更
+      const existing = newRows.find(r => r._rowIndex === c.rowIndex)
+      if (existing) {
+        existing[c.prop] = c.newVal || ''
+      } else {
+        newRows.push({ _rowIndex: c.rowIndex, ...c.rowData, [c.prop]: c.newVal || '' })
       }
-    } catch (e) {
-      console.error('创建行失败:', e)
-    } finally {
-      rowCreating.delete(row)
     }
-  })()
-  rowCreating.set(row, promise)
-  return promise
+  }
+
+  // 逐条更新已有行
+  for (const u of updates) {
+    const { id, ...data } = u
+    orgAPI.updateStudent(currentSheet.value.id, id, data)
+      .catch(e => console.error('更新失败:', e))
+  }
+
+  // 批量创建新行
+  if (newRows.length > 0) {
+    const rowsToSave = newRows.map(r => {
+      const { _rowIndex, id, ...rest } = r
+      return rest
+    })
+    orgAPI.batchSave(currentSheet.value.id, rowsToSave)
+      .then(res => {
+        // 创建成功后刷新数据，让新行获得 id
+        loadSheetData()
+      })
+      .catch(e => {
+        console.error('批量创建失败:', e)
+        alert('部分数据保存失败，请点击"刷新数据"重试')
+      })
+  }
+}
+
+function scheduleBatchSave(rowData, rowIndex, prop, newVal) {
+  pendingChanges.push({ rowData, rowIndex, prop, newVal })
+  clearTimeout(batchTimer)
+  batchTimer = setTimeout(flushBatchSave, 500)
 }
 
 const loadSheets = async () => {
@@ -148,6 +183,8 @@ const loadSheetData = async () => {
 }
 
 const closeSheet = () => {
+  clearTimeout(batchTimer)
+  flushBatchSave()
   if (hot) {
     hot.destroy()
     hot = null
@@ -174,6 +211,7 @@ const initHot = () => {
     stretchH: 'all',
     language: 'zh-CN',
     licenseKey: 'non-commercial-and-evaluation',
+    minSpareRows: 10,
     contextMenu: {
       items: {
         'row_above': { name: '在上方插入行' },
@@ -192,19 +230,10 @@ const initHot = () => {
       if (source === 'loadData') return
       if (!changes) return
       for (const [row, prop, oldVal, newVal] of changes) {
+        if (oldVal === newVal) continue
         const rowData = hot.getSourceDataAtRow(row)
         if (!rowData) continue
-        if (oldVal === newVal) continue
-        if (!rowData.id) {
-          // 新粘贴的行还没有 id，先创建再更新
-          ensureRowCreated(row, rowData).then(() => {
-            orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
-              .catch(e => console.error('保存失败:', e))
-          })
-        } else {
-          orgAPI.updateStudent(currentSheet.value.id, rowData.id, { [prop]: newVal || '' })
-            .catch(e => console.error('保存失败:', e))
-        }
+        scheduleBatchSave(rowData, row, prop, newVal)
       }
     },
     afterRemoveRow(index, amount, physicalRows) {
