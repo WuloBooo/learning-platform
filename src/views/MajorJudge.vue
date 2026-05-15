@@ -80,7 +80,6 @@
             <p>电子与信息、医药卫生、装备制造、教育与体育相关学科</p>
           </div>
         </div>
-        <p class="related">相关职业：{{ relatedOccupations }}</p>
       </div>
     </div>
   </div>
@@ -89,7 +88,7 @@
 <script setup>
 import { ref } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
-import { checkQualification, relatedOccupations } from '../data/majorData'
+import { checkQualification } from '../data/majorData'
 
 const searchText = ref('')
 const suggestions = ref([])
