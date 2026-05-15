@@ -182,8 +182,7 @@ onMounted(loadStats)
 }
 
 .actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  display: flex;
   gap: 12px;
 }
 
