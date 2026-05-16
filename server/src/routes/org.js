@@ -51,7 +51,8 @@ router.post('/login', async (req, res) => {
       }
     })
   } catch (error) {
-    res.status(500).json({ message: '登录失败' })
+    console.error('机构登录错误:', error)
+    res.status(500).json({ message: '登录失败', error: error.message })
   }
 })
 
