@@ -27,7 +27,7 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: '密码错误' })
     }
 
-    await update('org_users', { last_login: new Date().toISOString() }, 'id = ?', [user.id])
+    await update('org_users', { last_login: new Date().toISOString().slice(0, 19).replace('T', ' ') }, 'id = ?', [user.id])
 
     const org = await getOne('SELECT * FROM organizations WHERE id = ?', [user.org_id])
 

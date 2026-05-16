@@ -43,8 +43,7 @@ router.post('/sessions', async (req, res) => {
     const { name } = req.body
     const sessionId = await insert('survey_sessions', {
       name: name || '匿名',
-      status: 'active',
-      created_at: new Date().toISOString()
+      status: 'active'
     })
 
     const openingMessage = `嗨！我正在帮咱们部门做一次工作流程调研，主要是想了解大家日常有哪些重复性的工作，看看哪些可以用技术手段优化。
@@ -53,8 +52,7 @@ router.post('/sessions', async (req, res) => {
     await insert('survey_messages', {
       session_id: sessionId,
       role: 'assistant',
-      content: openingMessage,
-      created_at: new Date().toISOString()
+      content: openingMessage
     })
 
     res.json({ sessionId, openingMessage })
@@ -82,8 +80,7 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
     await insert('survey_messages', {
       session_id: sessionId,
       role: 'user',
-      content: content.trim(),
-      created_at: new Date().toISOString()
+      content: content.trim()
     })
 
     // 获取该会话的所有历史消息
@@ -124,8 +121,7 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
     await insert('survey_messages', {
       session_id: sessionId,
       role: 'assistant',
-      content: aiReply,
-      created_at: new Date().toISOString()
+      content: aiReply
     })
 
     res.json({ reply: aiReply })
@@ -228,8 +224,7 @@ router.post('/form', async (req, res) => {
       q15: data.q15 || '',
       q16: data.q16 || '',
       q17: data.q17 || '',
-      q18: data.q18 || '',
-      created_at: new Date().toISOString()
+      q18: data.q18 || ''
     })
     res.json({ message: '提交成功', id })
   } catch (error) {

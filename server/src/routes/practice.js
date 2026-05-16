@@ -534,7 +534,7 @@ router.post('/submit', async (req, res, next) => {
         await update('wrong_questions',
           {
             wrong_count: existingWrong.wrong_count + 1,
-            last_wrong_at: new Date().toISOString(),
+            last_wrong_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
             mastered: 0
           },
           'id = ?',
@@ -650,7 +650,7 @@ router.post('/submit-paper', async (req, res, next) => {
       wrong_count: wrongCount,
       time_spent: time_spent || 0,
       status: 'submitted',
-      submitted_at: new Date().toISOString()
+      submitted_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
     }, 'id = ?', [userExamId])
 
     res.json({
