@@ -215,7 +215,7 @@ router.post('/sheets/:sheetId/batch-create-empty', orgAuth, async (req, res) => 
 
     res.json({ data: { ids, count: ids.length } })
   } catch (error) {
-    res.status(500).json({ message: '批量创建失败' })
+    res.status(500).json({ message: '批量创建失败', error: error.message })
   }
 })
 
