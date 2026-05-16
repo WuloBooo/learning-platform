@@ -272,6 +272,7 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, async (req, res) => {
         await pool.execute(`UPDATE org_sheet_students SET ${setClause} WHERE id = ? AND sheet_id = ?`, values)
         result.success++
       } catch (e) {
+        console.error('batch-save update error:', e.message, 'data:', JSON.stringify(data))
         result.failed++
       }
     }
