@@ -4,9 +4,9 @@ import { query, getOne } from '../config/database.js'
 const router = Router()
 
 // 获取轮播图（公开）
-router.get('/banners', (req, res, next) => {
+router.get('/banners', async (req, res, next) => {
   try {
-    const banners = query(
+    const banners = await query(
       'SELECT * FROM banners WHERE status = "active" ORDER BY sort_order ASC'
     )
     res.json({ banners })
@@ -16,14 +16,14 @@ router.get('/banners', (req, res, next) => {
 })
 
 // 获取考试动态/新闻（公开）
-router.get('/news', (req, res, next) => {
+router.get('/news', async (req, res, next) => {
   try {
     const { page = 1, pageSize = 5 } = req.query
 
-    const countResult = getOne('SELECT COUNT(*) as total FROM news WHERE status = "published"')
+    const countResult = await getOne('SELECT COUNT(*) as total FROM news WHERE status = "published"')
     const total = countResult?.total || 0
 
-    const news = query(
+    const news = await query(
       `SELECT id, title, summary, type, cover_image, created_at
        FROM news
        WHERE status = "published"
@@ -47,10 +47,10 @@ router.get('/news', (req, res, next) => {
 })
 
 // 获取新闻详情（公开）
-router.get('/news/:id', (req, res, next) => {
+router.get('/news/:id', async (req, res, next) => {
   try {
     const { id } = req.params
-    const news = getOne(
+    const news = await getOne(
       'SELECT * FROM news WHERE id = ? AND status = "published"',
       [id]
     )
@@ -66,9 +66,9 @@ router.get('/news/:id', (req, res, next) => {
 })
 
 // 获取时间节点（公开）
-router.get('/timelines', (req, res, next) => {
+router.get('/timelines', async (req, res, next) => {
   try {
-    const timelines = query(
+    const timelines = await query(
       `SELECT id, exam_name, exam_period, exam_icon, exam_status, exam_status_label,
               milestones
        FROM exam_timelines
@@ -89,7 +89,7 @@ router.get('/timelines', (req, res, next) => {
 })
 
 // 获取培训项目（公开）
-router.get('/programs', (req, res, next) => {
+router.get('/programs', async (req, res, next) => {
   try {
     const { category } = req.query
 
@@ -103,7 +103,7 @@ router.get('/programs', (req, res, next) => {
 
     sql += ' ORDER BY sort_order ASC, created_at DESC'
 
-    const programs = query(sql, params)
+    const programs = await query(sql, params)
 
     res.json({ programs })
   } catch (error) {
@@ -112,7 +112,7 @@ router.get('/programs', (req, res, next) => {
 })
 
 // 获取学习资料（公开）
-router.get('/materials', (req, res, next) => {
+router.get('/materials', async (req, res, next) => {
   try {
     const { category, page = 1, pageSize = 12 } = req.query
 
@@ -125,13 +125,13 @@ router.get('/materials', (req, res, next) => {
     }
 
     const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as total')
-    const countResult = getOne(countSql, params)
+    const countResult = await getOne(countSql, params)
     const total = countResult?.total || 0
 
     sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?'
     params.push(parseInt(pageSize), (parseInt(page) - 1) * parseInt(pageSize))
 
-    const materials = query(sql, params)
+    const materials = await query(sql, params)
 
     res.json({
       materials,
@@ -148,10 +148,10 @@ router.get('/materials', (req, res, next) => {
 })
 
 // 获取资料详情（公开）
-router.get('/materials/:id', (req, res, next) => {
+router.get('/materials/:id', async (req, res, next) => {
   try {
     const { id } = req.params
-    const material = getOne(
+    const material = await getOne(
       'SELECT * FROM materials WHERE id = ? AND status = "active"',
       [id]
     )
@@ -161,7 +161,7 @@ router.get('/materials/:id', (req, res, next) => {
     }
 
     // 增加下载次数
-    query(
+    await query(
       'UPDATE materials SET download_count = download_count + 1 WHERE id = ?',
       [id]
     )

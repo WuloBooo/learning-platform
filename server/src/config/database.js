@@ -1,748 +1,485 @@
-import initSqlJs from 'sql.js'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
-import fs from 'fs'
+import mysql from 'mysql2/promise'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-
-const dataDir = join(__dirname, '..', '..', 'data')
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true })
-}
-
-const dbPath = process.env.DB_PATH || join(dataDir, 'learning_platform.db')
-
-let db = null
+let pool = null
 
 export async function initDatabase() {
-  const SQL = await initSqlJs()
-  
-  if (fs.existsSync(dbPath)) {
-    const buffer = fs.readFileSync(dbPath)
-    db = new SQL.Database(buffer)
-  } else {
-    db = new SQL.Database()
-  }
-  
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT NOT NULL UNIQUE,
-      email TEXT NOT NULL UNIQUE,
+  pool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'learning_platform',
+    waitForConnections: true,
+    connectionLimit: 20,
+    charset: 'utf8mb4'
+  })
+
+  // 测试连接
+  const conn = await pool.getConnection()
+  console.log('MySQL 连接成功')
+  conn.release()
+
+  // 创建所有表
+  const tables = [
+    `CREATE TABLE IF NOT EXISTS users (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      username VARCHAR(255) NOT NULL UNIQUE,
+      email VARCHAR(255) NOT NULL UNIQUE,
       password TEXT NOT NULL,
       avatar TEXT DEFAULT NULL,
-      role TEXT DEFAULT 'student',
-      status TEXT DEFAULT 'active',
+      role VARCHAR(50) DEFAULT 'student',
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-  
-  db.run(`
-    CREATE TABLE IF NOT EXISTS registrations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER,
-      name TEXT NOT NULL,
-      gender TEXT,
-      phone TEXT NOT NULL,
-      email TEXT,
-      id_card TEXT,
-      education TEXT,
-      school TEXT,
-      major TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS registrations (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT,
+      name VARCHAR(255) NOT NULL,
+      gender VARCHAR(10),
+      phone VARCHAR(50) NOT NULL,
+      email VARCHAR(255),
+      id_card VARCHAR(50),
+      education VARCHAR(100),
+      school VARCHAR(255),
+      major VARCHAR(255),
       goal TEXT,
-      referrer TEXT,
-      exam_type TEXT,
-      exam_level TEXT,
-      has_experience INTEGER DEFAULT 0,
+      referrer VARCHAR(255),
+      exam_type VARCHAR(100),
+      exam_level VARCHAR(100),
+      has_experience INT DEFAULT 0,
       experience TEXT,
-      registration_no TEXT NOT NULL UNIQUE,
-      status TEXT DEFAULT 'pending',
+      registration_no VARCHAR(255) NOT NULL UNIQUE,
+      status VARCHAR(50) DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-    )
-  `)
-  
-  db.run(`
-    CREATE TABLE IF NOT EXISTS refresh_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+    )`,
+    `CREATE TABLE IF NOT EXISTS refresh_tokens (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
       token TEXT NOT NULL,
       expires_at DATETIME NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exams (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      exam_type TEXT NOT NULL,
+    )`,
+    `CREATE TABLE IF NOT EXISTS exams (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      exam_type VARCHAR(100) NOT NULL,
       exam_date DATE,
-      location TEXT,
+      location VARCHAR(255),
       description TEXT,
-      status TEXT DEFAULT 'upcoming',
-      max_participants INTEGER DEFAULT 100,
-      current_participants INTEGER DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'upcoming',
+      max_participants INT DEFAULT 100,
+      current_participants INT DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS materials (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      category TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS materials (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(255) NOT NULL,
+      category VARCHAR(100),
       description TEXT,
       file_path TEXT,
-      file_size INTEGER,
-      file_type TEXT,
-      download_count INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
+      file_size INT DEFAULT 0,
+      file_type VARCHAR(50),
+      download_count INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS banners (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      subtitle TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS banners (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(255) NOT NULL,
+      subtitle VARCHAR(255),
       image_url TEXT,
       link_url TEXT,
-      sort_order INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
+      sort_order INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS question_categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      parent_id INTEGER,
-      exam_type TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS question_categories (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      parent_id INT,
+      exam_type VARCHAR(100),
       description TEXT,
-      sort_order INTEGER DEFAULT 0,
+      sort_order INT DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      category_id INTEGER,
-      exam_type TEXT,
-      question_type TEXT DEFAULT 'single',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS questions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      category_id INT,
+      exam_type VARCHAR(100),
+      question_type VARCHAR(50) DEFAULT 'single',
       title TEXT NOT NULL,
       options TEXT,
       answer TEXT NOT NULL,
       analysis TEXT,
-      difficulty TEXT DEFAULT 'medium',
-      points INTEGER DEFAULT 1,
+      difficulty VARCHAR(50) DEFAULT 'medium',
+      points INT DEFAULT 1,
       tags TEXT,
-      status TEXT DEFAULT 'published',
-      created_by INTEGER,
+      status VARCHAR(50) DEFAULT 'published',
+      created_by INT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (category_id) REFERENCES question_categories(id),
       FOREIGN KEY (created_by) REFERENCES users(id)
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exam_papers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      exam_type TEXT,
+    )`,
+    `CREATE TABLE IF NOT EXISTS exam_papers (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      exam_type VARCHAR(100),
       description TEXT,
-      total_score INTEGER DEFAULT 100,
-      duration INTEGER DEFAULT 60,
-      pass_score INTEGER DEFAULT 60,
-      question_count INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'draft',
-      created_by INTEGER,
+      total_score INT DEFAULT 100,
+      duration INT DEFAULT 60,
+      pass_score INT DEFAULT 60,
+      question_count INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'draft',
+      created_by INT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (created_by) REFERENCES users(id)
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS paper_questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      paper_id INTEGER NOT NULL,
-      question_id INTEGER NOT NULL,
-      sort_order INTEGER DEFAULT 0,
-      score INTEGER DEFAULT 1,
+    )`,
+    `CREATE TABLE IF NOT EXISTS paper_questions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      paper_id INT NOT NULL,
+      question_id INT NOT NULL,
+      sort_order INT DEFAULT 0,
+      score INT DEFAULT 1,
       FOREIGN KEY (paper_id) REFERENCES exam_papers(id) ON DELETE CASCADE,
       FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_answers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      question_id INTEGER,
-      paper_id INTEGER,
+    )`,
+    `CREATE TABLE IF NOT EXISTS user_answers (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      question_id INT,
+      paper_id INT,
       user_answer TEXT,
-      is_correct INTEGER DEFAULT 0,
-      time_spent INTEGER DEFAULT 0,
+      is_correct INT DEFAULT 0,
+      time_spent INT DEFAULT 0,
       answered_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (question_id) REFERENCES questions(id),
       FOREIGN KEY (paper_id) REFERENCES exam_papers(id)
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_exams (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      paper_id INTEGER,
-      registration_id INTEGER,
-      total_score REAL DEFAULT 0,
-      correct_count INTEGER DEFAULT 0,
-      wrong_count INTEGER DEFAULT 0,
-      time_spent INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'ongoing',
+    )`,
+    `CREATE TABLE IF NOT EXISTS user_exams (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      paper_id INT,
+      registration_id INT,
+      total_score DOUBLE DEFAULT 0,
+      correct_count INT DEFAULT 0,
+      wrong_count INT DEFAULT 0,
+      time_spent INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'ongoing',
       started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       submitted_at DATETIME,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (paper_id) REFERENCES exam_papers(id),
       FOREIGN KEY (registration_id) REFERENCES registrations(id)
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS wrong_questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      question_id INTEGER NOT NULL,
-      wrong_count INTEGER DEFAULT 1,
+    )`,
+    `CREATE TABLE IF NOT EXISTS wrong_questions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      question_id INT NOT NULL,
+      wrong_count INT DEFAULT 1,
       last_wrong_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      mastered INTEGER DEFAULT 0,
+      mastered INT DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (question_id) REFERENCES questions(id)
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS paper_questions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      paper_id INTEGER NOT NULL,
-      question_id INTEGER NOT NULL,
-      sort_order INTEGER DEFAULT 0,
-      score INTEGER DEFAULT 1,
-      FOREIGN KEY (paper_id) REFERENCES exam_papers(id) ON DELETE CASCADE,
-      FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
-    )
-  `)
-
-  // 资料表（如果不存在）
-  db.run(`
-    CREATE TABLE IF NOT EXISTS materials (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      category TEXT,
-      description TEXT,
-      file_path TEXT,
-      file_size INTEGER DEFAULT 0,
-      file_type TEXT,
-      download_count INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 新闻/公告表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS news (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
+    )`,
+    `CREATE TABLE IF NOT EXISTS news (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(255) NOT NULL,
       summary TEXT,
-      content TEXT,
-      type TEXT DEFAULT 'notice',
+      content LONGTEXT,
+      type VARCHAR(50) DEFAULT 'notice',
       cover_image TEXT,
-      author TEXT,
-      view_count INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'draft',
+      author VARCHAR(100),
+      view_count INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'draft',
       published_at DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 考试时间节点表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exam_timelines (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      exam_name TEXT NOT NULL,
-      exam_period TEXT,
-      exam_icon TEXT DEFAULT '📋',
-      exam_status TEXT DEFAULT 'upcoming',
-      exam_status_label TEXT DEFAULT '即将开始',
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS exam_timelines (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      exam_name VARCHAR(255) NOT NULL,
+      exam_period VARCHAR(100),
+      exam_icon VARCHAR(50) DEFAULT '📋',
+      exam_status VARCHAR(50) DEFAULT 'upcoming',
+      exam_status_label VARCHAR(100) DEFAULT '即将开始',
       milestones TEXT,
-      sort_order INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
+      sort_order INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 培训项目表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS programs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      category TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS programs (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      category VARCHAR(100),
       description TEXT,
-      icon TEXT,
-      gradient TEXT,
-      duration TEXT,
-      students INTEGER DEFAULT 0,
-      price TEXT,
-      status TEXT DEFAULT 'open',
-      status_label TEXT DEFAULT '报名中',
-      sort_order INTEGER DEFAULT 0,
+      icon VARCHAR(50),
+      gradient VARCHAR(100),
+      duration VARCHAR(100),
+      students INT DEFAULT 0,
+      price VARCHAR(100),
+      status VARCHAR(50) DEFAULT 'open',
+      status_label VARCHAR(100) DEFAULT '报名中',
+      sort_order INT DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 考场题目分发表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exam_rooms (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      exam_name TEXT NOT NULL,
-      room_name TEXT NOT NULL,
-      room_code TEXT NOT NULL UNIQUE,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS exam_rooms (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      exam_name VARCHAR(255) NOT NULL,
+      room_name VARCHAR(255) NOT NULL,
+      room_code VARCHAR(255) NOT NULL UNIQUE,
       file_path TEXT,
-      file_name TEXT,
-      file_size INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
-      download_count INTEGER DEFAULT 0,
+      file_name VARCHAR(255),
+      file_size INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
+      download_count INT DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exam_downloads (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      room_id INTEGER NOT NULL,
-      ip_address TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS exam_downloads (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      room_id INT NOT NULL,
+      ip_address VARCHAR(50),
       downloaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (room_id) REFERENCES exam_rooms(id)
-    )
-  `)
-
-  // 调研会话表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS survey_sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT DEFAULT '匿名',
-      status TEXT DEFAULT 'active',
+    )`,
+    `CREATE TABLE IF NOT EXISTS survey_sessions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(100) DEFAULT '匿名',
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 调研消息表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS survey_messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      session_id INTEGER NOT NULL,
-      role TEXT NOT NULL,
+    )`,
+    `CREATE TABLE IF NOT EXISTS survey_messages (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      session_id INT NOT NULL,
+      role VARCHAR(50) NOT NULL,
       content TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (session_id) REFERENCES survey_sessions(id)
-    )
-  `)
-
-  // 流程调研问卷表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS survey_forms (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      q1 TEXT DEFAULT '',
-      q2 TEXT DEFAULT '',
-      q3 TEXT DEFAULT '',
-      q4 TEXT DEFAULT '',
-      q5 TEXT DEFAULT '',
-      q6 TEXT DEFAULT '',
-      q7 TEXT DEFAULT '',
-      q8 TEXT DEFAULT '',
-      q9 TEXT DEFAULT '',
-      q10 TEXT DEFAULT '',
-      q11 TEXT DEFAULT '',
-      q12 TEXT DEFAULT '',
-      q13 TEXT DEFAULT '',
-      q14 TEXT DEFAULT '',
-      q15 TEXT DEFAULT '',
-      q16 TEXT DEFAULT '',
-      q17 TEXT DEFAULT '',
-      q18 TEXT DEFAULT '',
+    )`,
+    `CREATE TABLE IF NOT EXISTS survey_forms (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      q1 TEXT, q2 TEXT, q3 TEXT, q4 TEXT, q5 TEXT,
+      q6 TEXT, q7 TEXT, q8 TEXT, q9 TEXT, q10 TEXT,
+      q11 TEXT, q12 TEXT, q13 TEXT, q14 TEXT, q15 TEXT,
+      q16 TEXT, q17 TEXT, q18 TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // ===== 部门工作流程优化相关表 =====
-
-  // 专业目录表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS major_catalog (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      major_name TEXT NOT NULL,
-      category TEXT,
-      allowed_levels TEXT,
-      status TEXT DEFAULT 'active',
+    )`,
+    `CREATE TABLE IF NOT EXISTS major_catalog (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      major_name VARCHAR(255) NOT NULL,
+      category VARCHAR(100),
+      allowed_levels VARCHAR(100),
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 学员信息表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS student_profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      phone TEXT NOT NULL,
-      email TEXT,
-      gender TEXT,
-      age INTEGER,
-      education TEXT,
-      major TEXT,
-      work_years INTEGER,
-      social_security_years INTEGER,
-      id_card TEXT,
-      target_level TEXT,
-      organization TEXT,
-      source TEXT DEFAULT '网站',
+    )`,
+    `CREATE TABLE IF NOT EXISTS student_profiles (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      phone VARCHAR(50) NOT NULL,
+      email VARCHAR(255),
+      gender VARCHAR(10),
+      age INT,
+      education VARCHAR(100),
+      major VARCHAR(255),
+      work_years INT,
+      social_security_years INT,
+      id_card VARCHAR(50),
+      target_level VARCHAR(100),
+      organization VARCHAR(255),
+      source VARCHAR(100) DEFAULT '网站',
       remark TEXT,
-      status TEXT DEFAULT 'pending',
+      status VARCHAR(50) DEFAULT 'pending',
+      org_id INT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 兼容旧表：如果没有 source 列则添加
-  try {
-    db.run('ALTER TABLE student_profiles ADD COLUMN source TEXT DEFAULT \'网站\'')
-  } catch (e) {}
-
-  // 兼容旧表：如果没有 org_id 列则添加
-  try {
-    db.run('ALTER TABLE student_profiles ADD COLUMN org_id INTEGER')
-  } catch (e) {}
-
-  // 兼容旧表：org_sheet_students 重建（去掉 student_id NOT NULL 和 UNIQUE 约束）
-  // 使用 db 对象直接操作，不依赖 query/getOne（此时可能还未完全绑定）
-  try {
-    const checkSql = db.prepare("SELECT sql FROM sqlite_master WHERE name='org_sheet_students'")
-    let tableDef = null
-    if (checkSql.step()) {
-      tableDef = checkSql.getAsObject().sql
-    }
-    checkSql.free()
-
-    if (tableDef && (tableDef.includes('student_id INTEGER NOT NULL') || tableDef.includes('UNIQUE(sheet_id, student_id)'))) {
-      console.log('检测到 org_sheet_students 旧约束，开始重建...')
-
-      // 添加 extra_data 列（如果不存在）
-      try { db.run('ALTER TABLE org_sheet_students ADD COLUMN extra_data TEXT') } catch (e) {}
-
-      db.run('ALTER TABLE org_sheet_students RENAME TO org_sheet_students_old')
-      db.run(`CREATE TABLE org_sheet_students (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        sheet_id INTEGER NOT NULL,
-        student_id INTEGER,
-        name TEXT, phone TEXT, id_card TEXT, job_type TEXT, level TEXT,
-        reg_date DATE, exam_date DATE, condition TEXT, major TEXT, extra_data TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
-      )`)
-
-      // 获取旧表列
-      const oldColsStmt = db.prepare("PRAGMA table_info(org_sheet_students_old)")
-      const oldCols = []
-      while (oldColsStmt.step()) { oldCols.push(oldColsStmt.getAsObject().name) }
-      oldColsStmt.free()
-
-      const newColsStmt = db.prepare("PRAGMA table_info(org_sheet_students)")
-      const newCols = []
-      while (newColsStmt.step()) { newCols.push(newColsStmt.getAsObject().name) }
-      newColsStmt.free()
-
-      const commonCols = oldCols.filter(c => newCols.includes(c))
-      db.run(`INSERT INTO org_sheet_students (${commonCols.join(', ')}) SELECT ${commonCols.join(', ')} FROM org_sheet_students_old`)
-      db.run('DROP TABLE org_sheet_students_old')
-      console.log('org_sheet_students 表已重建，移除 NOT NULL/UNIQUE 约束，迁移列:', commonCols.join(', '))
-    } else {
-      console.log('org_sheet_students 表结构正常，无需迁移')
-    }
-  } catch (e) {
-    console.error('org_sheet_students 迁移失败:', e.message)
-  }
-
-  // org_sheet_students 新增列（18列扩展）
-  const newColumns = [
-    'submitted TEXT DEFAULT \'\'',
-    'audit_result TEXT DEFAULT \'\'',
-    'verified TEXT DEFAULT \'\'',
-    'payment_status TEXT DEFAULT \'\'',
-    'reject_reason TEXT DEFAULT \'\'',
-    'account_opened TEXT DEFAULT \'\'',
-    'remark TEXT DEFAULT \'\'',
-    'is_retest TEXT DEFAULT \'\'',
-    'offline_training TEXT DEFAULT \'\''
-  ]
-  for (const col of newColumns) {
-    try { db.run(`ALTER TABLE org_sheet_students ADD COLUMN ${col}`) } catch (e) {}
-  }
-
-  // 学员状态跟踪表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS student_status (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_id INTEGER NOT NULL,
-      stage TEXT NOT NULL,
-      operator TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS student_status (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      student_id INT NOT NULL,
+      stage VARCHAR(100) NOT NULL,
+      operator VARCHAR(100),
       note TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES student_profiles(id)
-    )
-  `)
-
-  // 机构信息表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS organizations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      contact_person TEXT,
-      contact_phone TEXT,
-      address TEXT,
-      cooperation_type TEXT,
-      student_count INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'active',
+    )`,
+    `CREATE TABLE IF NOT EXISTS organizations (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      name VARCHAR(255) NOT NULL,
+      contact_person VARCHAR(100),
+      contact_phone VARCHAR(50),
+      address VARCHAR(500),
+      cooperation_type VARCHAR(100),
+      student_count INT DEFAULT 0,
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 证书记录表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS certificates (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      student_id INTEGER NOT NULL,
-      cert_type TEXT,
-      cert_level TEXT,
-      cert_number TEXT,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS certificates (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      student_id INT NOT NULL,
+      cert_type VARCHAR(100),
+      cert_level VARCHAR(100),
+      cert_number VARCHAR(100),
       issue_date DATE,
       file_path TEXT,
-      status TEXT DEFAULT 'pending',
+      status VARCHAR(50) DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (student_id) REFERENCES student_profiles(id)
-    )
-  `)
-
-  // ===== 多租户 & 考试计划 & 数据表管理 =====
-
-  // 机构账号表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS org_users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      org_id INTEGER NOT NULL,
-      username TEXT NOT NULL UNIQUE,
+    )`,
+    `CREATE TABLE IF NOT EXISTS org_users (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      org_id INT NOT NULL,
+      username VARCHAR(255) NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      contact_name TEXT,
-      status TEXT DEFAULT 'active',
+      contact_name VARCHAR(100),
+      status VARCHAR(50) DEFAULT 'active',
       last_login DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (org_id) REFERENCES organizations(id)
-    )
-  `)
-
-  // 考试计划表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS exam_plans (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      exam_type TEXT,
-      exam_level TEXT,
+    )`,
+    `CREATE TABLE IF NOT EXISTS exam_plans (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      title VARCHAR(255) NOT NULL,
+      exam_type VARCHAR(100),
+      exam_level VARCHAR(100),
       reg_start DATE,
       reg_end DATE,
       exam_date DATE,
-      location TEXT,
+      location VARCHAR(255),
       description TEXT,
-      status TEXT DEFAULT '报名中',
-      created_by TEXT,
+      status VARCHAR(50) DEFAULT '报名中',
+      created_by VARCHAR(100),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
-
-  // 机构数据表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS org_sheets (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      org_id INTEGER NOT NULL,
-      exam_plan_id INTEGER,
-      sheet_name TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS org_sheets (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      org_id INT NOT NULL,
+      exam_plan_id INT,
+      sheet_name VARCHAR(255) NOT NULL,
       description TEXT,
-      created_by TEXT,
-      status TEXT DEFAULT 'active',
+      created_by VARCHAR(100),
+      status VARCHAR(50) DEFAULT 'active',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (org_id) REFERENCES organizations(id),
       FOREIGN KEY (exam_plan_id) REFERENCES exam_plans(id)
-    )
-  `)
-
-  // 表格学员关联表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS org_sheet_students (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sheet_id INTEGER NOT NULL,
-      student_id INTEGER,
-      name TEXT,
-      phone TEXT,
-      id_card TEXT,
-      job_type TEXT,
-      level TEXT,
+    )`,
+    `CREATE TABLE IF NOT EXISTS org_sheet_students (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      sheet_id INT NOT NULL,
+      student_id INT,
+      name VARCHAR(255),
+      phone VARCHAR(50),
+      id_card VARCHAR(50),
+      job_type VARCHAR(100),
+      level VARCHAR(50),
       reg_date DATE,
       exam_date DATE,
-      condition TEXT,
-      major TEXT,
+      \`condition\` VARCHAR(100),
+      major VARCHAR(255),
       extra_data TEXT,
+      submitted VARCHAR(50) DEFAULT '',
+      audit_result VARCHAR(100) DEFAULT '',
+      verified VARCHAR(50) DEFAULT '',
+      payment_status VARCHAR(100) DEFAULT '',
+      reject_reason VARCHAR(255) DEFAULT '',
+      account_opened VARCHAR(50) DEFAULT '',
+      remark TEXT,
+      is_retest VARCHAR(50) DEFAULT '',
+      offline_training VARCHAR(50) DEFAULT '',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
-    )
-  `)
-
-  // 单元格颜色标记表
-  db.run(`
-    CREATE TABLE IF NOT EXISTS cell_colors (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      sheet_id INTEGER NOT NULL,
-      row_id INTEGER NOT NULL,
-      column_key TEXT NOT NULL,
-      color TEXT NOT NULL,
+    )`,
+    `CREATE TABLE IF NOT EXISTS cell_colors (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      sheet_id INT NOT NULL,
+      row_id INT NOT NULL,
+      column_key VARCHAR(100) NOT NULL,
+      color VARCHAR(50) NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (sheet_id) REFERENCES org_sheets(id) ON DELETE CASCADE
-    )
-  `)
+    )`
+  ]
 
-  saveDatabase()
-  
-  return db
+  for (const sql of tables) {
+    await pool.execute(sql)
+  }
+
+  console.log('MySQL 数据库表初始化完成')
+  return pool
 }
 
 export function saveDatabase() {
-  if (db) {
-    const data = db.export()
-    const buffer = Buffer.from(data)
-    fs.writeFileSync(dbPath, buffer)
-  }
+  // MySQL 自动持久化，无需手动保存
 }
 
-export function query(sql, params = []) {
-  const stmt = db.prepare(sql)
-  stmt.bind(params)
-  
+export async function query(sql, params = []) {
+  const [rows] = await pool.execute(sql, params)
+
   if (sql.trim().toUpperCase().startsWith('SELECT')) {
-    const results = []
-    while (stmt.step()) {
-      const row = stmt.getAsObject()
-      results.push(row)
-    }
-    stmt.free()
-    return results
+    return rows
   }
-  
-  stmt.run()
-  stmt.free()
-  saveDatabase()
-  
+
   return {
-    lastInsertRowid: null,
-    changes: db.getRowsModified()
+    lastInsertRowid: rows.insertId || null,
+    changes: rows.affectedRows || 0
   }
 }
 
-export function getOne(sql, params = []) {
-  const stmt = db.prepare(sql)
-  stmt.bind(params)
-  
-  if (stmt.step()) {
-    const row = stmt.getAsObject()
-    stmt.free()
-    return row
-  }
-  stmt.free()
-  return null
+export async function getOne(sql, params = []) {
+  const [rows] = await pool.execute(sql, params)
+  return rows.length > 0 ? rows[0] : null
 }
 
-export function getLastInsertId() {
-  const stmt = db.prepare("SELECT last_insert_rowid() as id")
-  if (stmt.step()) {
-    const row = stmt.getAsObject()
-    stmt.free()
-    return row.id
-  }
-  stmt.free()
-  return null
-}
-
-export function insert(table, data) {
+export async function insert(table, data) {
   const keys = Object.keys(data)
   const values = Object.values(data)
   const placeholders = keys.map(() => '?').join(', ')
   const sql = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`
-  
-  const stmt = db.prepare(sql)
-  stmt.bind(values)
-  stmt.run()
-  stmt.free()
-  
-  const idStmt = db.prepare("SELECT last_insert_rowid() as id")
-  let lastId = null
-  if (idStmt.step()) {
-    lastId = idStmt.getAsObject().id
-  }
-  idStmt.free()
-  
-  saveDatabase()
-  
-  return lastId
+
+  const [result] = await pool.execute(sql, values)
+  return result.insertId
 }
 
-export function update(table, data, where, whereParams = []) {
+export async function update(table, data, where, whereParams = []) {
   const setClause = Object.keys(data).map(key => `${key} = ?`).join(', ')
   const values = [...Object.values(data), ...whereParams]
   const sql = `UPDATE ${table} SET ${setClause} WHERE ${where}`
-  const result = query(sql, values)
-  return result.changes
+  const [result] = await pool.execute(sql, values)
+  return result.affectedRows
 }
 
-export function remove(table, where, whereParams = []) {
+export async function remove(table, where, whereParams = []) {
   const sql = `DELETE FROM ${table} WHERE ${where}`
-  const result = query(sql, whereParams)
-  return result.changes
+  const [result] = await pool.execute(sql, whereParams)
+  return result.affectedRows
+}
+
+export function getPool() {
+  return pool
+}
+
+// 兼容旧代码的 getDB 别名
+export function getDB() {
+  return pool
 }
 
 export default { initDatabase, query, getOne, insert, update, remove, saveDatabase }
-
-export function getDB() {
-  return db
-}

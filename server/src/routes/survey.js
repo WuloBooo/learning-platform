@@ -38,20 +38,19 @@ const SYSTEM_PROMPT = `你是一位企业数字化转型顾问，正在帮助一
 注意：不要一次性列出所有问题，要像真实对话一样逐步展开。每次回复控制在150字以内。`
 
 // 创建新会话
-router.post('/sessions', (req, res) => {
+router.post('/sessions', async (req, res) => {
   try {
     const { name } = req.body
-    const sessionId = insert('survey_sessions', {
+    const sessionId = await insert('survey_sessions', {
       name: name || '匿名',
       status: 'active',
       created_at: new Date().toISOString()
     })
 
-    // 插入AI开场白
     const openingMessage = `嗨！我正在帮咱们部门做一次工作流程调研，主要是想了解大家日常有哪些重复性的工作，看看哪些可以用技术手段优化。
 
 能先简单说说你平时主要负责哪些工作吗？`
-    insert('survey_messages', {
+    await insert('survey_messages', {
       session_id: sessionId,
       role: 'assistant',
       content: openingMessage,
@@ -80,7 +79,7 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
     }
 
     // 保存用户消息
-    insert('survey_messages', {
+    await insert('survey_messages', {
       session_id: sessionId,
       role: 'user',
       content: content.trim(),
@@ -88,7 +87,7 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
     })
 
     // 获取该会话的所有历史消息
-    const messages = query(
+    const messages = await query(
       'SELECT role, content FROM survey_messages WHERE session_id = ? ORDER BY created_at ASC',
       [sessionId]
     )
@@ -122,7 +121,7 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
     const aiReply = data.choices[0]?.message?.content || '抱歉，我暂时无法回复，请稍后再试。'
 
     // 保存AI回复
-    insert('survey_messages', {
+    await insert('survey_messages', {
       session_id: sessionId,
       role: 'assistant',
       content: aiReply,
@@ -137,10 +136,10 @@ router.post('/sessions/:sessionId/messages', async (req, res) => {
 })
 
 // 获取会话历史消息
-router.get('/sessions/:sessionId/messages', (req, res) => {
+router.get('/sessions/:sessionId/messages', async (req, res) => {
   try {
     const { sessionId } = req.params
-    const messages = query(
+    const messages = await query(
       'SELECT id, role, content, created_at FROM survey_messages WHERE session_id = ? ORDER BY created_at ASC',
       [sessionId]
     )
@@ -151,9 +150,9 @@ router.get('/sessions/:sessionId/messages', (req, res) => {
 })
 
 // 获取所有会话列表（管理员查看）
-router.get('/sessions', (req, res) => {
+router.get('/sessions', async (req, res) => {
   try {
-    const sessions = query(
+    const sessions = await query(
       'SELECT id, name, status, created_at FROM survey_sessions ORDER BY created_at DESC'
     )
     res.json({ sessions })
@@ -163,14 +162,14 @@ router.get('/sessions', (req, res) => {
 })
 
 // 导出某个会话的完整对话（管理员查看）
-router.get('/sessions/:sessionId/export', (req, res) => {
+router.get('/sessions/:sessionId/export', async (req, res) => {
   try {
     const { sessionId } = req.params
-    const session = getOne('SELECT * FROM survey_sessions WHERE id = ?', [sessionId])
+    const session = await getOne('SELECT * FROM survey_sessions WHERE id = ?', [sessionId])
     if (!session) {
       return res.status(404).json({ message: '会话不存在' })
     }
-    const messages = query(
+    const messages = await query(
       'SELECT role, content, created_at FROM survey_messages WHERE session_id = ? ORDER BY created_at ASC',
       [sessionId]
     )
@@ -181,11 +180,11 @@ router.get('/sessions/:sessionId/export', (req, res) => {
 })
 
 // 删除单个会话
-router.delete('/sessions/:sessionId', (req, res) => {
+router.delete('/sessions/:sessionId', async (req, res) => {
   try {
     const { sessionId } = req.params
-    query('DELETE FROM survey_messages WHERE session_id = ?', [sessionId])
-    query('DELETE FROM survey_sessions WHERE id = ?', [sessionId])
+    await query('DELETE FROM survey_messages WHERE session_id = ?', [sessionId])
+    await query('DELETE FROM survey_sessions WHERE id = ?', [sessionId])
     res.json({ message: '删除成功' })
   } catch (error) {
     res.status(500).json({ message: '删除失败', error: error.message })
@@ -193,10 +192,10 @@ router.delete('/sessions/:sessionId', (req, res) => {
 })
 
 // 清空所有会话
-router.delete('/sessions', (req, res) => {
+router.delete('/sessions', async (req, res) => {
   try {
-    query('DELETE FROM survey_messages')
-    query('DELETE FROM survey_sessions')
+    await query('DELETE FROM survey_messages')
+    await query('DELETE FROM survey_sessions')
     res.json({ message: '已清空所有会话' })
   } catch (error) {
     res.status(500).json({ message: '清空失败', error: error.message })
@@ -204,13 +203,13 @@ router.delete('/sessions', (req, res) => {
 })
 
 // 提交流程调研问卷
-router.post('/form', (req, res) => {
+router.post('/form', async (req, res) => {
   try {
     const data = req.body
     if (!data.name || !data.name.trim()) {
       return res.status(400).json({ message: '请填写姓名' })
     }
-    const id = insert('survey_forms', {
+    const id = await insert('survey_forms', {
       name: data.name,
       q1: data.q1 || '',
       q2: data.q2 || '',
@@ -239,9 +238,9 @@ router.post('/form', (req, res) => {
 })
 
 // 获取所有问卷结果
-router.get('/form', (req, res) => {
+router.get('/form', async (req, res) => {
   try {
-    const forms = query('SELECT * FROM survey_forms ORDER BY created_at DESC')
+    const forms = await query('SELECT * FROM survey_forms ORDER BY created_at DESC')
     res.json({ forms })
   } catch (error) {
     res.status(500).json({ message: '获取失败', error: error.message })

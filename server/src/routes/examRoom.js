@@ -57,7 +57,7 @@ router.get('/download', async (req, res, next) => {
       return res.status(400).json({ message: '请输入识别码' })
     }
 
-    const room = getOne('SELECT * FROM exam_rooms WHERE room_code = ? AND status = ?', [code, 'active'])
+    const room = await getOne('SELECT * FROM exam_rooms WHERE room_code = ? AND status = ?', [code, 'active'])
     if (!room) {
       return res.status(404).json({ message: '识别码无效或考场已关闭' })
     }
@@ -70,12 +70,12 @@ router.get('/download', async (req, res, next) => {
     const realIp = req.headers['x-real-ip']
     const ipAddress = (forwarded ? forwarded.split(',')[0].trim() : null) || realIp || req.socket.remoteAddress
 
-    insert('exam_downloads', {
+    await insert('exam_downloads', {
       room_id: room.id,
       ip_address: ipAddress
     })
 
-    update('exam_rooms', { download_count: room.download_count + 1 }, 'id = ?', [room.id])
+    await update('exam_rooms', { download_count: room.download_count + 1 }, 'id = ?', [room.id])
 
     res.download(room.file_path, room.file_name || 'exam.zip')
   } catch (error) {
@@ -89,7 +89,7 @@ router.use(authorize('admin'))
 
 router.get('/', async (req, res, next) => {
   try {
-    const rooms = query('SELECT * FROM exam_rooms ORDER BY created_at DESC')
+    const rooms = await query('SELECT * FROM exam_rooms ORDER BY created_at DESC')
     res.json({ data: rooms })
   } catch (error) {
     next(error)
@@ -106,13 +106,13 @@ router.post('/', async (req, res, next) => {
       return res.status(400).json({ message: '识别码必须为纯数字' })
     }
 
-    const existing = getOne('SELECT id FROM exam_rooms WHERE room_code = ?', [room_code])
+    const existing = await getOne('SELECT id FROM exam_rooms WHERE room_code = ?', [room_code])
     if (existing) {
       return res.status(400).json({ message: '识别码已存在' })
     }
 
-    const id = insert('exam_rooms', { exam_name, room_name, room_code })
-    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const id = await insert('exam_rooms', { exam_name, room_name, room_code })
+    const room = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     res.status(201).json({ data: room })
   } catch (error) {
     next(error)
@@ -124,7 +124,7 @@ router.put('/:id', async (req, res, next) => {
     const { id } = req.params
     const { exam_name, room_name, room_code, status } = req.body
 
-    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const room = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     if (!room) {
       return res.status(404).json({ message: '考场不存在' })
     }
@@ -133,7 +133,7 @@ router.put('/:id', async (req, res, next) => {
       if (!/^\d+$/.test(room_code)) {
         return res.status(400).json({ message: '识别码必须为纯数字' })
       }
-      const existing = getOne('SELECT id FROM exam_rooms WHERE room_code = ? AND id != ?', [room_code, id])
+      const existing = await getOne('SELECT id FROM exam_rooms WHERE room_code = ? AND id != ?', [room_code, id])
       if (existing) {
         return res.status(400).json({ message: '识别码已存在' })
       }
@@ -145,8 +145,8 @@ router.put('/:id', async (req, res, next) => {
     if (room_code) data.room_code = room_code
     if (status) data.status = status
 
-    update('exam_rooms', data, 'id = ?', [id])
-    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    await update('exam_rooms', data, 'id = ?', [id])
+    const updated = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     res.json({ data: updated })
   } catch (error) {
     next(error)
@@ -156,7 +156,7 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params
-    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const room = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     if (!room) {
       return res.status(404).json({ message: '考场不存在' })
     }
@@ -165,8 +165,8 @@ router.delete('/:id', async (req, res, next) => {
       fs.unlinkSync(room.file_path)
     }
 
-    remove('exam_downloads', 'room_id = ?', [id])
-    remove('exam_rooms', 'id = ?', [id])
+    await remove('exam_downloads', 'room_id = ?', [id])
+    await remove('exam_rooms', 'id = ?', [id])
     res.json({ message: '删除成功' })
   } catch (error) {
     next(error)
@@ -177,7 +177,7 @@ router.delete('/:id', async (req, res, next) => {
 router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
   try {
     const { id } = req.params
-    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const room = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     if (!room) {
       return res.status(404).json({ message: '考场不存在' })
     }
@@ -190,13 +190,13 @@ router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
       fs.unlinkSync(room.file_path)
     }
 
-    update('exam_rooms', {
+    await update('exam_rooms', {
       file_path: req.file.path,
       file_name: req.file.originalname,
       file_size: req.file.size
     }, 'id = ?', [id])
 
-    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const updated = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     res.json({ data: updated })
   } catch (error) {
     next(error)
@@ -207,7 +207,7 @@ router.post('/:id/upload', upload.single('file'), async (req, res, next) => {
 router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, res, next) => {
   try {
     const { id } = req.params
-    const room = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const room = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     if (!room) {
       return res.status(404).json({ message: '考场不存在' })
     }
@@ -263,13 +263,13 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
 
     const zipSize = fs.statSync(zipPath).size
 
-    update('exam_rooms', {
+    await update('exam_rooms', {
       file_path: zipPath,
       file_name: zipFileName,
       file_size: zipSize
     }, 'id = ?', [id])
 
-    const updated = getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
+    const updated = await getOne('SELECT * FROM exam_rooms WHERE id = ?', [id])
     res.json({ data: updated })
   } catch (error) {
     next(error)
@@ -279,7 +279,7 @@ router.post('/:id/upload-folder', folderUpload.array('files', 500), async (req, 
 router.get('/:id/downloads', async (req, res, next) => {
   try {
     const { id } = req.params
-    const downloads = query('SELECT * FROM exam_downloads WHERE room_id = ? ORDER BY downloaded_at DESC', [id])
+    const downloads = await query('SELECT * FROM exam_downloads WHERE room_id = ? ORDER BY downloaded_at DESC', [id])
     res.json({ data: downloads })
   } catch (error) {
     next(error)
