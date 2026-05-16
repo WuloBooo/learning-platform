@@ -14,21 +14,21 @@
           <span class="icon">📊</span>
           <span>概览</span>
         </router-link>
+        <router-link to="/workflow/organizations" class="nav-item" active-class="active">
+          <span class="icon">🏢</span>
+          <span>机构管理</span>
+        </router-link>
         <router-link to="/workflow/org-users" class="nav-item" active-class="active">
           <span class="icon">🔑</span>
           <span>机构账号</span>
-        </router-link>
-        <router-link to="/workflow/exam-plans" class="nav-item" active-class="active">
-          <span class="icon">📋</span>
-          <span>考试计划</span>
         </router-link>
         <router-link to="/workflow/data-sheets" class="nav-item" active-class="active">
           <span class="icon">📊</span>
           <span>数据表管理</span>
         </router-link>
-        <router-link to="/workflow/organizations" class="nav-item" active-class="active">
-          <span class="icon">🏢</span>
-          <span>机构管理</span>
+        <router-link to="/workflow/exam-plans" class="nav-item" active-class="active">
+          <span class="icon">📋</span>
+          <span>考试计划</span>
         </router-link>
         <router-link to="/workflow/students" class="nav-item" active-class="active">
           <span class="icon">👥</span>
