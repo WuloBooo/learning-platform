@@ -87,7 +87,7 @@ router.post('/login', validateLogin, async (req, res, next) => {
     )
     
     await query(
-      "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, datetime('now', '+7 days'))",
+      "INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))",
       [user.id, uuidv4()]
     )
     
