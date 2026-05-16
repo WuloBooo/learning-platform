@@ -252,24 +252,74 @@ const initHot = () => {
       }
     },
     afterPaste(data, coords) {
-      // 粘贴后等保存完成，再检查是否需要补充空行
-      savePromise.then(async () => {
-        // 等待一小段时间确保所有 afterChange 都处理完
-        await new Promise(r => setTimeout(r, 1500))
-        const empty = countEmptyRows(tableData.value)
-        if (empty < 50) {
-          const need = MIN_EMPTY_ROWS - empty
-          saving.value = true
-          try {
-            await orgAPI.batchCreateEmpty(currentSheet.value.id, need)
-            // 注意：不调 loadSheetData，因为会覆盖当前编辑的数据
-            // 只在用户手动点"刷新数据"时才重新加载
-          } catch (e) {
-            console.error('补充空行失败:', e)
-          }
-          saving.value = false
+      // 粘贴后检查是否有无id的行需要创建
+      const newRows = []
+      for (let i = 0; i < tableData.value.length; i++) {
+        const row = tableData.value[i]
+        if (!row.id && colKeys.some(k => row[k] && String(row[k]).trim())) {
+          newRows.push({ index: i, data: { ...row } })
         }
-      })
+      }
+
+      if (newRows.length === 0) {
+        // 没有新行需要创建，只需补充空行
+        savePromise.then(async () => {
+          await new Promise(r => setTimeout(r, 1000))
+          const empty = countEmptyRows(tableData.value)
+          if (empty < 50) {
+            saving.value = true
+            try {
+              await orgAPI.batchCreateEmpty(currentSheet.value.id, MIN_EMPTY_ROWS - empty)
+            } catch (e) {
+              console.error('补充空行失败:', e)
+            }
+            saving.value = false
+          }
+        })
+        return
+      }
+
+      // 有无id的行，先批量创建，拿到id后再更新内容
+      saving.value = true
+      ;(async () => {
+        try {
+          const res = await orgAPI.batchCreateEmpty(currentSheet.value.id, newRows.length)
+          const ids = res.data?.ids || res.ids || []
+          // 把id赋给对应的行
+          for (let i = 0; i < newRows.length && i < ids.length; i++) {
+            tableData.value[newRows[i].index].id = ids[i]
+          }
+          // 收集这些行的所有非空字段，批量保存
+          const updates = []
+          for (const { index, data } of newRows) {
+            const row = tableData.value[index]
+            if (row.id) {
+              const update = { id: row.id }
+              for (const key of colKeys) {
+                if (row[key] && String(row[key]).trim()) {
+                  update[key] = row[key]
+                }
+              }
+              updates.push(update)
+            }
+          }
+          // 分批保存
+          const batchSize = 200
+          for (let i = 0; i < updates.length; i += batchSize) {
+            await orgAPI.batchSave(currentSheet.value.id, updates.slice(i, i + batchSize))
+          }
+          console.log(`[afterPaste] 创建并保存了 ${updates.length} 个新行`)
+
+          // 补充空行
+          const empty = countEmptyRows(tableData.value)
+          if (empty < 50) {
+            await orgAPI.batchCreateEmpty(currentSheet.value.id, MIN_EMPTY_ROWS - empty)
+          }
+        } catch (e) {
+          console.error('粘贴处理失败:', e)
+        }
+        saving.value = false
+      })()
     },
     afterRemoveRow(index, amount, physicalRows) {
       for (const r of physicalRows) {
