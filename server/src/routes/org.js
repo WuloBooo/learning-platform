@@ -207,7 +207,7 @@ router.post('/sheets/:sheetId/batch-create-empty', orgAuth, async (req, res) => 
 
     for (let i = 0; i < count; i++) {
       const [result] = await pool.execute(
-        `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, \`condition\`, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '')`,
+        `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, \`condition\`, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', NULL, NULL, '', '', '', '', '', '', '', '', '', '', '')`,
         [req.params.sheetId]
       )
       ids.push(result.insertId)
@@ -263,7 +263,11 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, async (req, res) => {
     for (const row of merged.values()) {
       try {
         const { id, ...data } = row
-        const setClause = Object.keys(data).map(key => `${key} = ?`).join(', ')
+        // DATE类型字段空字符串转NULL
+        for (const key of ['reg_date', 'exam_date']) {
+          if (data[key] === '') data[key] = null
+        }
+        const setClause = Object.keys(data).map(key => `\`${key}\` = ?`).join(', ')
         const values = [...Object.values(data), id, req.params.sheetId]
         await pool.execute(`UPDATE org_sheet_students SET ${setClause} WHERE id = ? AND sheet_id = ?`, values)
         result.success++
@@ -279,7 +283,11 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, async (req, res) => {
           const keys = ['sheet_id']
           const vals = [req.params.sheetId]
           for (const key of allowed) {
-            if (row[key] !== undefined) { keys.push(key); vals.push(row[key] || '') }
+            if (row[key] !== undefined) {
+              keys.push(key)
+              const val = row[key] || ''
+              vals.push((key === 'reg_date' || key === 'exam_date') && val === '' ? null : val)
+            }
           }
           const placeholders = keys.map(() => '?').join(', ')
           await pool.execute(`INSERT INTO org_sheet_students (${keys.join(', ')}) VALUES (${placeholders})`, vals)
@@ -345,7 +353,7 @@ router.post('/sheets/:sheetId/import', orgAuth, async (req, res) => {
         }
 
         const keys = Object.keys(data)
-        const vals = Object.values(data)
+        const vals = keys.map(k => ((k === 'reg_date' || k === 'exam_date') && data[k] === '') ? null : data[k])
         const placeholders = keys.map(() => '?').join(', ')
         await pool.execute(`INSERT INTO org_sheet_students (${keys.join(', ')}) VALUES (${placeholders})`, vals)
         success++

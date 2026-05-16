@@ -592,7 +592,7 @@ router.post('/admin/sheets/:sheetId/batch-create-empty', async (req, res) => {
 
     for (let i = 0; i < count; i++) {
       const [result] = await pool.execute(
-        `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, \`condition\`, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '')`,
+        `INSERT INTO org_sheet_students (sheet_id, name, phone, id_card, job_type, level, reg_date, exam_date, \`condition\`, major, submitted, audit_result, verified, payment_status, reject_reason, account_opened, remark, is_retest, offline_training) VALUES (?, '', '', '', '', '', NULL, NULL, '', '', '', '', '', '', '', '', '', '', '')`,
         [req.params.sheetId]
       )
       ids.push(result.insertId)
