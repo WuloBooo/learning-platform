@@ -48,6 +48,7 @@
           <button class="tool-btn secondary" @click="exportExcel">导出 Excel</button>
           <button class="tool-btn outline" @click="loadSheetData">刷新数据</button>
           <input ref="fileInput" type="file" accept=".xlsx,.xls,.csv" style="display:none" @change="handleImport" />
+          <input class="search-input" type="text" placeholder="搜索..." v-model="searchKeyword" @input="doSearch" />
         </div>
 
         <div id="hot-container" class="table-scroll"></div>
@@ -73,6 +74,7 @@ const tableData = ref([])
 const selectedRows = ref([])
 const saving = ref(false)
 const fileInput = ref(null)
+const searchKeyword = ref('')
 let hot = null
 let savePromise = Promise.resolve()
 
@@ -194,6 +196,7 @@ const initHot = () => {
     colHeaders,
     columns: hotColumns,
     rowHeaders: true,
+    search: true,
     height: Math.max(400, window.innerHeight - 220),
     stretchH: 'all',
     language: 'zh-CN',
@@ -404,6 +407,13 @@ const handleImport = async (e) => {
   if (fileInput.value) fileInput.value.value = ''
 }
 
+const doSearch = () => {
+  if (!hot) return
+  const searchPlugin = hot.getPlugin('search')
+  searchPlugin.query(searchKeyword.value)
+  hot.render()
+}
+
 const handleLogout = () => {
   localStorage.removeItem('org_token')
   localStorage.removeItem('org_user')
@@ -517,7 +527,19 @@ onBeforeUnmount(() => {
   margin-left: auto;
 }
 
-.table-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.table-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+
+.search-input {
+  margin-left: auto;
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: #667eea; }
 
 .tool-btn {
   padding: 8px 16px;

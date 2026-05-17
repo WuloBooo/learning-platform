@@ -65,6 +65,7 @@
             <button class="tool-btn danger" @click="adminDeleteRows" v-if="adminSelectedRows.length > 0">删除选中行 ({{ adminSelectedRows.length }})</button>
             <button class="tool-btn secondary" @click="adminExportExcel">导出 Excel</button>
             <button class="tool-btn outline" @click="loadEditorData">刷新数据</button>
+            <input class="search-input" type="text" placeholder="搜索..." v-model="adminSearchKeyword" @input="adminDoSearch" />
             <span class="saving-hint" v-if="adminSaving">保存中...</span>
           </div>
           <div :id="'admin-hot-' + editorSheet.id" class="admin-hot-container"></div>
@@ -166,6 +167,7 @@ const editorSheet = ref(null)
 const adminTableData = ref([])
 const adminSelectedRows = ref([])
 const adminSaving = ref(false)
+const adminSearchKeyword = ref('')
 let adminHot = null
 
 const MIN_EMPTY_ROWS = 500
@@ -288,6 +290,7 @@ const initAdminHot = () => {
     colHeaders,
     columns: hotColumns,
     rowHeaders: true,
+    search: true,
     height: Math.max(400, window.innerHeight - 280),
     stretchH: 'all',
     language: 'zh-CN',
@@ -389,6 +392,13 @@ const adminDeleteRows = async () => {
   }
   adminHot.alter('remove_row', adminSelectedRows.value.sort((a, b) => b - a))
   adminSelectedRows.value = []
+}
+
+const adminDoSearch = () => {
+  if (!adminHot) return
+  const searchPlugin = adminHot.getPlugin('search')
+  searchPlugin.query(adminSearchKeyword.value)
+  adminHot.render()
 }
 
 const adminExportExcel = () => {
@@ -556,7 +566,19 @@ onBeforeUnmount(() => {
 
 .empty-row { text-align: center; padding: 40px !important; color: #999; }
 
-.editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; }
+.editor-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+
+.search-input {
+  margin-left: auto;
+  padding: 8px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: #667eea; }
 
 .tool-btn {
   padding: 8px 16px;
