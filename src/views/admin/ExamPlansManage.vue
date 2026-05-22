@@ -21,12 +21,27 @@
           <span class="day-number">{{ day.day }}</span>
           <div class="day-events">
             <div
-              v-for="evt in getEventsForDate(day.dateStr)"
-              :key="evt.id + evt.type"
-              :class="['event-dot', evt.type]"
+              v-for="(evt, eidx) in getEventsForDate(day.dateStr)"
+              :key="eidx"
+              class="event-card"
+              :style="{
+                background: getColorForType(evt.plan.exam_type).bg,
+                color: getColorForType(evt.plan.exam_type).text,
+                borderLeftColor: getColorForType(evt.plan.exam_type).border
+              }"
               @click="showEventDetail(evt)"
             >
-              {{ evt.label }}
+              <div class="event-title">{{ evt.plan.title }}</div>
+              <div class="event-meta">
+                <span v-if="evt.plan.exam_type">{{ evt.plan.exam_type }}</span>
+                <span v-if="evt.plan.exam_level">{{ evt.plan.exam_level }}</span>
+              </div>
+              <div class="event-bottom">
+                <div class="event-phases">
+                  <span v-for="phase in evt.phases" :key="phase" class="phase-tag">{{ phase }}</span>
+                </div>
+                <span :class="['event-status', getStatusClass(evt.plan.status)]">{{ evt.plan.status }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -148,6 +163,38 @@ const weekDays = ['日', '一', '二', '三', '四', '五', '六']
 const currentYear = ref(new Date().getFullYear())
 const currentMonth = ref(new Date().getMonth() + 1)
 
+const EVENT_COLORS = [
+  { bg: '#dbeafe', text: '#1e40af', border: '#93c5fd' },
+  { bg: '#dcfce7', text: '#166534', border: '#86efac' },
+  { bg: '#fef3c7', text: '#92400e', border: '#fcd34d' },
+  { bg: '#fce7f3', text: '#9d174d', border: '#f9a8d4' },
+  { bg: '#e0e7ff', text: '#3730a3', border: '#a5b4fc' },
+  { bg: '#ccfbf1', text: '#134e4a', border: '#5eead4' },
+  { bg: '#ffedd5', text: '#9a3412', border: '#fdba74' },
+  { bg: '#f3e8ff', text: '#6b21a8', border: '#c084fc' },
+]
+const typeColorMap = new Map()
+let colorIndex = 0
+
+function getColorForType(examType) {
+  const key = examType || '未分类'
+  if (!typeColorMap.has(key)) {
+    typeColorMap.set(key, EVENT_COLORS[colorIndex % EVENT_COLORS.length])
+    colorIndex++
+  }
+  return typeColorMap.get(key)
+}
+
+function normalizeDate(d) {
+  if (!d) return ''
+  const date = new Date(d)
+  if (isNaN(date.getTime())) return ''
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 function getEmptyForm() {
   return { title: '', exam_type: '', exam_level: '', reg_start: '', reg_end: '', exam_date: '', location: '', description: '', status: '报名中' }
 }
@@ -188,7 +235,10 @@ const calendarDays = computed(() => {
   const days = []
 
   for (let i = firstDay - 1; i >= 0; i--) {
-    days.push({ day: prevDays - i, current: false, dateStr: '' })
+    const pm = m === 1 ? 12 : m - 1
+    const py = m === 1 ? y - 1 : y
+    const dateStr = `${py}-${String(pm).padStart(2, '0')}-${String(prevDays - i).padStart(2, '0')}`
+    days.push({ day: prevDays - i, current: false, dateStr })
   }
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(i).padStart(2, '0')}`
@@ -200,8 +250,11 @@ const calendarDays = computed(() => {
     })
   }
   const remaining = 42 - days.length
+  const nm = m === 12 ? 1 : m + 1
+  const ny = m === 12 ? y + 1 : y
   for (let i = 1; i <= remaining; i++) {
-    days.push({ day: i, current: false, dateStr: '' })
+    const dateStr = `${ny}-${String(nm).padStart(2, '0')}-${String(i).padStart(2, '0')}`
+    days.push({ day: i, current: false, dateStr })
   }
   return days
 })
@@ -210,9 +263,13 @@ const getEventsForDate = (dateStr) => {
   if (!dateStr) return []
   const events = []
   for (const plan of plans.value) {
-    if (plan.reg_start === dateStr) events.push({ id: plan.id, type: 'reg-start', label: '📢报名开始', plan })
-    if (plan.reg_end === dateStr) events.push({ id: plan.id, type: 'reg-end', label: '⏰报名截止', plan })
-    if (plan.exam_date === dateStr) events.push({ id: plan.id, type: 'exam', label: '📝考试', plan })
+    const phases = []
+    if (plan.reg_start === dateStr) phases.push('报名开始')
+    if (plan.reg_end === dateStr) phases.push('报名截止')
+    if (plan.exam_date === dateStr) phases.push('考试')
+    if (phases.length > 0) {
+      events.push({ plan, phases })
+    }
   }
   return events
 }
@@ -225,7 +282,12 @@ const showEventDetail = (evt) => {
 const loadPlans = async () => {
   try {
     const res = await workflowAPI.getExamPlans()
-    plans.value = res.data || []
+    plans.value = (res.data || []).map(p => ({
+      ...p,
+      reg_start: normalizeDate(p.reg_start),
+      reg_end: normalizeDate(p.reg_end),
+      exam_date: normalizeDate(p.exam_date),
+    }))
   } catch (e) {
     console.error('加载失败', e)
   }
@@ -329,7 +391,7 @@ onMounted(loadPlans)
 
 .calendar-day {
   background: white;
-  min-height: 80px;
+  min-height: 120px;
   padding: 4px;
   position: relative;
 }
@@ -351,23 +413,67 @@ onMounted(loadPlans)
 .day-events {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   margin-top: 4px;
 }
 
-.event-dot {
-  font-size: 10px;
-  padding: 2px 4px;
-  border-radius: 3px;
+.event-card {
+  border-radius: 4px;
+  padding: 3px 6px;
+  border-left: 3px solid;
   cursor: pointer;
+  font-size: 11px;
+  line-height: 1.3;
+  transition: opacity 0.15s;
+  overflow: hidden;
+}
+.event-card:hover { opacity: 0.8; }
+
+.event-title {
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 11px;
 }
 
-.event-dot.reg-start { background: #dbeafe; color: #1e40af; }
-.event-dot.reg-end { background: #fef3c7; color: #92400e; }
-.event-dot.exam { background: #fee2e2; color: #991b1b; }
+.event-meta {
+  display: flex;
+  gap: 4px;
+  opacity: 0.8;
+  font-size: 10px;
+}
+
+.event-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.event-phases {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+
+.phase-tag {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(0,0,0,0.1);
+}
+
+.event-status {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.event-status.active { background: rgba(59,130,246,0.2); color: #1e40af; }
+.event-status.complete { background: rgba(34,197,94,0.2); color: #166534; }
+.event-status.archived { background: rgba(156,163,175,0.2); color: #6b7280; }
 
 .list-section h3 { margin: 0 0 12px; font-size: 16px; }
 
