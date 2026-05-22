@@ -452,7 +452,7 @@ router.get('/admin/sheets', async (req, res) => {
 
     const sheets = await query(sql, params)
     for (const sheet of sheets) {
-      const result = await getOne('SELECT COUNT(*) as count FROM org_sheet_students WHERE sheet_id = ?', [sheet.id])
+      const result = await getOne("SELECT COUNT(*) as count FROM org_sheet_students WHERE sheet_id = ? AND name IS NOT NULL AND TRIM(name) != ''", [sheet.id])
       sheet.student_count = result?.count || 0
     }
 
