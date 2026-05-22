@@ -147,12 +147,62 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- 考试计划详情弹窗 -->
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="selectedPlan" @click.self="closePlanDetail">
+        <div class="modal-card plan-detail-modal">
+          <div class="plan-detail-header">
+            <h3>{{ selectedPlan.title }}</h3>
+            <button class="close-btn" @click="closePlanDetail">✕</button>
+          </div>
+          <div class="plan-detail-info">
+            <div class="info-row">
+              <span v-if="selectedPlan.exam_type"><strong>类型：</strong>{{ selectedPlan.exam_type }}</span>
+              <span v-if="selectedPlan.exam_level"><strong>等级：</strong>{{ selectedPlan.exam_level }}</span>
+              <span :class="['status-badge', getStatusClass(selectedPlan.status)]">{{ selectedPlan.status }}</span>
+            </div>
+            <div class="info-row">
+              <span><strong>报名：</strong>{{ formatDate(selectedPlan.reg_start) }} ~ {{ formatDate(selectedPlan.reg_end) }}</span>
+              <span><strong>考试：</strong>{{ formatDate(selectedPlan.exam_date) }}</span>
+            </div>
+            <div class="info-row" v-if="selectedPlan.location">
+              <span><strong>地点：</strong>{{ selectedPlan.location }}</span>
+            </div>
+          </div>
+          <div class="plan-sheets-section">
+            <div class="plan-sheets-header">
+              <h4>关联数据表（{{ planSheets.length }}张）</h4>
+              <button class="tool-btn" @click="goToAllSheets">查看全部 →</button>
+            </div>
+            <div class="plan-sheets-list" v-if="planSheets.length > 0">
+              <div class="sheet-item" v-for="sheet in planSheets" :key="sheet.id">
+                <div class="sheet-item-info">
+                  <span class="sheet-org">{{ sheet.org_name }}</span>
+                  <span class="sheet-name">{{ sheet.sheet_name }}</span>
+                  <span :class="['status-badge', sheet.status === 'active' ? 'active' : 'archived']">
+                    {{ sheet.status === 'active' ? '使用中' : '已归档' }}
+                  </span>
+                </div>
+                <button class="action-btn edit" @click="goToSheetEditor(sheet)">编辑</button>
+              </div>
+            </div>
+            <div class="empty-sheets" v-else>
+              <p>暂无关联数据表</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { workflowAPI } from '../../api'
+
+const router = useRouter()
 
 const plans = ref([])
 const showModal = ref(false)
@@ -274,9 +324,35 @@ const getEventsForDate = (dateStr) => {
   return events
 }
 
-const showEventDetail = (evt) => {
-  const p = evt.plan
-  alert(`${p.title}\n类型：${p.exam_type || '-'}\n等级：${p.exam_level || '-'}\n报名：${formatDate(p.reg_start)} ~ ${formatDate(p.reg_end)}\n考试：${formatDate(p.exam_date)}\n地点：${p.location || '-'}\n状态：${p.status}`)
+const selectedPlan = ref(null)
+const planSheets = ref([])
+
+const showEventDetail = async (evt) => {
+  selectedPlan.value = evt.plan
+  planSheets.value = []
+  try {
+    const res = await workflowAPI.getSheets({ exam_plan_id: evt.plan.id })
+    planSheets.value = res.data || []
+  } catch (e) {
+    console.error('加载关联数据表失败', e)
+  }
+}
+
+const closePlanDetail = () => {
+  selectedPlan.value = null
+  planSheets.value = []
+}
+
+const goToAllSheets = () => {
+  const id = selectedPlan.value.id
+  closePlanDetail()
+  router.push({ path: '/workflow/data-sheets', query: { exam_plan_id: id } })
+}
+
+const goToSheetEditor = (sheet) => {
+  const planId = selectedPlan.value.id
+  closePlanDetail()
+  router.push({ path: '/workflow/data-sheets', query: { exam_plan_id: planId, sheet_id: sheet.id } })
 }
 
 const loadPlans = async () => {
@@ -522,6 +598,89 @@ onMounted(loadPlans)
 .action-btn.delete { color: #e74c3c; border-color: #e74c3c; }
 
 .empty-row { text-align: center; padding: 40px !important; color: #999; }
+
+.plan-detail-modal { width: 620px !important; }
+.plan-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.plan-detail-header h3 { margin: 0; font-size: 18px; }
+.close-btn {
+  background: none; border: none; font-size: 20px; cursor: pointer; color: #999;
+  padding: 4px 8px;
+}
+.close-btn:hover { color: #333; }
+
+.plan-detail-info {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+.info-row:last-child { margin-bottom: 0; }
+.info-row strong { color: #555; }
+
+.plan-sheets-section { }
+.plan-sheets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.plan-sheets-header h4 { margin: 0; font-size: 15px; color: #333; }
+.tool-btn {
+  padding: 6px 14px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.tool-btn:hover { opacity: 0.9; }
+
+.plan-sheets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.sheet-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+.sheet-item:hover { background: #f8f9ff; }
+.sheet-item-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.sheet-org { font-weight: 600; color: #333; }
+.sheet-name { color: #666; }
+
+.empty-sheets {
+  text-align: center;
+  padding: 24px;
+  color: #999;
+  background: #fafafa;
+  border-radius: 8px;
+}
 </style>
 
 <style>

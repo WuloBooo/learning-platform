@@ -6,6 +6,10 @@
           <option value="">全部机构</option>
           <option v-for="org in organizations" :key="org.id" :value="org.id">{{ org.name }}</option>
         </select>
+        <select v-model="filterExamPlanId" @change="loadSheets" class="filter-select">
+          <option value="">全部考试计划</option>
+          <option v-for="plan in examPlans" :key="plan.id" :value="plan.id">{{ plan.title }}</option>
+        </select>
       </div>
       <div class="header-right">
         <button class="add-btn" @click="openCreate">创建数据表</button>
@@ -148,16 +152,19 @@
 
 <script setup>
 import { ref, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import { workflowAPI, api } from '../../api'
 import Handsontable from 'handsontable'
 import 'handsontable/styles/handsontable.min.css'
 import 'handsontable/styles/ht-theme-main.min.css'
 import * as XLSX from 'xlsx'
 
+const route = useRoute()
 const sheets = ref([])
 const organizations = ref([])
 const examPlans = ref([])
 const filterOrgId = ref('')
+const filterExamPlanId = ref('')
 const showModal = ref(false)
 const showBatchModal = ref(false)
 const editing = ref(null)
@@ -192,7 +199,9 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString('zh-CN') : '-'
 
 const loadSheets = async () => {
   try {
-    const params = filterOrgId.value ? { org_id: filterOrgId.value } : {}
+    const params = {}
+    if (filterOrgId.value) params.org_id = filterOrgId.value
+    if (filterExamPlanId.value) params.exam_plan_id = filterExamPlanId.value
     const res = await workflowAPI.getSheets(params)
     sheets.value = res.data || []
   } catch (e) {
@@ -478,10 +487,16 @@ const handleDelete = async (sheet) => {
   }
 }
 
-onMounted(() => {
-  loadSheets()
-  loadOrganizations()
-  loadExamPlans()
+onMounted(async () => {
+  if (route.query.exam_plan_id) {
+    filterExamPlanId.value = route.query.exam_plan_id
+  }
+  await Promise.all([loadOrganizations(), loadExamPlans()])
+  await loadSheets()
+  if (route.query.sheet_id) {
+    const sheet = sheets.value.find(s => s.id === parseInt(route.query.sheet_id))
+    if (sheet) openSheetEditor(sheet)
+  }
 })
 
 onBeforeUnmount(() => {
