@@ -394,6 +394,8 @@ onMounted(loadPlans)
   min-height: 120px;
   padding: 4px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .calendar-day.other-month { background: #fafafa; }
@@ -408,13 +410,14 @@ onMounted(loadPlans)
   justify-content: center;
 }
 
-.day-number { font-size: 13px; color: #666; }
+.day-number { font-size: 12px; color: #666; margin-bottom: 2px; }
 
 .day-events {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  margin-top: 4px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .event-card {
