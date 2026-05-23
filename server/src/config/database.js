@@ -11,7 +11,8 @@ export async function initDatabase() {
     database: process.env.DB_NAME || 'learning_platform',
     waitForConnections: true,
     connectionLimit: 20,
-    charset: 'utf8mb4'
+    charset: 'utf8mb4',
+    dateStrings: true
   })
 
   // 测试连接
