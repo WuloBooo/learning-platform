@@ -65,8 +65,34 @@ router.post('/student/submit', async (req, res) => {
 
 router.get('/admin/students', async (req, res) => {
   try {
-    const students = await query('SELECT * FROM student_profiles ORDER BY created_at DESC')
-    res.json({ data: students })
+    // 手动录入的学员
+    const profiles = await query('SELECT * FROM student_profiles ORDER BY created_at DESC')
+    const manualStudents = profiles.map(p => ({
+      ...p,
+      source_type: 'manual',
+      org_name: p.organization || '',
+      sheet_name: '',
+      audit_result: '',
+      payment_status: '',
+      job_type: '',
+      level: p.target_level || '',
+    }))
+
+    // 数据表中的学员
+    const sheetStudents = await query(
+      `SELECT s.name, s.phone, s.id_card, s.major, s.level, s.job_type,
+              s.submitted, s.audit_result, s.payment_status, s.account_opened,
+              s.verified, s.reg_date, s.exam_date, s.remark,
+              o.name as org_name, sh.sheet_name,
+              'sheet' as source_type, s.id as sheet_student_id
+       FROM org_sheet_students s
+       JOIN org_sheets sh ON s.sheet_id = sh.id
+       JOIN organizations o ON sh.org_id = o.id
+       WHERE s.name IS NOT NULL AND TRIM(s.name) != ''
+       ORDER BY s.id DESC`
+    )
+
+    res.json({ data: [...manualStudents, ...sheetStudents] })
   } catch (error) {
     res.status(500).json({ message: '获取失败' })
   }

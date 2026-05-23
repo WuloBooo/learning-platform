@@ -3,14 +3,19 @@
     <div class="page-toolbar">
       <div class="toolbar-info">
         <h2>学员管理</h2>
-        <p class="hint">双击单元格编辑 | 共 {{ filteredStudents.length }} 条记录</p>
+        <p class="hint">双击单元格编辑（仅手动录入的学员） | 共 {{ filteredStudents.length }} 条记录</p>
       </div>
       <div class="toolbar-actions">
-        <select v-model="filterStatus" @change="loadStudents">
+        <div class="source-tabs">
+          <button :class="['tab-btn', { active: filterSource === '' }]" @click="filterSource = ''">全部</button>
+          <button :class="['tab-btn', { active: filterSource === 'manual' }]" @click="filterSource = 'manual'">手动录入</button>
+          <button :class="['tab-btn', { active: filterSource === 'sheet' }]" @click="filterSource = 'sheet'">数据表来源</button>
+        </div>
+        <select v-model="filterStatus">
           <option value="">全部状态</option>
           <option v-for="s in STAGES" :key="s" :value="s">{{ s }}</option>
         </select>
-        <input v-model="searchKey" placeholder="搜索姓名/手机号" />
+        <input v-model="searchKey" placeholder="搜索姓名/手机号/机构" />
         <button class="btn-primary" @click="openAddModal">+ 添加学员</button>
         <button class="btn-secondary" @click="$refs.importInput.click()">导入</button>
         <button class="btn-secondary" @click="exportExcel">导出</button>
@@ -36,19 +41,26 @@
           <tr>
             <th class="col-check"><input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" /></th>
             <th class="col-id">ID</th>
+            <th style="min-width:60px">来源</th>
             <th v-for="col in COLUMNS" :key="col.key" :style="{ minWidth: col.width }">{{ col.label }}</th>
+            <th style="min-width:90px">所属机构</th>
+            <th style="min-width:100px">数据表</th>
+            <th style="min-width:70px">审核结果</th>
+            <th class="col-time">提交时间</th>
             <th class="col-time">提交时间</th>
             <th class="col-actions">操作</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="s in filteredStudents" :key="s.id" :class="{ selected: selectedIds.has(s.id) }">
-            <td class="col-check"><input type="checkbox" :checked="selectedIds.has(s.id)" @change="toggleSelect(s.id)" /></td>
-            <td class="col-id">{{ s.id }}</td>
+            <td class="col-check"><input type="checkbox" :checked="selectedIds.has(s.id || s.sheet_student_id)" @change="toggleSelect(s.id || s.sheet_student_id)" /></td>
+            <td class="col-id">{{ s.id || s.sheet_student_id }}</td>
+            <td>
+              <span :class="['source-tag', s.source_type]">{{ s.source_type === 'sheet' ? '数据表' : '手动' }}</span>
+            </td>
             <td v-for="col in COLUMNS" :key="col.key"
-                @dblclick="startEdit(s, col)"
+                @dblclick="s.source_type === 'manual' && startEdit(s, col)"
                 :class="{ editing: isEditing(s.id, col.key) }">
-              <!-- 编辑模式 -->
               <template v-if="isEditing(s.id, col.key)">
                 <select v-if="col.type === 'select'" v-model="editValue"
                         @blur="saveCell(s, col)" @change="saveCell(s, col)" ref="editEl" autofocus>
@@ -59,16 +71,18 @@
                        @blur="saveCell(s, col)" @keyup.enter="saveCell(s, col)" @keyup.escape="cancelEdit"
                        ref="editEl" autofocus />
               </template>
-              <!-- 显示模式 -->
               <template v-else>
                 <span v-if="col.key === 'status'" :class="['status-tag', getStatusClass(s.status)]">{{ s.status || '-' }}</span>
                 <span v-else>{{ s[col.key] || '-' }}</span>
               </template>
             </td>
+            <td>{{ s.org_name || '-' }}</td>
+            <td>{{ s.sheet_name || '-' }}</td>
+            <td>{{ s.audit_result || '-' }}</td>
             <td class="col-time">{{ formatDate(s.created_at) }}</td>
             <td class="col-actions">
-              <button class="btn-link" @click="viewDetail(s)">详情</button>
-              <button class="btn-link danger" @click="deleteStudent(s)">删除</button>
+              <button class="btn-link" @click="viewDetail(s)" v-if="s.source_type === 'manual'">详情</button>
+              <button class="btn-link danger" @click="deleteStudent(s)" v-if="s.source_type === 'manual'">删除</button>
             </td>
           </tr>
         </tbody>
@@ -255,14 +269,20 @@ const ADD_FORM_COLS = [
 const students = ref([])
 const loading = ref(false)
 const filterStatus = ref('')
+const filterSource = ref('')
 const searchKey = ref('')
 
 const filteredStudents = computed(() => {
   let list = students.value
+  if (filterSource.value) list = list.filter(s => s.source_type === filterSource.value)
   if (filterStatus.value) list = list.filter(s => s.status === filterStatus.value)
   if (searchKey.value) {
     const key = searchKey.value.toLowerCase()
-    list = list.filter(s => s.name?.toLowerCase().includes(key) || s.phone?.includes(key))
+    list = list.filter(s =>
+      s.name?.toLowerCase().includes(key) ||
+      s.phone?.includes(key) ||
+      s.org_name?.toLowerCase().includes(key)
+    )
   }
   return list
 })
@@ -524,6 +544,16 @@ onMounted(loadStudents)
 .status-tag.verify { background: #e0e7ff; color: #4338ca; }
 
 .required { color: #ef4444; }
+
+/* 来源标签 */
+.source-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+.source-tag.manual { background: #dbeafe; color: #1e40af; }
+.source-tag.sheet { background: #dcfce7; color: #166534; }
+
+/* Tab 切换 */
+.source-tabs { display: flex; gap: 2px; background: #f1f5f9; border-radius: 6px; padding: 2px; }
+.tab-btn { padding: 5px 12px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; background: transparent; color: #64748b; }
+.tab-btn.active { background: white; color: #1e40af; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
 @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
 </style>
