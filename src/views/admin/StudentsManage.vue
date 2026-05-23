@@ -46,7 +46,8 @@
             <th style="min-width:90px">所属机构</th>
             <th style="min-width:100px">数据表</th>
             <th style="min-width:70px">审核结果</th>
-            <th class="col-time">提交时间</th>
+            <th style="min-width:70px">支付状态</th>
+            <th style="min-width:80px">学习账号</th>
             <th class="col-time">提交时间</th>
             <th class="col-actions">操作</th>
           </tr>
@@ -78,7 +79,47 @@
             </td>
             <td>{{ s.org_name || '-' }}</td>
             <td>{{ s.sheet_name || '-' }}</td>
-            <td>{{ s.audit_result || '-' }}</td>
+            <!-- 审核结果：数据表来源可编辑 -->
+            <td @dblclick="startEditSheetField(s, 'audit_result')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'audit_result') }">
+              <template v-if="isEditingSheet(s.sheet_student_id, 'audit_result')">
+                <select v-model="sheetEditValue" @change="saveSheetField(s, 'audit_result')" @blur="cancelSheetEdit" autofocus>
+                  <option value="">-</option>
+                  <option value="通过">通过</option>
+                  <option value="不通过">不通过</option>
+                  <option value="待审核">待审核</option>
+                </select>
+              </template>
+              <template v-else>
+                <span :class="['status-tag', s.audit_result === '通过' ? 'success' : s.audit_result === '不通过' ? 'pending' : 'info']">{{ s.audit_result || '-' }}</span>
+              </template>
+            </td>
+            <!-- 支付状态：数据表来源可编辑 -->
+            <td @dblclick="startEditSheetField(s, 'payment_status')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'payment_status') }">
+              <template v-if="isEditingSheet(s.sheet_student_id, 'payment_status')">
+                <select v-model="sheetEditValue" @change="saveSheetField(s, 'payment_status')" @blur="cancelSheetEdit" autofocus>
+                  <option value="">-</option>
+                  <option value="已支付">已支付</option>
+                  <option value="未支付">未支付</option>
+                  <option value="部分支付">部分支付</option>
+                </select>
+              </template>
+              <template v-else>
+                <span :class="['status-tag', s.payment_status === '已支付' ? 'success' : s.payment_status === '未支付' ? 'pending' : 'info']">{{ s.payment_status || '-' }}</span>
+              </template>
+            </td>
+            <!-- 学习账号：数据表来源可编辑 -->
+            <td @dblclick="startEditSheetField(s, 'account_opened')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'account_opened') }">
+              <template v-if="isEditingSheet(s.sheet_student_id, 'account_opened')">
+                <select v-model="sheetEditValue" @change="saveSheetField(s, 'account_opened')" @blur="cancelSheetEdit" autofocus>
+                  <option value="">-</option>
+                  <option value="已开通">已开通</option>
+                  <option value="未开通">未开通</option>
+                </select>
+              </template>
+              <template v-else>
+                <span :class="['status-tag', s.account_opened === '已开通' ? 'success' : 'info']">{{ s.account_opened || '-' }}</span>
+              </template>
+            </td>
             <td class="col-time">{{ formatDate(s.created_at) }}</td>
             <td class="col-actions">
               <button class="btn-link" @click="viewDetail(s)" v-if="s.source_type === 'manual'">详情</button>
@@ -343,6 +384,45 @@ const saveCell = async (student, col) => {
 }
 
 const cancelEdit = () => { editingCell.value = null }
+
+// 数据表来源学员的审核字段编辑
+const sheetEditCell = ref(null)
+const sheetEditValue = ref('')
+
+const isEditingSheet = (id, key) => sheetEditCell.value?.rowId === id && sheetEditCell.value?.colKey === key
+
+const startEditSheetField = (s, key) => {
+  if (s.source_type !== 'sheet') return
+  sheetEditCell.value = { rowId: s.sheet_student_id, colKey: key }
+  sheetEditValue.value = s[key] || ''
+  nextTick(() => {
+    const el = document.querySelector('.grid-table td.editing select')
+    if (el) el.focus()
+  })
+}
+
+const cancelSheetEdit = () => { sheetEditCell.value = null }
+
+const saveSheetField = async (s, key) => {
+  if (!sheetEditCell.value) return
+  const oldValue = s[key] || ''
+  const newValue = sheetEditValue.value
+  sheetEditCell.value = null
+
+  if (String(newValue) === String(oldValue)) return
+
+  try {
+    await fetch(`${API_BASE}/admin/sheets/${s.sheet_id}/students/${s.sheet_student_id}`, {
+      method: 'PUT',
+      headers: headers(),
+      body: JSON.stringify({ [key]: newValue })
+    })
+    s[key] = newValue
+  } catch (e) {
+    alert('更新失败')
+    s[key] = oldValue
+  }
+}
 
 // 选择与批量操作
 const selectedIds = ref(new Set())

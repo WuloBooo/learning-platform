@@ -83,7 +83,7 @@ router.get('/admin/students', async (req, res) => {
       `SELECT s.name, s.phone, s.id_card, s.major, s.level, s.job_type,
               s.submitted, s.audit_result, s.payment_status, s.account_opened,
               s.verified, s.reg_date, s.exam_date, s.remark,
-              o.name as org_name, sh.sheet_name,
+              o.name as org_name, sh.sheet_name, s.sheet_id,
               'sheet' as source_type, s.id as sheet_student_id
        FROM org_sheet_students s
        JOIN org_sheets sh ON s.sheet_id = sh.id
