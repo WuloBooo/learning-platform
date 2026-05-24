@@ -621,7 +621,6 @@ onBeforeUnmount(() => {
 .saving-hint.saving { color: #667eea; }
 .saving-hint.saved { color: #10b981; }
 .saving-hint.error { color: #ef4444; font-weight: 500; }
-}
 
 .admin-hot-container {
   background: white;
