@@ -269,6 +269,7 @@ export const orgAPI = {
 
 // 管理员工作流API
 export const workflowAPI = {
+  getDashboardStats: () => api.get('/workflow/admin/dashboard/stats'),
   getOrgUsers: () => api.get('/workflow/admin/org-users'),
   createOrgUser: (data) => api.post('/workflow/admin/org-users', data),
   updateOrgUser: (id, data) => api.put(`/workflow/admin/org-users/${id}`, data),

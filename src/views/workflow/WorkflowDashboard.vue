@@ -45,6 +45,55 @@
       </div>
     </div>
 
+    <!-- 图表区域 -->
+    <div class="charts-row">
+      <!-- 最近7天新增学员 -->
+      <div class="chart-card">
+        <h3>最近7天新增学员</h3>
+        <div class="bar-chart" v-if="dailyData.length > 0">
+          <div class="bar-item" v-for="d in dailyData" :key="d.date">
+            <div class="bar-wrapper">
+              <div class="bar" :style="{ height: getBarHeight(d.count) + '%' }">
+                <span class="bar-val" v-if="d.count > 0">{{ d.count }}</span>
+              </div>
+            </div>
+            <span class="bar-label">{{ d.label }}</span>
+          </div>
+        </div>
+        <div class="empty-chart" v-else>暂无数据</div>
+      </div>
+
+      <!-- 各机构学员排行 -->
+      <div class="chart-card">
+        <h3>机构学员排行</h3>
+        <div class="rank-list" v-if="orgData.length > 0">
+          <div class="rank-item" v-for="(o, i) in orgData" :key="o.org_name">
+            <span class="rank-num" :class="{ top3: i < 3 }">{{ i + 1 }}</span>
+            <span class="rank-name">{{ o.org_name }}</span>
+            <div class="rank-bar-wrapper">
+              <div class="rank-bar" :style="{ width: getRankWidth(o.count) + '%' }"></div>
+            </div>
+            <span class="rank-count">{{ o.count }}</span>
+          </div>
+        </div>
+        <div class="empty-chart" v-else>暂无数据</div>
+      </div>
+
+      <!-- 审核状态分布 -->
+      <div class="chart-card">
+        <h3>审核状态分布</h3>
+        <div class="audit-stats" v-if="auditTotal > 0">
+          <div class="audit-item" v-for="a in auditDisplay" :key="a.label">
+            <div class="audit-color" :style="{ background: a.color }"></div>
+            <span class="audit-label">{{ a.label }}</span>
+            <span class="audit-count">{{ a.count }}</span>
+            <span class="audit-pct">{{ a.pct }}%</span>
+          </div>
+        </div>
+        <div class="empty-chart" v-else>暂无数据</div>
+      </div>
+    </div>
+
     <!-- 快捷操作 -->
     <div class="quick-actions">
       <h3>快捷操作</h3>
@@ -89,19 +138,41 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { workflowAPI, api } from '../../api'
 
 const stats = ref({
-  orgCount: 0,
-  orgUserCount: 0,
-  examPlanCount: 0,
-  sheetCount: 0,
-  studentCount: 0,
-  certCount: 0
+  orgCount: 0, orgUserCount: 0, examPlanCount: 0,
+  sheetCount: 0, studentCount: 0, certCount: 0
+})
+const recentPlans = ref([])
+const dailyData = ref([])
+const orgData = ref([])
+const auditRaw = ref([])
+
+const auditTotal = computed(() => auditRaw.value.reduce((s, a) => s + a.count, 0))
+
+const auditDisplay = computed(() => {
+  const total = auditTotal.value
+  if (total === 0) return []
+  const colorMap = { '通过': '#10b981', '不通过': '#ef4444', '待审核': '#f59e0b' }
+  return auditRaw.value.map(a => ({
+    label: a.audit_result || '未填写',
+    count: a.count,
+    pct: Math.round(a.count / total * 100),
+    color: colorMap[a.audit_result] || '#94a3b8'
+  }))
 })
 
-const recentPlans = ref([])
+const getBarHeight = (count) => {
+  const max = Math.max(...dailyData.value.map(d => d.count), 1)
+  return Math.max(count / max * 80, count > 0 ? 8 : 2)
+}
+
+const getRankWidth = (count) => {
+  const max = Math.max(...orgData.value.map(o => o.count), 1)
+  return Math.max(count / max * 100, 5)
+}
 
 const loadStats = async () => {
   try {
@@ -127,7 +198,35 @@ const loadStats = async () => {
   }
 }
 
-onMounted(loadStats)
+const loadCharts = async () => {
+  try {
+    const res = await workflowAPI.getDashboardStats()
+    const d = res.data || {}
+
+    // 处理7天数据，补全没有数据的天
+    const raw = d.dailyStats || []
+    const days = []
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date()
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().slice(0, 10)
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      const found = raw.find(r => r.date === dateStr)
+      days.push({ date: dateStr, label, count: found?.count || 0 })
+    }
+    dailyData.value = days
+
+    orgData.value = d.orgStats || []
+    auditRaw.value = d.auditStats || []
+  } catch (e) {
+    console.error('加载图表失败', e)
+  }
+}
+
+onMounted(() => {
+  loadStats()
+  loadCharts()
+})
 </script>
 
 <style scoped>
@@ -169,6 +268,169 @@ onMounted(loadStats)
   font-size: 13px;
   color: #999;
   margin-top: 2px;
+}
+
+/* 图表区域 */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #eee;
+}
+
+.chart-card h3 {
+  margin: 0 0 16px;
+  font-size: 15px;
+  color: #1a1a2e;
+}
+
+/* 柱状图 */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 160px;
+}
+
+.bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+}
+
+.bar-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.bar {
+  width: 100%;
+  background: linear-gradient(180deg, #667eea, #764ba2);
+  border-radius: 4px 4px 0 0;
+  min-height: 2px;
+  position: relative;
+  transition: height 0.3s;
+}
+
+.bar-val {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.bar-label {
+  font-size: 11px;
+  color: #999;
+  margin-top: 6px;
+}
+
+/* 排行 */
+.rank-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.rank-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.rank-num.top3 { background: #667eea; color: white; }
+
+.rank-name {
+  width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.rank-bar-wrapper {
+  flex: 1;
+  height: 16px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.rank-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 8px;
+  transition: width 0.3s;
+}
+
+.rank-count {
+  font-weight: 600;
+  color: #333;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* 审核状态 */
+.audit-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.audit-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.audit-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.audit-label { color: #333; flex: 1; }
+.audit-count { font-weight: 600; color: #333; }
+.audit-pct { color: #999; font-size: 12px; min-width: 36px; text-align: right; }
+
+.empty-chart {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-size: 14px;
 }
 
 .quick-actions {
@@ -270,5 +532,9 @@ onMounted(loadStats)
   padding: 32px;
   color: #999;
   font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .charts-row { grid-template-columns: 1fr; }
 }
 </style>

@@ -63,6 +63,50 @@ router.post('/student/submit', async (req, res) => {
 
 // ===== 管理接口 =====
 
+router.get('/admin/dashboard/stats', async (req, res) => {
+  try {
+    // 最近7天每天新增学员数（从 org_sheet_students）
+    const dailyStats = await query(
+      `SELECT DATE(created_at) as date, COUNT(*) as count
+       FROM org_sheet_students
+       WHERE name IS NOT NULL AND TRIM(name) != ''
+         AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+       GROUP BY DATE(created_at)
+       ORDER BY date`
+    )
+
+    // 各机构学员数 Top 10
+    const orgStats = await query(
+      `SELECT o.name as org_name, COUNT(*) as count
+       FROM org_sheet_students s
+       JOIN org_sheets sh ON s.sheet_id = sh.id
+       JOIN organizations o ON sh.org_id = o.id
+       WHERE s.name IS NOT NULL AND TRIM(s.name) != ''
+       GROUP BY o.name
+       ORDER BY count DESC
+       LIMIT 10`
+    )
+
+    // 审核状态分布
+    const auditStats = await query(
+      `SELECT audit_result, COUNT(*) as count
+       FROM org_sheet_students
+       WHERE name IS NOT NULL AND TRIM(name) != ''
+       GROUP BY audit_result`
+    )
+
+    res.json({
+      data: {
+        dailyStats,
+        orgStats,
+        auditStats
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ message: '获取统计失败' })
+  }
+})
+
 router.get('/admin/students', async (req, res) => {
   try {
     // 手动录入的学员
