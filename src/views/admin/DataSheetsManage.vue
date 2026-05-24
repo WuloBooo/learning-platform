@@ -70,7 +70,9 @@
             <button class="tool-btn secondary" @click="adminExportExcel">导出 Excel</button>
             <button class="tool-btn outline" @click="loadEditorData">刷新数据</button>
             <input class="search-input" type="text" placeholder="搜索..." v-model="adminSearchKeyword" @input="adminDoSearch" />
-            <span class="saving-hint" v-if="adminSaving">保存中...</span>
+            <span class="saving-hint saving" v-if="adminSaving">保存中...</span>
+            <span class="saving-hint saved" v-if="adminSaveStatus === 'saved'">已保存</span>
+            <span class="saving-hint error" v-if="adminSaveStatus === 'error'">保存失败，请刷新重试</span>
           </div>
           <div :id="'admin-hot-' + editorSheet.id" class="admin-hot-container"></div>
         </div>
@@ -174,6 +176,7 @@ const editorSheet = ref(null)
 const adminTableData = ref([])
 const adminSelectedRows = ref([])
 const adminSaving = ref(false)
+const adminSaveStatus = ref('')
 const adminSearchKeyword = ref('')
 let adminHot = null
 
@@ -375,8 +378,6 @@ const initAdminHot = () => {
 }
 
 function orgAPI_batchSaveAdmin(updates) {
-  // 管理员用 workflow batch-save，但那个接口还没有。用逐条更新合并
-  // 简单方案：按 id 合并，逐条调 updateSheetStudent
   const merged = new Map()
   for (const u of updates) {
     if (!merged.has(u.id)) merged.set(u.id, {})
@@ -385,9 +386,16 @@ function orgAPI_batchSaveAdmin(updates) {
   const promises = []
   for (const [id, data] of merged) {
     const { id: _, ...rest } = data
-    promises.push(workflowAPI.updateSheetStudent(editorSheet.value.id, id, rest).catch(e => console.error(e)))
+    promises.push(workflowAPI.updateSheetStudent(editorSheet.value.id, id, rest))
   }
-  Promise.all(promises).finally(() => { adminSaving.value = false })
+  let adminSaveStatusTimer = null
+  Promise.all(promises).then(() => {
+    adminSaveStatus.value = 'saved'
+    if (adminSaveStatusTimer) clearTimeout(adminSaveStatusTimer)
+    adminSaveStatusTimer = setTimeout(() => { adminSaveStatus.value = '' }, 2000)
+  }).catch(() => {
+    adminSaveStatus.value = 'error'
+  }).finally(() => { adminSaving.value = false })
 }
 
 const adminDeleteRows = async () => {
@@ -609,11 +617,10 @@ onBeforeUnmount(() => {
 .tool-btn.outline { background: white; color: #667eea; border: 1px solid #667eea; }
 .tool-btn.danger { background: #e74c3c; }
 
-.saving-hint {
-  font-size: 13px;
-  color: #667eea;
-  margin-left: auto;
-  align-self: center;
+.saving-hint { font-size: 13px; margin-left: auto; align-self: center; }
+.saving-hint.saving { color: #667eea; }
+.saving-hint.saved { color: #10b981; }
+.saving-hint.error { color: #ef4444; font-weight: 500; }
 }
 
 .admin-hot-container {

@@ -39,7 +39,9 @@
         <div class="editor-header">
           <button class="back-btn" @click="closeSheet">← 返回列表</button>
           <h2>{{ currentSheet.sheet_name }}</h2>
-          <span class="saving-hint" v-if="saving">保存中...</span>
+          <span class="saving-hint saving" v-if="saving">保存中...</span>
+          <span class="saving-hint saved" v-if="saveStatus === 'saved'">已保存</span>
+          <span class="saving-hint error" v-if="saveStatus === 'error'">保存失败，请刷新重试</span>
         </div>
 
         <div class="table-toolbar">
@@ -73,6 +75,16 @@ const currentSheet = ref(null)
 const tableData = ref([])
 const selectedRows = ref([])
 const saving = ref(false)
+const saveStatus = ref('') // '' | 'saved' | 'error'
+let saveStatusTimer = null
+
+const setSaveStatus = (status) => {
+  saveStatus.value = status
+  if (saveStatusTimer) clearTimeout(saveStatusTimer)
+  if (status === 'saved') {
+    saveStatusTimer = setTimeout(() => { saveStatus.value = '' }, 2000)
+  }
+}
 const fileInput = ref(null)
 const searchKeyword = ref('')
 let hot = null
@@ -248,10 +260,13 @@ const initHot = () => {
         }
         savePromise = Promise.all(
           batches.map(batch => orgAPI.batchSave(currentSheet.value.id, batch)
-            .then(res => console.log(`[batchSave] 批次完成:`, res))
-            .catch(e => console.error('保存失败:', e))
+            .catch(e => { console.error('保存失败:', e); throw e })
           )
-        ).finally(() => { saving.value = false })
+        ).then(() => {
+          setSaveStatus('saved')
+        }).catch(() => {
+          setSaveStatus('error')
+        }).finally(() => { saving.value = false })
       }
     },
     afterPaste(data, coords) {
@@ -523,9 +538,11 @@ onBeforeUnmount(() => {
 
 .saving-hint {
   font-size: 13px;
-  color: #667eea;
   margin-left: auto;
 }
+.saving-hint.saving { color: #667eea; }
+.saving-hint.saved { color: #10b981; }
+.saving-hint.error { color: #ef4444; font-weight: 500; }
 
 .table-toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
 
