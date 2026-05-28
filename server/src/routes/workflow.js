@@ -107,6 +107,59 @@ router.get('/admin/dashboard/stats', async (req, res) => {
   }
 })
 
+// 管理员：筛选学员列表（支持考试计划和机构筛选）
+router.get('/admin/students/filtered', async (req, res) => {
+  try {
+    const { exam_plan_id, org_id, source_type } = req.query
+
+    let manualStudents = []
+    let sheetStudents = []
+
+    // 数据表来源学员
+    if (source_type !== 'manual') {
+      let sql = `SELECT s.id, s.sheet_id, s.name, s.phone, s.id_card, s.job_type, s.level,
+                s.reg_date, s.exam_date, s.\`condition\`, s.major, s.submitted,
+                s.audit_result, s.verified, s.payment_status, s.reject_reason,
+                s.account_opened, s.remark, s.is_retest, s.offline_training,
+                o.name AS org_name, sh.sheet_name, sh.org_id,
+                'sheet' AS source_type
+         FROM org_sheet_students s
+         JOIN org_sheets sh ON s.sheet_id = sh.id
+         JOIN organizations o ON sh.org_id = o.id
+         WHERE s.name IS NOT NULL AND TRIM(s.name) != ''`
+      const params = []
+      if (exam_plan_id) { sql += ' AND sh.exam_plan_id = ?'; params.push(exam_plan_id) }
+      if (org_id) { sql += ' AND sh.org_id = ?'; params.push(org_id) }
+      sql += ' ORDER BY s.id DESC'
+      sheetStudents = await query(sql, params)
+    }
+
+    // 手动录入学员
+    if (source_type !== 'sheet') {
+      let sql = 'SELECT * FROM student_profiles WHERE 1=1'
+      const params = []
+      if (org_id) { sql += ' AND org_id = ?'; params.push(org_id) }
+      sql += ' ORDER BY created_at DESC'
+      const profiles = await query(sql, params)
+      manualStudents = profiles.map(p => ({
+        ...p,
+        source_type: 'manual',
+        org_name: p.organization || '',
+        sheet_name: '',
+        level: p.target_level || '',
+        job_type: '', condition: '', submitted: '', audit_result: '', verified: '',
+        payment_status: '', reject_reason: '', account_opened: '', is_retest: '', offline_training: '',
+        reg_date: '', exam_date: ''
+      }))
+    }
+
+    res.json({ data: [...manualStudents, ...sheetStudents] })
+  } catch (error) {
+    console.error('筛选学员失败:', error)
+    res.status(500).json({ message: '获取失败' })
+  }
+})
+
 router.get('/admin/students', async (req, res) => {
   try {
     // 手动录入的学员
@@ -660,6 +713,46 @@ router.put('/admin/sheets/:sheetId/touch', async (req, res) => {
     res.json({ message: '更新成功' })
   } catch (error) {
     res.status(500).json({ message: '更新失败' })
+  }
+})
+
+// 管理员：批量保存数据表学员
+router.post('/admin/sheets/:sheetId/admin-batch-save', async (req, res) => {
+  try {
+    const { rows } = req.body
+    if (!rows || !Array.isArray(rows)) return res.status(400).json({ message: '无数据' })
+
+    const allowed = ['name', 'phone', 'id_card', 'job_type', 'level', 'reg_date', 'exam_date', 'condition', 'major', 'submitted', 'audit_result', 'verified', 'payment_status', 'reject_reason', 'account_opened', 'remark', 'is_retest', 'offline_training']
+
+    const merged = new Map()
+    for (const row of rows) {
+      if (row.id) {
+        if (!merged.has(row.id)) merged.set(row.id, { id: row.id })
+        const target = merged.get(row.id)
+        for (const key of allowed) {
+          if (row[key] !== undefined) target[key] = row[key]
+        }
+      }
+    }
+
+    const result = { success: 0, failed: 0 }
+    for (const row of merged.values()) {
+      try {
+        const { id, ...data } = row
+        for (const key of ['reg_date', 'exam_date']) {
+          if (data[key] === '') data[key] = null
+        }
+        await update('org_sheet_students', data, 'id = ? AND sheet_id = ?', [id, req.params.sheetId])
+        result.success++
+      } catch (e) {
+        result.failed++
+      }
+    }
+
+    await update('org_sheets', { updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ') }, 'id = ?', [req.params.sheetId])
+    res.json(result)
+  } catch (error) {
+    res.status(500).json({ message: '批量保存失败: ' + error.message })
   }
 })
 

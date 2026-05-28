@@ -290,4 +290,7 @@ export const workflowAPI = {
   updateSheetStudent: (sheetId, rowId, data) => api.put(`/workflow/admin/sheets/${sheetId}/students/${rowId}`, data),
   removeSheetStudent: (sheetId, rowId) => api.delete(`/workflow/admin/sheets/${sheetId}/students/${rowId}`),
   batchCreateEmpty: (sheetId, count) => api.post(`/workflow/admin/sheets/${sheetId}/batch-create-empty`, { count }),
+  adminBatchSave: (sheetId, rows) => api.post(`/workflow/admin/sheets/${sheetId}/admin-batch-save`, { rows }),
+
+  getStudentsFiltered: (params) => api.get(`/workflow/admin/students/filtered?${new URLSearchParams(params || {})}`),
 }

@@ -3,169 +3,34 @@
     <div class="page-toolbar">
       <div class="toolbar-info">
         <h2>学员管理</h2>
-        <p class="hint">双击单元格编辑（仅手动录入的学员） | 共 {{ filteredStudents.length }} 条记录</p>
+        <p class="hint">共 {{ tableData.length }} 条记录</p>
       </div>
       <div class="toolbar-actions">
-        <div class="source-tabs">
-          <button :class="['tab-btn', { active: filterSource === '' }]" @click="filterSource = ''">全部</button>
-          <button :class="['tab-btn', { active: filterSource === 'manual' }]" @click="filterSource = 'manual'">手动录入</button>
-          <button :class="['tab-btn', { active: filterSource === 'sheet' }]" @click="filterSource = 'sheet'">数据表来源</button>
-        </div>
-        <select v-model="filterStatus">
-          <option value="">全部状态</option>
-          <option v-for="s in STAGES" :key="s" :value="s">{{ s }}</option>
+        <select v-model="filterExamPlan" @change="loadData">
+          <option value="">全部考试计划</option>
+          <option v-for="p in examPlans" :key="p.id" :value="p.id">{{ p.title }}</option>
         </select>
-        <input v-model="searchKey" placeholder="搜索姓名/手机号/机构" />
+        <select v-model="filterOrg" @change="loadData">
+          <option value="">全部机构</option>
+          <option v-for="o in orgs" :key="o.id" :value="o.id">{{ o.name }}</option>
+        </select>
+        <div class="source-tabs">
+          <button :class="['tab-btn', { active: filterSource === '' }]" @click="filterSource = ''; loadData()">全部</button>
+          <button :class="['tab-btn', { active: filterSource === 'manual' }]" @click="filterSource = 'manual'; loadData()">手动录入</button>
+          <button :class="['tab-btn', { active: filterSource === 'sheet' }]" @click="filterSource = 'sheet'; loadData()">数据表来源</button>
+        </div>
         <button class="btn-primary" @click="openAddModal">+ 添加学员</button>
         <button class="btn-secondary" @click="$refs.importInput.click()">导入</button>
         <button class="btn-secondary" @click="exportExcel">导出</button>
+        <input class="search-input" type="text" placeholder="搜索..." v-model="searchKeyword" @input="doSearch" />
         <input ref="importInput" type="file" accept=".xlsx,.xls,.csv" @change="handleImport" style="display:none" />
+        <span class="saving-hint saving" v-if="saving">保存中...</span>
+        <span class="saving-hint saved" v-if="saveStatus === 'saved'">已保存</span>
+        <span class="saving-hint error" v-if="saveStatus === 'error'">保存失败</span>
       </div>
     </div>
 
-    <!-- 批量操作栏 -->
-    <div class="batch-bar" v-if="selectedIds.size > 0">
-      <span>已选择 {{ selectedIds.size }} 条</span>
-      <select v-model="batchStatus">
-        <option value="">批量设置状态...</option>
-        <option v-for="s in STAGES" :key="s" :value="s">{{ s }}</option>
-      </select>
-      <button class="btn-primary btn-sm" @click="batchUpdateStatus" :disabled="!batchStatus">确认更新</button>
-      <button class="btn-delete btn-sm" @click="batchDelete">批量删除</button>
-      <button class="btn-secondary btn-sm" @click="selectedIds.clear()">取消选择</button>
-    </div>
-
-    <div class="grid-wrapper" v-if="!loading">
-      <table class="grid-table">
-        <thead>
-          <tr>
-            <th class="col-check"><input type="checkbox" :checked="isAllSelected" @change="toggleSelectAll" /></th>
-            <th class="col-id">ID</th>
-            <th style="min-width:60px">来源</th>
-            <th v-for="col in COLUMNS" :key="col.key" :style="{ minWidth: col.width }">{{ col.label }}</th>
-            <th style="min-width:90px">所属机构</th>
-            <th style="min-width:100px">数据表</th>
-            <th style="min-width:70px">审核结果</th>
-            <th style="min-width:70px">支付状态</th>
-            <th style="min-width:80px">学习账号</th>
-            <th class="col-time">提交时间</th>
-            <th class="col-actions">操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="s in filteredStudents" :key="s.id" :class="{ selected: selectedIds.has(s.id) }">
-            <td class="col-check"><input type="checkbox" :checked="selectedIds.has(s.id || s.sheet_student_id)" @change="toggleSelect(s.id || s.sheet_student_id)" /></td>
-            <td class="col-id">{{ s.id || s.sheet_student_id }}</td>
-            <td>
-              <span :class="['source-tag', s.source_type]">{{ s.source_type === 'sheet' ? '数据表' : '手动' }}</span>
-            </td>
-            <td v-for="col in COLUMNS" :key="col.key"
-                @dblclick="s.source_type === 'manual' && startEdit(s, col)"
-                :class="{ editing: isEditing(s.id, col.key) }">
-              <template v-if="isEditing(s.id, col.key)">
-                <select v-if="col.type === 'select'" v-model="editValue"
-                        @blur="saveCell(s, col)" @change="saveCell(s, col)" ref="editEl" autofocus>
-                  <option value="">-</option>
-                  <option v-for="opt in col.options" :key="opt" :value="opt">{{ opt }}</option>
-                </select>
-                <input v-else v-model="editValue" :type="col.type || 'text'"
-                       @blur="saveCell(s, col)" @keyup.enter="saveCell(s, col)" @keyup.escape="cancelEdit"
-                       ref="editEl" autofocus />
-              </template>
-              <template v-else>
-                <span v-if="col.key === 'status'" :class="['status-tag', getStatusClass(s.status)]">{{ s.status || '-' }}</span>
-                <span v-else>{{ s[col.key] || '-' }}</span>
-              </template>
-            </td>
-            <td>{{ s.org_name || '-' }}</td>
-            <td>{{ s.sheet_name || '-' }}</td>
-            <!-- 审核结果：数据表来源可编辑 -->
-            <td @dblclick="startEditSheetField(s, 'audit_result')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'audit_result') }">
-              <template v-if="isEditingSheet(s.sheet_student_id, 'audit_result')">
-                <select v-model="sheetEditValue" @change="saveSheetField(s, 'audit_result')" @blur="cancelSheetEdit" autofocus>
-                  <option value="">-</option>
-                  <option value="通过">通过</option>
-                  <option value="不通过">不通过</option>
-                  <option value="待审核">待审核</option>
-                </select>
-              </template>
-              <template v-else>
-                <span :class="['status-tag', s.audit_result === '通过' ? 'success' : s.audit_result === '不通过' ? 'pending' : 'info']">{{ s.audit_result || '-' }}</span>
-              </template>
-            </td>
-            <!-- 支付状态：数据表来源可编辑 -->
-            <td @dblclick="startEditSheetField(s, 'payment_status')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'payment_status') }">
-              <template v-if="isEditingSheet(s.sheet_student_id, 'payment_status')">
-                <select v-model="sheetEditValue" @change="saveSheetField(s, 'payment_status')" @blur="cancelSheetEdit" autofocus>
-                  <option value="">-</option>
-                  <option value="已支付">已支付</option>
-                  <option value="未支付">未支付</option>
-                  <option value="部分支付">部分支付</option>
-                </select>
-              </template>
-              <template v-else>
-                <span :class="['status-tag', s.payment_status === '已支付' ? 'success' : s.payment_status === '未支付' ? 'pending' : 'info']">{{ s.payment_status || '-' }}</span>
-              </template>
-            </td>
-            <!-- 学习账号：数据表来源可编辑 -->
-            <td @dblclick="startEditSheetField(s, 'account_opened')" :class="{ editing: isEditingSheet(s.sheet_student_id, 'account_opened') }">
-              <template v-if="isEditingSheet(s.sheet_student_id, 'account_opened')">
-                <select v-model="sheetEditValue" @change="saveSheetField(s, 'account_opened')" @blur="cancelSheetEdit" autofocus>
-                  <option value="">-</option>
-                  <option value="已开通">已开通</option>
-                  <option value="未开通">未开通</option>
-                </select>
-              </template>
-              <template v-else>
-                <span :class="['status-tag', s.account_opened === '已开通' ? 'success' : 'info']">{{ s.account_opened || '-' }}</span>
-              </template>
-            </td>
-            <td class="col-time">{{ formatDate(s.created_at) }}</td>
-            <td class="col-actions">
-              <button class="btn-link" @click="viewDetail(s)" v-if="s.source_type === 'manual'">详情</button>
-              <button class="btn-link danger" @click="deleteStudent(s)" v-if="s.source_type === 'manual'">删除</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="empty-state" v-if="filteredStudents.length === 0">暂无学员数据</div>
-    </div>
-    <div class="loading-state" v-else>加载中...</div>
-
-    <!-- 详情弹窗 -->
-    <Teleport to="body">
-      <div class="modal-overlay" v-if="showDetail" @click.self="showDetail = false">
-        <div class="modal-card modal-lg">
-          <div class="modal-header">
-            <h3>学员详情 - {{ detailData.name }}</h3>
-            <button class="modal-close" @click="showDetail = false">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="detail-grid">
-              <div class="detail-item" v-for="col in COLUMNS" :key="col.key">
-                <label>{{ col.label }}</label>
-                <span v-if="col.key === 'status'" :class="['status-tag', getStatusClass(detailData.status)]">{{ detailData[col.key] || '-' }}</span>
-                <span v-else>{{ detailData[col.key] || '-' }}</span>
-              </div>
-              <div class="detail-item"><label>提交时间</label><span>{{ formatDate(detailData.created_at) }}</span></div>
-            </div>
-            <h4 class="history-title">状态变更记录</h4>
-            <div class="timeline" v-if="statusHistory.length > 0">
-              <div v-for="h in statusHistory" :key="h.id" class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                  <span class="timeline-stage">{{ h.stage }}</span>
-                  <span class="timeline-operator">{{ h.operator }}</span>
-                  <span class="timeline-note" v-if="h.note">{{ h.note }}</span>
-                  <span class="timeline-time">{{ formatDate(h.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-            <div v-else class="empty-state">暂无状态记录</div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+    <div id="students-hot-container" class="hot-container"></div>
 
     <!-- 手动添加学员弹窗 -->
     <Teleport to="body">
@@ -248,7 +113,7 @@
                 <label>初始状态</label>
                 <select v-model="addForm.status">
                   <option value="">请选择</option>
-                  <option v-for="opt in ['意向', '已报名', '资料审核', '实名认证', '已缴费']" :key="opt" :value="opt">{{ opt }}</option>
+                  <option v-for="opt in STAGES" :key="opt" :value="opt">{{ opt }}</option>
                 </select>
               </div>
             </div>
@@ -268,7 +133,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { workflowAPI, api } from '../../api'
+import Handsontable from 'handsontable'
+import 'handsontable/styles/handsontable.min.css'
+import 'handsontable/styles/ht-theme-main.min.css'
 import * as XLSX from 'xlsx'
 
 const API_BASE = '/api/workflow'
@@ -277,209 +146,228 @@ const headers = () => ({ 'Content-Type': 'application/json', 'Authorization': `B
 
 const STAGES = ['意向', '已报名', '资料审核', '实名认证', '已缴费', '学习中', '已考试', '已拿证']
 
-const COLUMNS = [
-  { key: 'name', label: '姓名', width: '70px' },
-  { key: 'phone', label: '手机号', width: '110px' },
-  { key: 'gender', label: '性别', width: '50px', type: 'select', options: ['男', '女'] },
-  { key: 'age', label: '年龄', width: '50px', type: 'number' },
-  { key: 'education', label: '学历', width: '60px', type: 'select', options: ['初中', '高中', '大专', '本科', '硕士', '博士'] },
-  { key: 'major', label: '专业', width: '90px' },
-  { key: 'work_years', label: '工作年限', width: '65px', type: 'number' },
-  { key: 'social_security_years', label: '社保年限', width: '65px', type: 'number' },
-  { key: 'target_level', label: '目标等级', width: '70px', type: 'select', options: ['初级', '中级', '高级'] },
-  { key: 'organization', label: '机构', width: '80px' },
-  { key: 'source', label: '来源', width: '60px', type: 'select', options: ['网站', '微信', '电话', '机构', '导入', '其他'] },
-  { key: 'status', label: '状态', width: '70px', type: 'select', options: STAGES },
-  { key: 'remark', label: '备注', width: '100px' },
-]
-
-const ADD_FORM_COLS = [
-  { key: 'gender', label: '性别', type: 'select', options: ['男', '女'] },
-  { key: 'age', label: '年龄', type: 'number' },
-  { key: 'education', label: '学历', type: 'select', options: ['初中', '高中', '大专', '本科', '硕士', '博士'] },
-  { key: 'major', label: '专业' },
-  { key: 'work_years', label: '工作年限', type: 'number' },
-  { key: 'social_security_years', label: '社保年限', type: 'number' },
-  { key: 'target_level', label: '目标等级', type: 'select', options: ['初级', '中级', '高级'] },
-  { key: 'source', label: '来源渠道', type: 'select', options: ['网站', '微信', '电话', '机构', '其他'] },
-  { key: 'organization', label: '所属机构' },
-  { key: 'status', label: '初始状态', type: 'select', options: ['意向', '已报名', '资料审核', '实名认证', '已缴费'] },
-]
+// 筛选
+const examPlans = ref([])
+const orgs = ref([])
+const filterExamPlan = ref('')
+const filterOrg = ref('')
+const filterSource = ref('')
+const searchKeyword = ref('')
 
 // 数据
-const students = ref([])
-const loading = ref(false)
-const filterStatus = ref('')
-const filterSource = ref('')
-const searchKey = ref('')
+const tableData = ref([])
+const saving = ref(false)
+const saveStatus = ref('')
+let saveStatusTimer = null
+let hot = null
 
-const filteredStudents = computed(() => {
-  let list = students.value
-  if (filterSource.value) list = list.filter(s => s.source_type === filterSource.value)
-  if (filterStatus.value) list = list.filter(s => s.status === filterStatus.value)
-  if (searchKey.value) {
-    const key = searchKey.value.toLowerCase()
-    list = list.filter(s =>
-      s.name?.toLowerCase().includes(key) ||
-      s.phone?.includes(key) ||
-      s.org_name?.toLowerCase().includes(key)
-    )
+const setSaveStatus = (status) => {
+  saveStatus.value = status
+  if (saveStatusTimer) clearTimeout(saveStatusTimer)
+  if (status === 'saved') {
+    saveStatusTimer = setTimeout(() => { saveStatus.value = '' }, 2000)
   }
-  return list
-})
-
-const loadStudents = async () => {
-  loading.value = true
-  try {
-    const res = await fetch(`${API_BASE}/admin/students`, { headers: headers() })
-    const data = await res.json()
-    students.value = data.data || []
-  } catch (e) { console.error(e) }
-  loading.value = false
 }
 
-// 内联编辑
-const editingCell = ref(null)
-const editValue = ref('')
+// 列定义
+const colHeaders = [
+  'ID', '来源', '所属机构', '数据表',
+  '姓名', '电话', '身份证号', '性别', '年龄', '学历', '专业',
+  '工作年限', '社保年限', '工种', '等级',
+  '报名日期', '考试日期', '报考条件', '来源渠道', '状态',
+  '是否提交资料🔒', '审核结果', '是否实名🔒', '支付情况',
+  '审核不通过理由🔒', '是否开通学习账号', '是否补考', '线下集训', '备注'
+]
+const colKeys = [
+  '_id', 'source_type', 'org_name', 'sheet_name',
+  'name', 'phone', 'id_card', 'gender', 'age', 'education', 'major',
+  'work_years', 'social_security_years', 'job_type', 'level',
+  'reg_date', 'exam_date', 'condition', 'source', 'status',
+  'submitted', 'audit_result', 'verified', 'payment_status',
+  'reject_reason', 'account_opened', 'is_retest', 'offline_training', 'remark'
+]
 
-const isEditing = (id, key) => editingCell.value?.rowId === id && editingCell.value?.colKey === key
+const metaKeys = new Set(['_id', 'source_type', 'org_name', 'sheet_name'])
+const alwaysReadOnly = new Set(['submitted', 'verified', 'reject_reason'])
+const manualOnly = new Set(['gender', 'age', 'education', 'work_years', 'social_security_years', 'source', 'status'])
+const sheetOnly = new Set(['job_type', 'reg_date', 'exam_date', 'condition', 'audit_result', 'payment_status', 'account_opened', 'is_retest', 'offline_training'])
 
-const startEdit = (s, col) => {
-  editingCell.value = { rowId: s.id, colKey: col.key }
-  editValue.value = s[col.key] || ''
-  nextTick(() => {
-    const el = document.querySelector('.grid-table td.editing input, .grid-table td.editing select')
-    if (el) el.focus()
-  })
-}
+const hotColumns = colKeys.map(key => ({
+  data: key,
+  type: 'text',
+  readOnly: metaKeys.has(key) || alwaysReadOnly.has(key),
+}))
 
-const saveCell = async (student, col) => {
-  if (!editingCell.value) return
-  const oldValue = student[col.key] || ''
-  const newValue = typeof editValue.value === 'string' ? editValue.value.trim() : editValue.value
-  editingCell.value = null
-
-  if (String(newValue) === String(oldValue)) return
-
+// 加载数据
+const loadData = async () => {
   try {
-    await fetch(`${API_BASE}/admin/students/${student.id}`, {
-      method: 'PUT',
-      headers: headers(),
-      body: JSON.stringify({ [col.key]: newValue || null })
-    })
-    student[col.key] = newValue || null
+    const params = {}
+    if (filterExamPlan.value) params.exam_plan_id = filterExamPlan.value
+    if (filterOrg.value) params.org_id = filterOrg.value
+    if (filterSource.value) params.source_type = filterSource.value
 
-    // 状态变更时记录历史
-    if (col.key === 'status' && newValue) {
-      await fetch(`${API_BASE}/admin/students/${student.id}/status`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ stage: newValue, operator: '管理员', note: '表格编辑' })
-      })
+    const res = await workflowAPI.getStudentsFiltered(params)
+    const rows = (res.data || []).map(r => ({
+      ...r,
+      _id: r.source_type === 'sheet' ? `S${r.id}` : r.id,
+      work_years: r.work_years ?? '',
+      social_security_years: r.social_security_years ?? '',
+      age: r.age ?? '',
+    }))
+    tableData.value = rows
+    if (hot) {
+      hot.loadData(tableData.value)
+    } else {
+      await nextTick()
+      initHot()
     }
   } catch (e) {
-    alert('更新失败')
-    student[col.key] = oldValue
+    console.error('加载学员失败:', e)
   }
 }
 
-const cancelEdit = () => { editingCell.value = null }
+const loadFilters = async () => {
+  try {
+    const [plansRes, orgsRes] = await Promise.all([
+      workflowAPI.getExamPlans(),
+      api.get('/workflow/admin/organizations')
+    ])
+    examPlans.value = plansRes.data || []
+    orgs.value = orgsRes.data || []
+  } catch (e) {
+    console.error('加载筛选条件失败:', e)
+  }
+}
 
-// 数据表来源学员的审核字段编辑
-const sheetEditCell = ref(null)
-const sheetEditValue = ref('')
+const initHot = () => {
+  const container = document.getElementById('students-hot-container')
+  if (!container) return
+  if (hot) { hot.destroy(); hot = null }
 
-const isEditingSheet = (id, key) => sheetEditCell.value?.rowId === id && sheetEditCell.value?.colKey === key
+  hot = new Handsontable(container, {
+    data: tableData.value,
+    colHeaders,
+    columns: hotColumns,
+    rowHeaders: true,
+    search: true,
+    height: Math.max(400, window.innerHeight - 200),
+    stretchH: 'all',
+    language: 'zh-CN',
+    licenseKey: 'non-commercial-and-evaluation',
+    contextMenu: {
+      items: {
+        'copy': { name: '复制' },
+        'cut': { name: '剪切' },
+        'sep1': '---------',
+        'remove_row': {
+          name: '删除该行',
+          callback(key, selection) {
+            for (const { start, end } of selection) {
+              for (let r = start.row; r <= end.row; r++) {
+                const row = hot.getSourceDataAtRow(r)
+                if (!row) continue
+                if (row.source_type === 'sheet' && row.id) {
+                  workflowAPI.removeSheetStudent(row.sheet_id, row.id).catch(e => console.error(e))
+                } else if (row.source_type === 'manual' && row.id) {
+                  fetch(`${API_BASE}/admin/students/${row.id}`, { method: 'DELETE', headers: headers() }).catch(e => console.error(e))
+                }
+              }
+            }
+            hot.alter('remove_row', selection[0].start.row, selection[0].end.row - selection[0].start.row + 1)
+          }
+        }
+      }
+    },
+    manualColumnResize: true,
+    autoWrapRow: true,
+    autoWrapCol: true,
+    cells(row, col) {
+      const rowData = tableData.value[row]
+      if (!rowData) return {}
+      const prop = colKeys[col]
+      const cellProps = {}
+      if (metaKeys.has(prop) || alwaysReadOnly.has(prop)) {
+        cellProps.readOnly = true
+        cellProps.className = 'htReadOnly'
+      } else if (rowData.source_type === 'sheet' && manualOnly.has(prop)) {
+        cellProps.readOnly = true
+        cellProps.className = 'htReadOnly'
+      } else if (rowData.source_type === 'manual' && sheetOnly.has(prop)) {
+        cellProps.readOnly = true
+        cellProps.className = 'htReadOnly'
+      }
+      return cellProps
+    },
+    afterChange(changes, source) {
+      if (source === 'loadData') return
+      if (!changes) return
 
-const startEditSheetField = (s, key) => {
-  if (s.source_type !== 'sheet') return
-  sheetEditCell.value = { rowId: s.sheet_student_id, colKey: key }
-  sheetEditValue.value = s[key] || ''
-  nextTick(() => {
-    const el = document.querySelector('.grid-table td.editing select')
-    if (el) el.focus()
+      const sheetUpdates = new Map()
+      const manualUpdates = []
+
+      for (const [row, prop, oldVal, newVal] of changes) {
+        if (oldVal === newVal) continue
+        const rowData = hot.getSourceDataAtRow(row)
+        if (!rowData || !rowData.id) continue
+
+        if (rowData.source_type === 'sheet') {
+          if (!sheetUpdates.has(rowData.sheet_id)) sheetUpdates.set(rowData.sheet_id, [])
+          sheetUpdates.get(rowData.sheet_id).push({ id: rowData.id, [prop]: newVal || '' })
+        } else if (rowData.source_type === 'manual') {
+          manualUpdates.push({ id: rowData.id, [prop]: newVal || '', _prop: prop, _row })
+        }
+      }
+
+      if (sheetUpdates.size === 0 && manualUpdates.length === 0) return
+      saving.value = true
+
+      const promises = []
+
+      // 数据表学员批量保存
+      for (const [sheetId, updates] of sheetUpdates) {
+        promises.push(workflowAPI.adminBatchSave(sheetId, updates).catch(e => console.error('批量保存失败:', e)))
+      }
+
+      // 手动学员逐条保存
+      for (const u of manualUpdates) {
+        const { id, _prop, _row, ...data } = u
+        promises.push(
+          fetch(`${API_BASE}/admin/students/${id}`, {
+            method: 'PUT', headers: headers(), body: JSON.stringify(data)
+          }).then(async r => {
+            if (_prop === 'status' && data.status) {
+              await fetch(`${API_BASE}/admin/students/${id}/status`, {
+                method: 'POST', headers: headers(),
+                body: JSON.stringify({ stage: data.status, operator: '管理员', note: '表格编辑' })
+              })
+            }
+          }).catch(e => console.error('保存失败:', e))
+        )
+      }
+
+      Promise.all(promises).then(() => {
+        setSaveStatus('saved')
+      }).catch(() => {
+        setSaveStatus('error')
+      }).finally(() => { saving.value = false })
+    }
   })
 }
 
-const cancelSheetEdit = () => { sheetEditCell.value = null }
-
-const saveSheetField = async (s, key) => {
-  if (!sheetEditCell.value) return
-  const oldValue = s[key] || ''
-  const newValue = sheetEditValue.value
-  sheetEditCell.value = null
-
-  if (String(newValue) === String(oldValue)) return
-
-  try {
-    await fetch(`${API_BASE}/admin/sheets/${s.sheet_id}/students/${s.sheet_student_id}`, {
-      method: 'PUT',
-      headers: headers(),
-      body: JSON.stringify({ [key]: newValue })
-    })
-    s[key] = newValue
-  } catch (e) {
-    alert('更新失败')
-    s[key] = oldValue
-  }
-}
-
-// 选择与批量操作
-const selectedIds = ref(new Set())
-const batchStatus = ref('')
-
-const toggleSelect = (id) => {
-  const s = new Set(selectedIds.value)
-  s.has(id) ? s.delete(id) : s.add(id)
-  selectedIds.value = s
-}
-
-const toggleSelectAll = () => {
-  if (selectedIds.value.size === filteredStudents.value.length) {
-    selectedIds.value = new Set()
-  } else {
-    selectedIds.value = new Set(filteredStudents.value.map(s => s.id))
-  }
-}
-
-const isAllSelected = computed(() => filteredStudents.value.length > 0 && selectedIds.value.size === filteredStudents.value.length)
-
-const batchUpdateStatus = async () => {
-  if (!batchStatus.value) return
-  try {
-    await fetch(`${API_BASE}/admin/students/batch-status`, {
-      method: 'POST',
-      headers: headers(),
-      body: JSON.stringify({ ids: [...selectedIds.value], stage: batchStatus.value, note: '批量操作' })
-    })
-    selectedIds.value = new Set()
-    batchStatus.value = ''
-    await loadStudents()
-  } catch (e) { alert('批量更新失败') }
-}
-
-const batchDelete = async () => {
-  if (!confirm(`确定删除 ${selectedIds.value.size} 条记录？`)) return
-  try {
-    await fetch(`${API_BASE}/admin/students/batch-delete`, {
-      method: 'POST',
-      headers: headers(),
-      body: JSON.stringify({ ids: [...selectedIds.value] })
-    })
-    selectedIds.value = new Set()
-    await loadStudents()
-  } catch (e) { alert('批量删除失败') }
+const doSearch = () => {
+  if (!hot) return
+  const searchPlugin = hot.getPlugin('search')
+  searchPlugin.query(searchKeyword.value)
+  hot.render()
 }
 
 // 导出
 const exportExcel = () => {
-  const data = filteredStudents.value.map(s => ({
-    'ID': s.id, '姓名': s.name, '手机号': s.phone, '邮箱': s.email || '',
-    '性别': s.gender || '', '年龄': s.age || '', '学历': s.education || '',
-    '专业': s.major || '', '工作年限': s.work_years || '', '社保年限': s.social_security_years || '',
-    '身份证号': s.id_card || '', '目标等级': s.target_level || '', '机构': s.organization || '',
-    '来源': s.source || '', '状态': s.status, '备注': s.remark || '', '提交时间': formatDate(s.created_at)
-  }))
+  const data = tableData.value.map(r => {
+    const row = {}
+    colKeys.forEach((key, i) => { row[colHeaders[i]] = r[key] || '' })
+    return row
+  })
   const ws = XLSX.utils.json_to_sheet(data)
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '学员数据')
@@ -495,14 +383,12 @@ const handleImport = async (event) => {
     const base64 = e.target.result.split(',')[1]
     try {
       const res = await fetch(`${API_BASE}/admin/students/import`, {
-        method: 'POST',
-        headers: headers(),
-        body: JSON.stringify({ fileData: base64 })
+        method: 'POST', headers: headers(), body: JSON.stringify({ fileData: base64 })
       })
       const data = await res.json()
       if (res.ok) {
         alert(`导入完成：成功 ${data.success} 条，失败 ${data.failed} 条`)
-        await loadStudents()
+        await loadData()
       } else {
         alert(data.message || '导入失败')
       }
@@ -510,30 +396,6 @@ const handleImport = async (event) => {
   }
   reader.readAsDataURL(file)
   event.target.value = ''
-}
-
-// 详情
-const showDetail = ref(false)
-const detailData = ref({})
-const statusHistory = ref([])
-
-const viewDetail = async (s) => {
-  try {
-    const res = await fetch(`${API_BASE}/admin/students/${s.id}`, { headers: headers() })
-    const data = await res.json()
-    detailData.value = data.data
-    statusHistory.value = data.data?.statusHistory || []
-    showDetail.value = true
-  } catch (e) { alert('获取详情失败') }
-}
-
-// 删除
-const deleteStudent = async (s) => {
-  if (!confirm(`确定删除学员「${s.name}」？`)) return
-  try {
-    await fetch(`${API_BASE}/admin/students/${s.id}`, { method: 'DELETE', headers: headers() })
-    await loadStudents()
-  } catch (e) { alert('删除失败') }
 }
 
 // 添加学员
@@ -560,98 +422,64 @@ const submitAddStudent = async () => {
         })
       }
       showAddModal.value = false
-      await loadStudents()
+      await loadData()
     } else { alert('添加失败') }
   } catch (e) { alert('添加失败') }
 }
 
-const getStatusClass = (status) => {
-  const map = { '意向': 'pending', '已报名': 'info', '资料审核': 'warning', '实名认证': 'verify', '已缴费': 'success', '学习中': 'info', '已考试': 'success', '已拿证': 'complete' }
-  return map[status] || 'pending'
-}
+onMounted(async () => {
+  await loadFilters()
+  await loadData()
+})
 
-const formatDate = (d) => { if (!d) return '-'; return new Date(d).toLocaleString('zh-CN') }
-
-onMounted(loadStudents)
+onBeforeUnmount(() => {
+  if (hot) { hot.destroy(); hot = null }
+})
 </script>
 
 <style scoped>
 .hint { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
 .toolbar-info h2 { margin: 0; font-size: 18px; }
 .toolbar-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.toolbar-actions select, .toolbar-actions input { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; }
-.toolbar-actions input { width: 150px; }
+.toolbar-actions select { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; }
+.toolbar-actions .search-input { padding: 6px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; width: 150px; outline: none; }
+.toolbar-actions .search-input:focus { border-color: #667eea; }
 
-/* 按钮 */
+.hot-container {
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid #eee;
+  overflow: hidden;
+}
+
 .btn-primary { padding: 7px 14px; background: var(--primary-color); color: white; border: none; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; }
 .btn-primary:hover { background: var(--primary-hover); }
-.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 .btn-secondary { padding: 7px 14px; background: #f8fafc; color: #475569; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 13px; cursor: pointer; }
 .btn-secondary:hover { background: #f1f5f9; }
-.btn-sm { padding: 5px 10px; font-size: 12px; }
-.btn-link { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 12px; padding: 2px 6px; }
-.btn-link:hover { text-decoration: underline; }
-.btn-link.danger { color: #ef4444; }
-.btn-delete { padding: 7px 14px; background: #ef4444; color: white; border: none; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; }
-.btn-delete:hover { background: #dc2626; }
 
-/* 批量操作栏 */
-.batch-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-md); margin-bottom: 12px; font-size: 13px; }
-.batch-bar select { padding: 5px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; }
+.saving-hint { font-size: 13px; }
+.saving-hint.saving { color: #667eea; }
+.saving-hint.saved { color: #10b981; }
+.saving-hint.error { color: #ef4444; font-weight: 500; }
 
-/* 可编辑网格 */
-.grid-wrapper { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); background: white; }
-.grid-table { width: 100%; border-collapse: collapse; min-width: 1200px; }
-.grid-table th { background: #f8fafc; padding: 10px 10px; font-size: 12px; font-weight: 600; color: #64748b; border-bottom: 2px solid #e2e8f0; white-space: nowrap; position: sticky; top: 0; z-index: 1; text-align: left; }
-.grid-table td { padding: 8px 10px; font-size: 13px; border-bottom: 1px solid #f1f5f9; white-space: nowrap; cursor: default; vertical-align: middle; }
-.grid-table tbody tr:nth-child(even) { background: #fafbfc; }
-.grid-table tbody tr:hover { background: #f0f9ff; }
-.grid-table tbody tr.selected { background: #eff6ff; }
-.grid-table td.editing { padding: 4px; background: #fef3c7 !important; }
-.grid-table td.editing input, .grid-table td.editing select { width: 100%; padding: 4px 6px; border: 1px solid #3b82f6; border-radius: 3px; font-size: 13px; outline: none; box-sizing: border-box; }
-.col-check { width: 36px; text-align: center; }
-.col-id { width: 45px; color: #94a3b8; }
-.col-time { min-width: 130px; color: #94a3b8; font-size: 12px; }
-.col-actions { width: 80px; }
-
-/* 状态标签 */
-.status-tag { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 500; }
-.status-tag.pending { background: #fef3c7; color: #92400e; }
-.status-tag.info { background: #dbeafe; color: #1e40af; }
-.status-tag.warning { background: #fef3c7; color: #92400e; }
-.status-tag.success { background: #d1fae5; color: #065f46; }
-.status-tag.complete { background: #ede9fe; color: #5b21b6; }
-.status-tag.verify { background: #e0e7ff; color: #4338ca; }
-
-.required { color: #ef4444; }
-
-/* 来源标签 */
-.source-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-.source-tag.manual { background: #dbeafe; color: #1e40af; }
-.source-tag.sheet { background: #dcfce7; color: #166534; }
-
-/* Tab 切换 */
 .source-tabs { display: flex; gap: 2px; background: #f1f5f9; border-radius: 6px; padding: 2px; }
 .tab-btn { padding: 5px 12px; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; background: transparent; color: #64748b; }
 .tab-btn.active { background: white; color: #1e40af; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 
-@media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
+.required { color: #ef4444; }
+
+:deep(.htReadOnly) {
+  background: #f5f5f5 !important;
+  color: #888;
+}
 </style>
 
 <style>
-/* 弹窗（Teleport 到 body，不能用 scoped） */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-overlay .modal-card {
-  padding: 0;
-  text-align: left;
-  background: white;
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 0; text-align: left; background: white; border-radius: var(--radius-lg);
+  width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-  animation: none;
 }
 .modal-overlay .modal-lg { max-width: 700px; }
 .modal-overlay .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid #e2e8f0; }
@@ -659,31 +487,12 @@ onMounted(loadStudents)
 .modal-overlay .modal-close { background: none; border: none; font-size: 22px; color: #94a3b8; cursor: pointer; }
 .modal-overlay .modal-body { padding: 24px; }
 .modal-overlay .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px; border-top: 1px solid #e2e8f0; }
-
-/* 详情 */
-.modal-overlay .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.modal-overlay .detail-item { display: flex; flex-direction: column; gap: 2px; }
-.modal-overlay .detail-item label { font-size: 11px; color: #94a3b8; }
-.modal-overlay .detail-item span { font-size: 13px; }
-.modal-overlay .history-title { font-size: 15px; margin: 16px 0 10px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
-.modal-overlay .timeline { padding-left: 18px; border-left: 2px solid #e2e8f0; }
-.modal-overlay .timeline-item { position: relative; padding: 6px 0 6px 14px; }
-.modal-overlay .timeline-dot { position: absolute; left: -7px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--primary-color); }
-.modal-overlay .timeline-content { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
-.modal-overlay .timeline-stage { font-weight: 600; }
-.modal-overlay .timeline-operator { color: #94a3b8; }
-.modal-overlay .timeline-note { color: #94a3b8; font-style: italic; }
-.modal-overlay .timeline-time { color: #cbd5e1; font-size: 12px; }
-.modal-overlay .empty-state { text-align: center; padding: 20px; color: #999; }
-
-/* 表单 */
 .modal-overlay .form-group { margin-bottom: 14px; }
 .modal-overlay .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; }
 .modal-overlay .form-group input, .modal-overlay .form-group select, .modal-overlay .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: var(--radius-md); font-size: 13px; box-sizing: border-box; }
 .modal-overlay .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
 @media (max-width: 768px) {
-  .modal-overlay .detail-grid { grid-template-columns: 1fr; }
   .modal-overlay .form-row { grid-template-columns: 1fr; }
 }
 </style>
