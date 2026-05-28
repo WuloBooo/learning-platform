@@ -86,9 +86,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
 import { checkQualification } from '../data/majorData'
+
+onMounted(() => { document.title = '专业报考条件查询' })
+onBeforeUnmount(() => { document.title = '智能学习平台' })
 
 const searchText = ref('')
 const suggestions = ref([])
