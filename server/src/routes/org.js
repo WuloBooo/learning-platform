@@ -299,6 +299,9 @@ router.post('/sheets/:sheetId/batch-save', orgAuth, async (req, res) => {
       }
     }
 
+    // 更新数据表的最后更新时间
+    await update('org_sheets', { updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ') }, 'id = ?', [req.params.sheetId])
+
     res.json(result)
   } catch (error) {
     res.status(500).json({ message: '批量保存失败: ' + error.message })

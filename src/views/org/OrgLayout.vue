@@ -39,6 +39,7 @@
         <div class="editor-header">
           <button class="back-btn" @click="closeSheet">← 返回列表</button>
           <h2>{{ currentSheet.sheet_name }}</h2>
+          <span class="last-updated" v-if="currentSheet.updated_at">最后更新：{{ currentSheet.updated_at }}</span>
           <span class="saving-hint saving" v-if="saving">保存中...</span>
           <span class="saving-hint saved" v-if="saveStatus === 'saved'">已保存</span>
           <span class="saving-hint error" v-if="saveStatus === 'error'">保存失败，请刷新重试</span>
@@ -264,6 +265,8 @@ const initHot = () => {
           )
         ).then(() => {
           setSaveStatus('saved')
+          const now = new Date()
+          currentSheet.value.updated_at = now.toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
         }).catch(() => {
           setSaveStatus('error')
         }).finally(() => { saving.value = false })
@@ -535,6 +538,12 @@ onBeforeUnmount(() => {
 .back-btn:hover { background: #e0e0e0; }
 
 .editor-header h2 { margin: 0; font-size: 20px; color: #1a1a2e; }
+
+.last-updated {
+  font-size: 12px;
+  color: #999;
+  margin-left: 12px;
+}
 
 .saving-hint {
   font-size: 13px;

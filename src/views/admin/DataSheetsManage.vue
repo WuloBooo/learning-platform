@@ -70,6 +70,7 @@
             <button class="tool-btn secondary" @click="adminExportExcel">导出 Excel</button>
             <button class="tool-btn outline" @click="loadEditorData">刷新数据</button>
             <input class="search-input" type="text" placeholder="搜索..." v-model="adminSearchKeyword" @input="adminDoSearch" />
+            <span class="last-updated" v-if="editorSheet.updated_at">最后更新：{{ editorSheet.updated_at }}</span>
             <span class="saving-hint saving" v-if="adminSaving">保存中...</span>
             <span class="saving-hint saved" v-if="adminSaveStatus === 'saved'">已保存</span>
             <span class="saving-hint error" v-if="adminSaveStatus === 'error'">保存失败，请刷新重试</span>
@@ -391,6 +392,9 @@ function orgAPI_batchSaveAdmin(updates) {
   let adminSaveStatusTimer = null
   Promise.all(promises).then(() => {
     adminSaveStatus.value = 'saved'
+    const now = new Date()
+    editorSheet.value.updated_at = now.toLocaleString('zh-CN', { hour12: false }).replace(/\//g, '-')
+    api.put(`/workflow/admin/sheets/${editorSheet.value.id}/touch`).catch(() => {})
     if (adminSaveStatusTimer) clearTimeout(adminSaveStatusTimer)
     adminSaveStatusTimer = setTimeout(() => { adminSaveStatus.value = '' }, 2000)
   }).catch(() => {
@@ -618,6 +622,7 @@ onBeforeUnmount(() => {
 .tool-btn.danger { background: #e74c3c; }
 
 .saving-hint { font-size: 13px; margin-left: auto; align-self: center; }
+.last-updated { font-size: 12px; color: #999; }
 .saving-hint.saving { color: #667eea; }
 .saving-hint.saved { color: #10b981; }
 .saving-hint.error { color: #ef4444; font-weight: 500; }

@@ -653,6 +653,16 @@ router.put('/admin/sheets/:sheetId/students/:rowId', async (req, res) => {
   }
 })
 
+// 管理员：更新数据表最后更新时间
+router.put('/admin/sheets/:sheetId/touch', async (req, res) => {
+  try {
+    await update('org_sheets', { updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ') }, 'id = ?', [req.params.sheetId])
+    res.json({ message: '更新成功' })
+  } catch (error) {
+    res.status(500).json({ message: '更新失败' })
+  }
+})
+
 // 管理员：批量创建空行（MySQL版）
 router.post('/admin/sheets/:sheetId/batch-create-empty', async (req, res) => {
   try {
