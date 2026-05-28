@@ -171,7 +171,7 @@ const setSaveStatus = (status) => {
 
 // 列定义
 const colHeaders = [
-  'ID', '来源', '所属机构', '数据表',
+  '来源', '所属机构', '数据表',
   '姓名', '电话', '身份证号', '性别', '年龄', '学历', '专业',
   '工作年限', '社保年限', '工种', '等级',
   '报名日期', '考试日期', '报考条件', '来源渠道', '状态',
@@ -179,7 +179,7 @@ const colHeaders = [
   '审核不通过理由🔒', '是否开通学习账号', '是否补考', '线下集训', '备注'
 ]
 const colKeys = [
-  '_id', 'source_type', 'org_name', 'sheet_name',
+  'source_type', 'org_name', 'sheet_name',
   'name', 'phone', 'id_card', 'gender', 'age', 'education', 'major',
   'work_years', 'social_security_years', 'job_type', 'level',
   'reg_date', 'exam_date', 'condition', 'source', 'status',
@@ -187,7 +187,7 @@ const colKeys = [
   'reject_reason', 'account_opened', 'is_retest', 'offline_training', 'remark'
 ]
 
-const metaKeys = new Set(['_id', 'source_type', 'org_name', 'sheet_name'])
+const metaKeys = new Set(['source_type', 'org_name', 'sheet_name'])
 const alwaysReadOnly = new Set(['submitted', 'verified', 'reject_reason'])
 const manualOnly = new Set(['gender', 'age', 'education', 'work_years', 'social_security_years', 'source', 'status'])
 const sheetOnly = new Set(['job_type', 'reg_date', 'exam_date', 'condition', 'audit_result', 'payment_status', 'account_opened', 'is_retest', 'offline_training'])
@@ -209,7 +209,6 @@ const loadData = async () => {
     const res = await workflowAPI.getStudentsFiltered(params)
     const rows = (res.data || []).map(r => ({
       ...r,
-      _id: r.source_type === 'sheet' ? `S${r.id}` : r.id,
       work_years: r.work_years ?? '',
       social_security_years: r.social_security_years ?? '',
       age: r.age ?? '',
@@ -281,10 +280,9 @@ const initHot = () => {
     manualColumnResize: true,
     autoWrapRow: true,
     autoWrapCol: true,
-    cells(row, col) {
+    cells(row, col, prop) {
       const rowData = tableData.value[row]
       if (!rowData) return {}
-      const prop = colKeys[col]
       const cellProps = {}
       if (metaKeys.has(prop) || alwaysReadOnly.has(prop)) {
         cellProps.readOnly = true
