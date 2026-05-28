@@ -22,7 +22,7 @@
         <button class="btn-primary" @click="openAddModal">+ 添加学员</button>
         <button class="btn-secondary" @click="$refs.importInput.click()">导入</button>
         <button class="btn-secondary" @click="exportExcel">导出</button>
-        <input class="search-input" type="text" placeholder="搜索..." v-model="searchKeyword" @input="doSearch" />
+        <input class="search-input" type="text" placeholder="搜索姓名/手机/机构..." v-model="searchKeyword" />
         <input ref="importInput" type="file" accept=".xlsx,.xls,.csv" @change="handleImport" style="display:none" />
         <span class="saving-hint saving" v-if="saving">保存中...</span>
         <span class="saving-hint saved" v-if="saveStatus === 'saved'">已保存</span>
@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { workflowAPI, api } from '../../api'
 import Handsontable from 'handsontable'
 import 'handsontable/styles/handsontable.min.css'
@@ -152,10 +152,27 @@ const orgs = ref([])
 const filterExamPlan = ref('')
 const filterOrg = ref('')
 const filterSource = ref('')
-const searchKeyword = ref('')
 
 // 数据
 const tableData = ref([])
+const searchKeyword = ref('')
+
+const displayData = computed(() => {
+  if (!searchKeyword.value) return tableData.value
+  const key = searchKeyword.value.toLowerCase()
+  return tableData.value.filter(r =>
+    (r.name || '').toLowerCase().includes(key) ||
+    (r.phone || '').includes(key) ||
+    (r.org_name || '').toLowerCase().includes(key) ||
+    (r.id_card || '').includes(key) ||
+    (r.major || '').toLowerCase().includes(key)
+  )
+})
+
+watch(displayData, (data) => {
+  if (hot) hot.loadData(data)
+})
+
 const saving = ref(false)
 const saveStatus = ref('')
 let saveStatusTimer = null
@@ -212,7 +229,7 @@ const loadData = async () => {
     }))
     tableData.value = rows
     if (hot) {
-      hot.loadData(tableData.value)
+      hot.loadData(displayData.value)
     } else {
       await nextTick()
       initHot()
@@ -241,11 +258,10 @@ const initHot = () => {
   if (hot) { hot.destroy(); hot = null }
 
   hot = new Handsontable(container, {
-    data: tableData.value,
+    data: displayData.value,
     colHeaders,
     columns: hotColumns,
     rowHeaders: true,
-    search: true,
     height: Math.max(400, window.innerHeight - 200),
     stretchH: 'all',
     language: 'zh-CN',
@@ -329,13 +345,6 @@ const initHot = () => {
       }).finally(() => { saving.value = false })
     }
   })
-}
-
-const doSearch = () => {
-  if (!hot) return
-  const searchPlugin = hot.getPlugin('search')
-  searchPlugin.query(searchKeyword.value)
-  hot.render()
 }
 
 // 导出
