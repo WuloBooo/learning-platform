@@ -188,14 +188,11 @@ const colKeys = [
 ]
 
 const metaKeys = new Set(['source_type', 'org_name', 'sheet_name'])
-const alwaysReadOnly = new Set(['submitted', 'verified', 'reject_reason'])
-const manualOnly = new Set(['gender', 'age', 'education', 'work_years', 'social_security_years', 'source', 'status'])
-const sheetOnly = new Set(['job_type', 'reg_date', 'exam_date', 'condition', 'audit_result', 'payment_status', 'account_opened', 'is_retest', 'offline_training'])
 
 const hotColumns = colKeys.map(key => ({
   data: key,
   type: 'text',
-  readOnly: metaKeys.has(key) || alwaysReadOnly.has(key),
+  readOnly: metaKeys.has(key),
 }))
 
 // 加载数据
@@ -280,22 +277,6 @@ const initHot = () => {
     manualColumnResize: true,
     autoWrapRow: true,
     autoWrapCol: true,
-    cells(row, col, prop) {
-      const rowData = tableData.value[row]
-      if (!rowData) return {}
-      const cellProps = {}
-      if (metaKeys.has(prop) || alwaysReadOnly.has(prop)) {
-        cellProps.readOnly = true
-        cellProps.className = 'htReadOnly'
-      } else if (rowData.source_type === 'sheet' && manualOnly.has(prop)) {
-        cellProps.readOnly = true
-        cellProps.className = 'htReadOnly'
-      } else if (rowData.source_type === 'manual' && sheetOnly.has(prop)) {
-        cellProps.readOnly = true
-        cellProps.className = 'htReadOnly'
-      }
-      return cellProps
-    },
     afterChange(changes, source) {
       if (source === 'loadData') return
       if (!changes) return
@@ -312,7 +293,8 @@ const initHot = () => {
           if (!sheetUpdates.has(rowData.sheet_id)) sheetUpdates.set(rowData.sheet_id, [])
           sheetUpdates.get(rowData.sheet_id).push({ id: rowData.id, [prop]: newVal || '' })
         } else if (rowData.source_type === 'manual') {
-          manualUpdates.push({ id: rowData.id, [prop]: newVal || '', _prop: prop, _row })
+          const fieldName = prop === 'level' ? 'target_level' : prop
+          manualUpdates.push({ id: rowData.id, prop, field: fieldName, value: newVal || '' })
         }
       }
 
@@ -321,22 +303,19 @@ const initHot = () => {
 
       const promises = []
 
-      // 数据表学员批量保存
       for (const [sheetId, updates] of sheetUpdates) {
         promises.push(workflowAPI.adminBatchSave(sheetId, updates).catch(e => console.error('批量保存失败:', e)))
       }
 
-      // 手动学员逐条保存
       for (const u of manualUpdates) {
-        const { id, _prop, _row, ...data } = u
         promises.push(
-          fetch(`${API_BASE}/admin/students/${id}`, {
-            method: 'PUT', headers: headers(), body: JSON.stringify(data)
+          fetch(`${API_BASE}/admin/students/${u.id}`, {
+            method: 'PUT', headers: headers(), body: JSON.stringify({ [u.field]: u.value })
           }).then(async r => {
-            if (_prop === 'status' && data.status) {
-              await fetch(`${API_BASE}/admin/students/${id}/status`, {
+            if (u.prop === 'status' && u.value) {
+              await fetch(`${API_BASE}/admin/students/${u.id}/status`, {
                 method: 'POST', headers: headers(),
-                body: JSON.stringify({ stage: data.status, operator: '管理员', note: '表格编辑' })
+                body: JSON.stringify({ stage: u.value, operator: '管理员', note: '表格编辑' })
               })
             }
           }).catch(e => console.error('保存失败:', e))
