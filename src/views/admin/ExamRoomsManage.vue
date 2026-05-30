@@ -67,7 +67,7 @@
     <div class="loading-state" v-else>加载中...</div>
 
     <!-- 隐藏的文件上传 input -->
-    <input type="file" ref="fileInput" accept=".zip" @change="handleFileUpload" style="display:none" />
+    <input type="file" ref="fileInput" @change="handleFileUpload" style="display:none" />
     <!-- 隐藏的文件夹上传 input -->
     <input type="file" ref="folderInput" webkitdirectory @change="handleFolderUpload" style="display:none" />
 
