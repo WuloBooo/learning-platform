@@ -55,10 +55,11 @@ app.use('/api/', limiter)
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   message: { message: '登录尝试次数过多，请15分钟后再试' }
 })
 app.use('/api/auth/login', authLimiter)
+app.use('/api/org/login', authLimiter)
 
 // 大文件上传路由（必须在全局 10kb 限制之前）
 app.use('/api/exam-rooms', express.json({ limit: '500mb' }))
@@ -72,6 +73,42 @@ app.use(express.urlencoded({ extended: true }))
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
+// 学信网专业查询代理
+import https from 'https'
+app.get('/api/chsi/major-search', (req, res) => {
+  const { cc, key } = req.query
+  if (!cc || !key) return res.status(400).json({ message: '缺少参数' })
+  const data = 'cc=' + cc + '&key=' + encodeURIComponent(key) + '&trnd=' + Math.random().toString().slice(2)
+  const options = {
+    hostname: 'my.chsi.com.cn',
+    path: '/archive/zybh/search.action',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+      'Content-Length': Buffer.byteLength(data),
+      'Origin': 'https://my.chsi.com.cn',
+      'Referer': 'https://my.chsi.com.cn/archive/zybh/show.action',
+      'X-Requested-With': 'XMLHttpRequest',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'
+    }
+  }
+  const proxyReq = https.request(options, proxyRes => {
+    let body = ''
+    proxyRes.on('data', c => body += c)
+    proxyRes.on('end', () => {
+      try {
+        const d = JSON.parse(body)
+        res.json(d)
+      } catch (e) {
+        res.status(502).json({ message: '学信网返回数据异常' })
+      }
+    })
+  })
+  proxyReq.on('error', () => res.status(502).json({ message: '学信网请求失败' }))
+  proxyReq.write(data)
+  proxyReq.end()
 })
 
 // 公开API（无需登录）

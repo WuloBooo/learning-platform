@@ -52,6 +52,9 @@
                 匹配条件：{{ result.matchedName }}
               </p>
               <p v-if="!result.qualified" class="fail-reason">{{ result.reason }}</p>
+              <button class="chsi-btn-inline" @click="searchChsi" :disabled="chsiLoading">
+                🔍 查看学信网专业变化记录
+              </button>
             </div>
           </div>
         </div>
@@ -60,6 +63,32 @@
       <!-- 多个专业提示 -->
       <div class="multi-hint" v-if="searched && !result && !showSuggestions">
         <p>未找到匹配的专业，请检查输入是否正确。</p>
+        <button class="chsi-btn" @click="searchChsi" :disabled="chsiLoading">
+          {{ chsiLoading ? '查询学信网中...' : '🔍 从学信网查询专业变化' }}
+        </button>
+      </div>
+
+      <!-- 学信网查询结果 -->
+      <div class="chsi-section" v-if="chsiResults.length > 0">
+        <h3>📚 学信网专业变化查询结果</h3>
+        <div class="chsi-list">
+          <div class="chsi-item" v-for="item in chsiResults" :key="item.zydm">
+            <div class="chsi-current">
+              <span class="chsi-code">{{ item.zydm }}</span>
+              <span class="chsi-name">{{ item.zymc }}</span>
+            </div>
+            <div class="chsi-old" v-if="item.yzyList && item.yzyList.length > 0">
+              <span class="chsi-arrow">← 原专业：</span>
+              <span class="chsi-old-item" v-for="y in item.yzyList" :key="y.zydm">
+                {{ y.zymc }}（{{ y.zydm }}）
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chsi-hint" v-if="chsiLoading">
+        <p>正在从学信网查询...</p>
       </div>
 
       <!-- 说明 -->
@@ -100,6 +129,37 @@ const selectedMajor = ref(null)
 const result = ref(null)
 const loading = ref(false)
 const searched = ref(false)
+const chsiResults = ref([])
+const chsiLoading = ref(false)
+
+// cc参数映射
+const ccMap = { '本科': 'ptjy', '专科': 'gz', '研究生': 'yjs' }
+
+const searchChsi = async () => {
+  if (!searchText.value.trim()) return
+  chsiLoading.value = true
+  chsiResults.value = []
+  try {
+    // 对三个层次都搜索
+    const all = {}
+    const levels = selectedMajor.value
+      ? [selectedMajor.value.level]
+      : ['本科', '专科', '研究生']
+    for (const level of levels) {
+      const cc = ccMap[level]
+      if (!cc) continue
+      const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(searchText.value.trim())}`)
+      const data = await res.json()
+      if (data.result && data.result[0] && data.result[0].resultVo) {
+        data.result[0].resultVo.forEach(v => { all[v.zydm] = v })
+      }
+    }
+    chsiResults.value = Object.values(all)
+  } catch (e) {
+    console.error('学信网查询失败:', e)
+  }
+  chsiLoading.value = false
+}
 
 const handleSearch = () => {
   searched.value = true
@@ -311,6 +371,90 @@ const selectMajor = (item) => {
 
 .fail-reason {
   color: #991b1b !important;
+}
+
+.chsi-btn {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.chsi-btn:hover { opacity: 0.9; }
+.chsi-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chsi-btn-inline {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: white;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chsi-btn-inline:hover { background: #eff6ff; }
+.chsi-btn-inline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chsi-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.chsi-section h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: #1e40af;
+}
+.chsi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chsi-item {
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+.chsi-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.chsi-code {
+  font-size: 12px;
+  color: white;
+  background: #3b82f6;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.chsi-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+.chsi-old {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  line-height: 1.6;
+}
+.chsi-arrow { color: #94a3b8; }
+.chsi-old-item {
+  margin-right: 8px;
+}
+.chsi-hint {
+  text-align: center;
+  padding: 12px;
+  color: #64748b;
+  font-size: 13px;
 }
 
 .multi-hint {
