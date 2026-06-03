@@ -170,8 +170,8 @@ const searchChsi = async () => {
       all[key]._qualified = finalMajor.qualified
       all[key]._checked = true
       all[key]._reason = finalMajor.qualified
-        ? `符合条件（${finalMajor.matchedCode ? '代码' + finalMajor.matchedCode : finalMajor.matchedName}）`
-        : finalMajor.reason
+        ? `符合条件（专业${item.zydm} → 专业类${finalMajor.matchedCode} ${finalMajor.className || ''}）`
+        : `不符合（专业${item.zydm} → 专业类${finalMajor.matchedCode || item.zydm?.substring(0,4)} 不在可报考范围内）`
       if (finalMajor.name !== item.zymc) {
         all[key]._finalName = finalMajor.name
       }
