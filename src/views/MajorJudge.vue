@@ -88,29 +88,6 @@
         <p>未找到匹配的专业，请检查输入是否正确。</p>
       </div>
 
-      <!-- 学信网查询结果 -->
-      <div class="chsi-section" v-if="chsiResults.length > 0">
-        <h3>📚 学信网专业变化查询结果</h3>
-        <div class="chsi-list">
-          <div class="chsi-item" v-for="item in chsiResults" :key="item.zydm">
-            <div class="chsi-current">
-              <span class="chsi-code">{{ item.zydm }}</span>
-              <span class="chsi-name">{{ item.zymc }}</span>
-            </div>
-            <div class="chsi-old" v-if="item.yzyList && item.yzyList.length > 0">
-              <span class="chsi-arrow">← 原专业：</span>
-              <span class="chsi-old-item" v-for="y in item.yzyList" :key="y.zydm">
-                {{ y.zymc }}（{{ y.zydm }}）
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="chsi-hint" v-if="chsiLoading">
-        <p>正在从学信网查询...</p>
-      </div>
-
       <!-- 说明 -->
       <div class="info-section">
         <h3>报考条件说明</h3>
