@@ -29,6 +29,13 @@
             </div>
             <div class="chsi-qualify" v-if="item._qualified">
               <span class="qualify-text">{{ item._reason }}</span>
+              <span class="chain-text" v-if="item._traceResult && item._traceResult._chain && item._traceResult._chain.length > 0">
+                （{{ item._traceResult._chain.map(c => c.zymc).join(' → ') }} → {{ item._traceResult.name }}）
+              </span>
+            </div>
+            <div class="chsi-qualify" v-if="item._checked && !item._qualified">
+              <span class="qualify-text">{{ item._reason }}</span>
+              <span class="chain-text" v-if="item._finalName"> → 最新专业名：{{ item._finalName }}</span>
             </div>
             <div class="chsi-old" v-if="item.yzyList && item.yzyList.length > 0">
               <span class="chsi-arrow">← 原专业：</span>
@@ -150,25 +157,71 @@ const searchChsi = async () => {
         data.result[0].resultVo.forEach(v => {
           if (!all[v.zydm]) {
             all[v.zydm] = { ...v, _level: level }
-            // 对学信网专业也进行判断
-            const major = buildMajorFromChsi(v, level)
-            if (major) {
-              const qual = checkQualification(major)
-              all[v.zydm]._qualified = qual.qualified
-              all[v.zydm]._checked = true
-              all[v.zydm]._reason = qual.qualified
-                ? `符合条件（${qual.matchedCode ? '代码' + qual.matchedCode : qual.matchedName}）`
-                : qual.reason
-            }
           }
         })
       }
     }
+
+    // 对每个结果，循环追踪到最终专业，用最终专业做判断
+    for (const key of Object.keys(all)) {
+      const item = all[key]
+      const finalMajor = await traceFinalMajor(item)
+      all[key]._traceResult = finalMajor
+      all[key]._qualified = finalMajor.qualified
+      all[key]._checked = true
+      all[key]._reason = finalMajor.qualified
+        ? `符合条件（${finalMajor.matchedCode ? '代码' + finalMajor.matchedCode : finalMajor.matchedName}）`
+        : finalMajor.reason
+      if (finalMajor.name !== item.zymc) {
+        all[key]._finalName = finalMajor.name
+      }
+    }
+
     chsiResults.value = Object.values(all)
   } catch (e) {
     console.error('学信网查询失败:', e)
   }
   chsiLoading.value = false
+}
+
+// 追踪专业变化链，找到最终专业后做判断
+const traceFinalMajor = async (item, depth = 0) => {
+  if (depth > 5) return { qualified: false, reason: '追踪层级过深' }
+  const level = item._level || '本科'
+  const major = buildMajorFromChsi(item, level)
+  if (!major) return { qualified: false, reason: '无法识别专业' }
+  const qual = checkQualification(major)
+  if (qual.qualified) return { ...qual, name: item.zymc }
+  // 不合格时，用专业名称再搜一次学信网，看这个名称是不是旧专业
+  const ccMap = { '本科': 'ptjy', '专科': 'gz', '研究生': 'yjs' }
+  const cc = ccMap[level]
+  if (!cc) return { ...qual, name: item.zymc }
+  try {
+    const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(item.zymc)}`)
+    const data = await res.json()
+    if (data.result && data.result[0] && data.result[0].resultVo) {
+      // 找到结果中对应的条目（代码匹配）
+      const found = data.result[0].resultVo.find(v => v.zydm === item.zydm)
+      // found 不需要再处理，关键是看搜索结果中有没有不同的专业指向它
+      // 搜索返回的结果本身就是包含原专业的，我们需要检查有没有其他专业把当前专业作为原专业
+      // 即：搜索当前专业名，看结果中是否有专业在 yzyList 里包含当前专业代码
+      for (const v of data.result[0].resultVo) {
+        if (v.yzyList && v.yzyList.some(y => y.zydm === item.zydm) && v.zydm !== item.zydm) {
+          // v 是当前专业变更后的新专业，递归追踪
+          const nextItem = { ...v, _level: level }
+          const finalResult = await traceFinalMajor(nextItem, depth + 1)
+          if (finalResult.qualified) {
+            finalResult._chain = finalResult._chain || []
+            finalResult._chain.unshift({ zydm: item.zydm, zymc: item.zymc })
+            return finalResult
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('追踪专业变化失败:', e)
+  }
+  return { ...qual, name: item.zymc }
 }
 
 // 从学信网数据构建专业对象用于判断
@@ -497,6 +550,11 @@ const selectMajor = (item) => {
 }
 .chsi-item.chsi-fail .qualify-text {
   color: #991b1b;
+}
+.chain-text {
+  font-size: 11px;
+  color: #6366f1;
+  margin-left: 4px;
 }
 .chsi-old {
   font-size: 12px;
