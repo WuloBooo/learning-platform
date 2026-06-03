@@ -16,7 +16,33 @@
           </button>
         </div>
 
-        <!-- 搜索建议（输入时出现） -->
+        <!-- 学信网查询结果（搜索时自动获取） -->
+      <div class="chsi-section" v-if="chsiResults.length > 0">
+        <h3>📚 学信网专业变化查询结果（{{ chsiResults.length }}条）</h3>
+        <div class="chsi-list">
+          <div class="chsi-item" v-for="item in chsiResults" :key="item.zydm" :class="{'chsi-pass': item._qualified, 'chsi-fail': item._checked && !item._qualified}">
+            <div class="chsi-current">
+              <span class="chsi-badge">{{ item._qualified ? '✅' : '❌' }}</span>
+              <span class="chsi-code">{{ item.zydm }}</span>
+              <span class="chsi-name">{{ item.zymc }}</span>
+              <span class="chsi-level-tag" v-if="item._level">{{ item._level }}</span>
+            </div>
+            <div class="chsi-qualify" v-if="item._qualified">
+              <span class="qualify-text">{{ item._reason }}</span>
+            </div>
+            <div class="chsi-old" v-if="item.yzyList && item.yzyList.length > 0">
+              <span class="chsi-arrow">← 原专业：</span>
+              <span class="chsi-old-item" v-for="y in item.yzyList" :key="y.zydm">
+                {{ y.zymc }}（{{ y.zydm }}）
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chsi-hint" v-if="chsiLoading">
+        <p>正在从学信网查询...</p>
+      </div>
         <div class="suggestions" v-if="suggestions.length > 0 && showSuggestions">
           <div
             v-for="item in suggestions"
@@ -52,20 +78,14 @@
                 匹配条件：{{ result.matchedName }}
               </p>
               <p v-if="!result.qualified" class="fail-reason">{{ result.reason }}</p>
-              <button class="chsi-btn-inline" @click="searchChsi" :disabled="chsiLoading">
-                🔍 查看学信网专业变化记录
-              </button>
             </div>
           </div>
         </div>
       </div>
 
       <!-- 多个专业提示 -->
-      <div class="multi-hint" v-if="searched && !result && !showSuggestions">
+      <div class="multi-hint" v-if="searched && !result && !showSuggestions && chsiResults.length === 0 && !chsiLoading">
         <p>未找到匹配的专业，请检查输入是否正确。</p>
-        <button class="chsi-btn" @click="searchChsi" :disabled="chsiLoading">
-          {{ chsiLoading ? '查询学信网中...' : '🔍 从学信网查询专业变化' }}
-        </button>
       </div>
 
       <!-- 学信网查询结果 -->
@@ -140,18 +160,31 @@ const searchChsi = async () => {
   chsiLoading.value = true
   chsiResults.value = []
   try {
-    // 对三个层次都搜索
     const all = {}
-    const levels = selectedMajor.value
-      ? [selectedMajor.value.level]
-      : ['本科', '专科', '研究生']
-    for (const level of levels) {
-      const cc = ccMap[level]
-      if (!cc) continue
+    const ccList = [
+      { cc: 'ptjy', level: '本科' },
+      { cc: 'gz', level: '专科' },
+      { cc: 'yjs', level: '研究生' }
+    ]
+    for (const { cc, level } of ccList) {
       const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(searchText.value.trim())}`)
       const data = await res.json()
       if (data.result && data.result[0] && data.result[0].resultVo) {
-        data.result[0].resultVo.forEach(v => { all[v.zydm] = v })
+        data.result[0].resultVo.forEach(v => {
+          if (!all[v.zydm]) {
+            all[v.zydm] = { ...v, _level: level }
+            // 对学信网专业也进行判断
+            const major = buildMajorFromChsi(v, level)
+            if (major) {
+              const qual = checkQualification(major)
+              all[v.zydm]._qualified = qual.qualified
+              all[v.zydm]._checked = true
+              all[v.zydm]._reason = qual.qualified
+                ? `符合条件（${qual.matchedCode ? '代码' + qual.matchedCode : qual.matchedName}）`
+                : qual.reason
+            }
+          }
+        })
       }
     }
     chsiResults.value = Object.values(all)
@@ -159,6 +192,22 @@ const searchChsi = async () => {
     console.error('学信网查询失败:', e)
   }
   chsiLoading.value = false
+}
+
+// 从学信网数据构建专业对象用于判断
+const buildMajorFromChsi = (item, level) => {
+  const code = item.zydm || ''
+  const name = item.zymc || ''
+  // 判断是专业类还是具体专业：代码长度4位且needBold为true的是专业类
+  if (item.needBold) {
+    return { level, className: name, name: name, code: code }
+  }
+  // 具体专业，代码前4位是专业类代码
+  const classCode = code.substring(0, 4)
+  // 从catalog中找到对应专业类名
+  const found = majorCatalog.find(m => m.level === level && String(m.code).startsWith(classCode))
+  const className = found ? found.className : classCode
+  return { level, className, name, code }
 }
 
 const handleSearch = () => {
@@ -169,6 +218,7 @@ const handleSearch = () => {
 
   if (!searchText.value.trim()) {
     suggestions.value = []
+    chsiResults.value = []
     return
   }
 
@@ -177,18 +227,19 @@ const handleSearch = () => {
     m.name.toLowerCase().includes(keyword) || String(m.code).includes(keyword)
   )
 
+  // 自动查学信网
+  searchChsi()
+
   if (filtered.length === 0) {
     suggestions.value = []
     return
   }
 
   if (filtered.length === 1) {
-    // 只有一个结果，直接判断
     selectMajor(filtered[0])
     return
   }
 
-  // 多个结果，显示候选列表
   suggestions.value = filtered.slice(0, 30)
   showSuggestions.value = true
 }
@@ -422,11 +473,23 @@ const selectMajor = (item) => {
   border-radius: 8px;
   border: 1px solid #e2e8f0;
 }
+.chsi-item.chsi-pass {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+.chsi-item.chsi-fail {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
 .chsi-current {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
+}
+.chsi-badge {
+  font-size: 14px;
+  flex-shrink: 0;
 }
 .chsi-code {
   font-size: 12px;
@@ -439,6 +502,24 @@ const selectMajor = (item) => {
   font-size: 14px;
   font-weight: 500;
   color: #1e293b;
+}
+.chsi-level-tag {
+  font-size: 11px;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #6366f1;
+}
+.chsi-qualify {
+  margin-top: 4px;
+}
+.qualify-text {
+  font-size: 12px;
+  color: #166534;
+  font-weight: 500;
+}
+.chsi-item.chsi-fail .qualify-text {
+  color: #991b1b;
 }
 .chsi-old {
   font-size: 12px;
