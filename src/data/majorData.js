@@ -494,7 +494,7 @@ export function checkQualificationByName(name) {
 
 // ==================== 研究生可报考一级学科名称（777文档）====================
 // 研究生按一级学科匹配，用户的二级学科归属于一级学科即可
-const masterLevelOneNames = [
+export const masterLevelOneNames = [
   // 教育学门类
   '体育学', '教育', '体育',
   // 工学门类

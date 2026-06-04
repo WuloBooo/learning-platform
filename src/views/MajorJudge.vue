@@ -128,7 +128,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
-import { checkQualification, checkQualificationByName } from '../data/majorData'
+import { checkQualification, checkQualificationByName, masterLevelOneNames } from '../data/majorData'
 
 onMounted(() => { document.title = '专业报考条件查询' })
 onBeforeUnmount(() => { document.title = '智能学习平台' })
@@ -215,18 +215,36 @@ const searchChsi = async () => {
 const traceFinalMajor = async (item, depth = 0) => {
   if (depth > 5) return { qualified: false, reason: '追踪层级过深' }
   const level = item._level || '本科'
-  // 先用名称直接匹配（高职专科 + 高职本科）
-  const nameQual = checkQualificationByName(item.zymc)
-  if (nameQual.qualified) return { ...nameQual, name: item.zymc }
+  const name = item.zymc
+
+  // 按学信网返回的层次优先匹配
+  if (level === '研究生') {
+    const matched = masterLevelOneNames?.filter(n => name.includes(n))
+    if (matched && matched.length > 0) {
+      return { qualified: true, matchedName: matched[0], level: '研究生', name }
+    }
+  }
+
+  // 名称精确匹配（不限层次）
+  const nameQual = checkQualificationByName(name)
+  if (nameQual.qualified) {
+    // 如果学信网标为研究生但名称匹配到了其他层次，优先用学信网的层次
+    if (level === '研究生') {
+      nameQual.level = '研究生'
+    }
+    return { ...nameQual, name }
+  }
+
   // 名称不匹配时，走旧逻辑（普通本科/研究生）
   const major = buildMajorFromChsi(item, level)
   if (major) {
     const qual = checkQualification(major)
-    if (qual.qualified) return { ...qual, name: item.zymc }
+    if (qual.qualified) return { ...qual, name }
   }
+
   // 不合格时，用专业名称再搜一次学信网，追踪变化链
   const cc = ccMap[level]
-  if (!cc) return { ...nameQual, name: item.zymc }
+  if (!cc) return { ...nameQual, name }
   try {
     const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(item.zymc)}`)
     const data = await res.json()
