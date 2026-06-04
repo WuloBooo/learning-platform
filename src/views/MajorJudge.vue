@@ -1,7 +1,7 @@
 <template>
   <div class="major-check-page">
     <div class="check-card">
-      <h1>专业报考条件查询</h1>
+      <h1>人工智能训练师三级 — 专业报考条件查询</h1>
       <p class="subtitle">人工智能训练师 — 查询您的专业是否符合报名条件</p>
 
       <div class="form-section">
@@ -101,6 +101,7 @@
 
       <!-- 说明 -->
       <div class="info-section">
+        <p class="disclaimer">⚠️ 以上查询结果仅供参考，最终报考资格以实际审核结果为准。</p>
         <h3>报考条件说明</h3>
         <p>人工智能训练师可报考的专业范围（按学历层次）：</p>
         <div class="info-grid">
@@ -589,6 +590,17 @@ const selectMajor = (item) => {
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid #eee;
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 13px !important;
+  color: #e67e22 !important;
+  margin: 0 0 16px !important;
+  padding: 10px;
+  background: #fef9e7;
+  border-radius: 8px;
+  border: 1px solid #f9e79f;
 }
 
 .info-section h3 {
