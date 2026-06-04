@@ -1,0 +1,2249 @@
+[
+  {
+    "code": "210101",
+    "name": "现代种业技术",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210102",
+    "name": "作物生产与品质改良",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210103",
+    "name": "智慧农业技术",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210104",
+    "name": "设施园艺",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210105",
+    "name": "现代农业经营与管理",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210106",
+    "name": "智能化农业装备技术",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210107",
+    "name": "现代植保技术",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210108",
+    "name": "茶叶生产与应用技术",
+    "className": "2101农业类",
+    "classCode": "",
+    "category": "2101农业类"
+  },
+  {
+    "code": "210201",
+    "name": "智慧林业技术",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210202",
+    "name": "园林工程",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210203",
+    "name": "木业产品智能制造",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210201",
+    "name": "现代种业技术",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210204",
+    "name": "林草保护工程",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210205",
+    "name": "林业碳汇工程",
+    "className": "2102林业类",
+    "classCode": "",
+    "category": "2102林业类"
+  },
+  {
+    "code": "210301",
+    "name": "动物医学",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210302",
+    "name": "动物药学",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210303",
+    "name": "宠物医疗",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210304",
+    "name": "现代畜牧",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210301",
+    "name": "现代作物生产技术",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210302",
+    "name": "智慧农业技术",
+    "className": "2103畜牧业类",
+    "classCode": "",
+    "category": "2103畜牧业类"
+  },
+  {
+    "code": "210401",
+    "name": "现代水产养殖技术",
+    "className": "2104渔业类",
+    "classCode": "",
+    "category": "2104渔业类"
+  },
+  {
+    "code": "210402",
+    "name": "远洋渔业",
+    "className": "2104渔业类",
+    "classCode": "",
+    "category": "2104渔业类"
+  },
+  {
+    "code": "220101",
+    "name": "资源勘查工程技术",
+    "className": "2201资源勘查类",
+    "classCode": "",
+    "category": "2201资源勘查类"
+  },
+  {
+    "code": "220101",
+    "name": "国土空间规划与测绘技术",
+    "className": "2201资源勘查类",
+    "classCode": "",
+    "category": "2201资源勘查类"
+  },
+  {
+    "code": "220201",
+    "name": "环境地质工程",
+    "className": "2202地质类",
+    "classCode": "",
+    "category": "2202地质类"
+  },
+  {
+    "code": "220301",
+    "name": "导航工程技术",
+    "className": "2203测绘地理信息类",
+    "classCode": "",
+    "category": "2203测绘地理信息类"
+  },
+  {
+    "code": "220302",
+    "name": "测绘工程技术",
+    "className": "2203测绘地理信息类",
+    "classCode": "",
+    "category": "2203测绘地理信息类"
+  },
+  {
+    "code": "220303",
+    "name": "地理信息技术",
+    "className": "2203测绘地理信息类",
+    "classCode": "",
+    "category": "2203测绘地理信息类"
+  },
+  {
+    "code": "220401",
+    "name": "油气储运工程",
+    "className": "2204石油与天然气类",
+    "classCode": "",
+    "category": "2204石油与天然气类"
+  },
+  {
+    "code": "220402",
+    "name": "石油工程技术",
+    "className": "2204石油与天然气类",
+    "classCode": "",
+    "category": "2204石油与天然气类"
+  },
+  {
+    "code": "220501",
+    "name": "智能采矿技术",
+    "className": "2205煤炭类",
+    "classCode": "",
+    "category": "2205煤炭类"
+  },
+  {
+    "code": "220502",
+    "name": "煤炭清洁利用工程",
+    "className": "2205煤炭类",
+    "classCode": "",
+    "category": "2205煤炭类"
+  },
+  {
+    "code": "220701",
+    "name": "智慧气象技术",
+    "className": "2207气象类",
+    "classCode": "",
+    "category": "2207气象类"
+  },
+  {
+    "code": "220801",
+    "name": "生态环境工程技术",
+    "className": "2208环境保护类",
+    "classCode": "",
+    "category": "2208环境保护类"
+  },
+  {
+    "code": "220802",
+    "name": "生态环境数智化监测技术",
+    "className": "2208环境保护类",
+    "classCode": "",
+    "category": "2208环境保护类"
+  },
+  {
+    "code": "220803",
+    "name": "资源循环工程",
+    "className": "2208环境保护类",
+    "classCode": "",
+    "category": "2208环境保护类"
+  },
+  {
+    "code": "220901",
+    "name": "安全工程技术",
+    "className": "2209安全类",
+    "classCode": "",
+    "category": "2209安全类"
+  },
+  {
+    "code": "220902",
+    "name": "应急管理",
+    "className": "2209安全类",
+    "classCode": "",
+    "category": "2209安全类"
+  },
+  {
+    "code": "220901",
+    "name": "安全工程技术",
+    "className": "2209安全类",
+    "classCode": "",
+    "category": "2209安全类"
+  },
+  {
+    "code": "220903",
+    "name": "消防工程技术",
+    "className": "2209安全类",
+    "classCode": "",
+    "category": "2209安全类"
+  },
+  {
+    "code": "230101",
+    "name": "电力工程及自动化",
+    "className": "2301电力技术类",
+    "classCode": "",
+    "category": "2301电力技术类"
+  },
+  {
+    "code": "230102",
+    "name": "智能电网工程技术",
+    "className": "2301电力技术类",
+    "classCode": "",
+    "category": "2301电力技术类"
+  },
+  {
+    "code": "230103",
+    "name": "智慧综合能源工程",
+    "className": "2301电力技术类",
+    "classCode": "",
+    "category": "2301电力技术类"
+  },
+  {
+    "code": "230201",
+    "name": "热能动力工程",
+    "className": "2302热能与发电工程类",
+    "classCode": "",
+    "category": "2302热能与发电工程类"
+  },
+  {
+    "code": "230202",
+    "name": "核工程与核技术应用",
+    "className": "2302热能与发电工程类",
+    "classCode": "",
+    "category": "2302热能与发电工程类"
+  },
+  {
+    "code": "230301",
+    "name": "新能源发电工程技术",
+    "className": "2303新能源发电工程类",
+    "classCode": "",
+    "category": "2303新能源发电工程类"
+  },
+  {
+    "code": "230302",
+    "name": "现代材料成型技术",
+    "className": "2303新能源发电工程类",
+    "classCode": "",
+    "category": "2303新能源发电工程类"
+  },
+  {
+    "code": "230401",
+    "name": "钢铁智能冶金技术",
+    "className": "2304黑色金属材料类",
+    "classCode": "",
+    "category": "2304黑色金属材料类"
+  },
+  {
+    "code": "230402",
+    "name": "钢铁智能轧制技术",
+    "className": "2304黑色金属材料类",
+    "classCode": "",
+    "category": "2304黑色金属材料类"
+  },
+  {
+    "code": "230501",
+    "name": "材料化冶金应用技术",
+    "className": "2305有色金属材料类",
+    "classCode": "",
+    "category": "2305有色金属材料类"
+  },
+  {
+    "code": "230502",
+    "name": "金属智能成型技术",
+    "className": "2305有色金属材料类",
+    "classCode": "",
+    "category": "2305有色金属材料类"
+  },
+  {
+    "code": "230503",
+    "name": "储能材料工程技术",
+    "className": "2305有色金属材料类",
+    "classCode": "",
+    "category": "2305有色金属材料类"
+  },
+  {
+    "code": "230601",
+    "name": "高分子材料工程技术",
+    "className": "2306非金属材料类",
+    "classCode": "",
+    "category": "2306非金属材料类"
+  },
+  {
+    "code": "230602",
+    "name": "新材料与应用技术",
+    "className": "2306非金属材料类",
+    "classCode": "",
+    "category": "2306非金属材料类"
+  },
+  {
+    "code": "230701",
+    "name": "建筑材料智能制造",
+    "className": "2307建筑材料类",
+    "classCode": "",
+    "category": "2307建筑材料类"
+  },
+  {
+    "code": "240101",
+    "name": "建筑设计",
+    "className": "2401建筑设计类",
+    "classCode": "",
+    "category": "2401建筑设计类"
+  },
+  {
+    "code": "240102",
+    "name": "建筑装饰工程",
+    "className": "2401建筑设计类",
+    "classCode": "",
+    "category": "2401建筑设计类"
+  },
+  {
+    "code": "240103",
+    "name": "古建筑工程",
+    "className": "2401建筑设计类",
+    "classCode": "",
+    "category": "2401建筑设计类"
+  },
+  {
+    "code": "240104",
+    "name": "园林景观工程",
+    "className": "2401建筑设计类",
+    "classCode": "",
+    "category": "2401建筑设计类"
+  },
+  {
+    "code": "240105",
+    "name": "城市设计数字技术",
+    "className": "2401建筑设计类",
+    "classCode": "",
+    "category": "2401建筑设计类"
+  },
+  {
+    "code": "240201",
+    "name": "城乡规划",
+    "className": "2402城乡规划与管理类",
+    "classCode": "",
+    "category": "2402城乡规划与管理类"
+  },
+  {
+    "code": "240202",
+    "name": "建筑智能检测与修复",
+    "className": "2402城乡规划与管理类",
+    "classCode": "",
+    "category": "2402城乡规划与管理类"
+  },
+  {
+    "code": "240301",
+    "name": "建筑工程",
+    "className": "2403土建施工类",
+    "classCode": "",
+    "category": "2403土建施工类"
+  },
+  {
+    "code": "240302",
+    "name": "智能建造工程",
+    "className": "2403土建施工类",
+    "classCode": "",
+    "category": "2403土建施工类"
+  },
+  {
+    "code": "240303",
+    "name": "城市地下工程",
+    "className": "2403土建施工类",
+    "classCode": "",
+    "category": "2403土建施工类"
+  },
+  {
+    "code": "240304",
+    "name": "建筑智能检测与修复",
+    "className": "2403土建施工类",
+    "classCode": "",
+    "category": "2403土建施工类"
+  },
+  {
+    "code": "240301",
+    "name": "市政工程技术",
+    "className": "2403土建施工类",
+    "classCode": "",
+    "category": "2403土建施工类"
+  },
+  {
+    "code": "240401",
+    "name": "建筑环境与能源工程",
+    "className": "2404建筑设备类",
+    "classCode": "",
+    "category": "2404建筑设备类"
+  },
+  {
+    "code": "240402",
+    "name": "建筑电气与智能化工程",
+    "className": "2404建筑设备类",
+    "classCode": "",
+    "category": "2404建筑设备类"
+  },
+  {
+    "code": "240501",
+    "name": "工程造价",
+    "className": "2405建设工程管理类",
+    "classCode": "",
+    "category": "2405建设工程管理类"
+  },
+  {
+    "code": "240502",
+    "name": "建设工程管理",
+    "className": "2405建设工程管理类",
+    "classCode": "",
+    "category": "2405建设工程管理类"
+  },
+  {
+    "code": "240601",
+    "name": "市政工程",
+    "className": "2406市政工程类",
+    "classCode": "",
+    "category": "2406市政工程类"
+  },
+  {
+    "code": "240602",
+    "name": "城市设施智慧管理",
+    "className": "2406市政工程类",
+    "classCode": "",
+    "category": "2406市政工程类"
+  },
+  {
+    "code": "240603",
+    "name": "给排水工程",
+    "className": "2406市政工程类",
+    "classCode": "",
+    "category": "2406市政工程类"
+  },
+  {
+    "code": "240701",
+    "name": "房地产投资与策划",
+    "className": "2407房地产类",
+    "classCode": "",
+    "category": "2407房地产类"
+  },
+  {
+    "code": "240702",
+    "name": "现代物业管理",
+    "className": "2407房地产类",
+    "classCode": "",
+    "category": "2407房地产类"
+  },
+  {
+    "code": "250101",
+    "name": "水文与水资源工程技术",
+    "className": "2501水文水资源类",
+    "classCode": "",
+    "category": "2501水文水资源类"
+  },
+  {
+    "code": "250201",
+    "name": "智慧水利工程",
+    "className": "2502水利工程与管理类",
+    "classCode": "",
+    "category": "2502水利工程与管理类"
+  },
+  {
+    "code": "250202",
+    "name": "农业水利工程",
+    "className": "2502水利工程与管理类",
+    "classCode": "",
+    "category": "2502水利工程与管理类"
+  },
+  {
+    "code": "250203",
+    "name": "水利水电工程",
+    "className": "2502水利工程与管理类",
+    "classCode": "",
+    "category": "2502水利工程与管理类"
+  },
+  {
+    "code": "250204",
+    "name": "治河与港航工程",
+    "className": "2502水利工程与管理类",
+    "classCode": "",
+    "category": "2502水利工程与管理类"
+  },
+  {
+    "code": "250301",
+    "name": "水利水电设备及自动化",
+    "className": "2503水利水电设备类",
+    "classCode": "",
+    "category": "2503水利水电设备类"
+  },
+  {
+    "code": "250401",
+    "name": "生态水利工程",
+    "className": "2504水土保持与水环境类",
+    "classCode": "",
+    "category": "2504水土保持与水环境类"
+  },
+  {
+    "code": "250402",
+    "name": "水环境工程",
+    "className": "2504水土保持与水环境类",
+    "classCode": "",
+    "category": "2504水土保持与水环境类"
+  },
+  {
+    "code": "260101",
+    "name": "机械设计制造及自动化",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260102",
+    "name": "智能制造工程技术",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260103",
+    "name": "数控技术",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260104",
+    "name": "工业设计",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260105",
+    "name": "工业工程技术",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260106",
+    "name": "材料成型及控制工程",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260102",
+    "name": "数字化设计与制造技术",
+    "className": "2601机械设计制造类",
+    "classCode": "",
+    "category": "2601机械设计制造类"
+  },
+  {
+    "code": "260201",
+    "name": "装备智能化技术",
+    "className": "2602机电设备类",
+    "classCode": "",
+    "category": "2602机电设备类"
+  },
+  {
+    "code": "260202",
+    "name": "制冷与空调工程",
+    "className": "2602机电设备类",
+    "classCode": "",
+    "category": "2602机电设备类"
+  },
+  {
+    "code": "260203",
+    "name": "电梯工程技术",
+    "className": "2602机电设备类",
+    "classCode": "",
+    "category": "2602机电设备类"
+  },
+  {
+    "code": "260202",
+    "name": "智能成形制造技术",
+    "className": "2602机电设备类",
+    "classCode": "",
+    "category": "2602机电设备类"
+  },
+  {
+    "code": "260301",
+    "name": "机械电子工程技术",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260302",
+    "name": "电气工程及自动化",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260303",
+    "name": "智能控制技术",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260304",
+    "name": "机器人技术",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260305",
+    "name": "自动化技术与应用",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260306",
+    "name": "现代测控工程技术",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260307",
+    "name": "工业互联网工程",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260302",
+    "name": "智能焊接与连接技术",
+    "className": "2603自动化类",
+    "classCode": "",
+    "category": "2603自动化类"
+  },
+  {
+    "code": "260401",
+    "name": "轨道交通车辆工程技术",
+    "className": "2604轨道装备类",
+    "classCode": "",
+    "category": "2604轨道装备类"
+  },
+  {
+    "code": "260402",
+    "name": "轨道交通智能控制装备技术",
+    "className": "2604轨道装备类",
+    "classCode": "",
+    "category": "2604轨道装备类"
+  },
+  {
+    "code": "260402",
+    "name": "航天装备制造技术",
+    "className": "2604轨道装备类",
+    "classCode": "",
+    "category": "2604轨道装备类"
+  },
+  {
+    "code": "260501",
+    "name": "船舶智能制造技术",
+    "className": "2605船舶与海洋工程装备类",
+    "classCode": "",
+    "category": "2605船舶与海洋工程装备类"
+  },
+  {
+    "code": "260502",
+    "name": "船舶动力工程技术",
+    "className": "2605船舶与海洋工程装备类",
+    "classCode": "",
+    "category": "2605船舶与海洋工程装备类"
+  },
+  {
+    "code": "260503",
+    "name": "船舶电气工程技术",
+    "className": "2605船舶与海洋工程装备类",
+    "classCode": "",
+    "category": "2605船舶与海洋工程装备类"
+  },
+  {
+    "code": "260601",
+    "name": "航空智能制造技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260602",
+    "name": "飞行器维修工程技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260603",
+    "name": "航空动力装置维修技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260604",
+    "name": "无人机系统应用技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260605",
+    "name": "航空复合材料智造工程技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260606",
+    "name": "电动飞行器应用技术",
+    "className": "2606航空装备类",
+    "classCode": "",
+    "category": "2606航空装备类"
+  },
+  {
+    "code": "260701",
+    "name": "汽车工程技术",
+    "className": "2607汽车制造类",
+    "classCode": "",
+    "category": "2607汽车制造类"
+  },
+  {
+    "code": "260702",
+    "name": "新能源汽车工程技术",
+    "className": "2607汽车制造类",
+    "classCode": "",
+    "category": "2607汽车制造类"
+  },
+  {
+    "code": "260703",
+    "name": "智能网联汽车工程技术",
+    "className": "2607汽车制造类",
+    "classCode": "",
+    "category": "2607汽车制造类"
+  },
+  {
+    "code": "270101",
+    "name": "生物检验检测技术",
+    "className": "2701生物技术类",
+    "classCode": "",
+    "category": "2701生物技术类"
+  },
+  {
+    "code": "270102",
+    "name": "合成生物技术",
+    "className": "2701生物技术类",
+    "classCode": "",
+    "category": "2701生物技术类"
+  },
+  {
+    "code": "270103",
+    "name": "农业生物技术",
+    "className": "2701生物技术类",
+    "classCode": "",
+    "category": "2701生物技术类"
+  },
+  {
+    "code": "270201",
+    "name": "应用化工技术",
+    "className": "2702化工技术类",
+    "classCode": "",
+    "category": "2702化工技术类"
+  },
+  {
+    "code": "270202",
+    "name": "化工智能制造工程技术",
+    "className": "2702化工技术类",
+    "classCode": "",
+    "category": "2702化工技术类"
+  },
+  {
+    "code": "270203",
+    "name": "现代精细化工技术",
+    "className": "2702化工技术类",
+    "classCode": "",
+    "category": "2702化工技术类"
+  },
+  {
+    "code": "270204",
+    "name": "现代分析测试技术",
+    "className": "2702化工技术类",
+    "classCode": "",
+    "category": "2702化工技术类"
+  },
+  {
+    "code": "270601",
+    "name": "食品工程技术",
+    "className": "2706新增专业类",
+    "classCode": "",
+    "category": "2706新增专业类"
+  },
+  {
+    "code": "280101",
+    "name": "化妆品工程技术",
+    "className": "2801轻化工类",
+    "classCode": "",
+    "category": "2801轻化工类"
+  },
+  {
+    "code": "280102",
+    "name": "现代造纸工程技术",
+    "className": "2801轻化工类",
+    "classCode": "",
+    "category": "2801轻化工类"
+  },
+  {
+    "code": "280103",
+    "name": "珠宝首饰工程技术",
+    "className": "2801轻化工类",
+    "classCode": "",
+    "category": "2801轻化工类"
+  },
+  {
+    "code": "280201",
+    "name": "包装工程技术",
+    "className": "2802包装类",
+    "classCode": "",
+    "category": "2802包装类"
+  },
+  {
+    "code": "280301",
+    "name": "数字印刷工程",
+    "className": "2803印刷类",
+    "classCode": "",
+    "category": "2803印刷类"
+  },
+  {
+    "code": "280401",
+    "name": "现代纺织工程技术",
+    "className": "2804纺织服装类",
+    "classCode": "",
+    "category": "2804纺织服装类"
+  },
+  {
+    "code": "280402",
+    "name": "服装工程技术",
+    "className": "2804纺织服装类",
+    "classCode": "",
+    "category": "2804纺织服装类"
+  },
+  {
+    "code": "280403",
+    "name": "数字化染整技术",
+    "className": "2804纺织服装类",
+    "classCode": "",
+    "category": "2804纺织服装类"
+  },
+  {
+    "code": "280404",
+    "name": "鞋类工程技术",
+    "className": "2804纺织服装类",
+    "classCode": "",
+    "category": "2804纺织服装类"
+  },
+  {
+    "code": "290101",
+    "name": "食品工程技术",
+    "className": "2901食品类",
+    "classCode": "",
+    "category": "2901食品类"
+  },
+  {
+    "code": "290102",
+    "name": "食品质量与安全",
+    "className": "2901食品类",
+    "classCode": "",
+    "category": "2901食品类"
+  },
+  {
+    "code": "290103",
+    "name": "食品营养与健康",
+    "className": "2901食品类",
+    "classCode": "",
+    "category": "2901食品类"
+  },
+  {
+    "code": "290201",
+    "name": "制药工程技术",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290202",
+    "name": "药品质量管理",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290203",
+    "name": "医疗器械工程技术",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290204",
+    "name": "药事服务与管理",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290201",
+    "name": "现代制药技术",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290205",
+    "name": "药物分析",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290206",
+    "name": "药物制剂",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290207",
+    "name": "康复工程技术",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290208",
+    "name": "生物制药技术",
+    "className": "2902药品与医疗器械类",
+    "classCode": "",
+    "category": "2902药品与医疗器械类"
+  },
+  {
+    "code": "290301",
+    "name": "现代粮食工程技术",
+    "className": "2903粮食类",
+    "classCode": "",
+    "category": "2903粮食类"
+  },
+  {
+    "code": "300101",
+    "name": "高速铁路工程",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300102",
+    "name": "高速铁路动车组技术",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300103",
+    "name": "高速铁路信号控制技术",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300104",
+    "name": "铁道机车智能运用技术",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300105",
+    "name": "高速铁路运营管理",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300106",
+    "name": "高速铁路通信技术",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300107",
+    "name": "高速铁路智能供电技术",
+    "className": "3001铁道运输类",
+    "classCode": "",
+    "category": "3001铁道运输类"
+  },
+  {
+    "code": "300201",
+    "name": "道路与桥梁工程",
+    "className": "3002道路运输类",
+    "classCode": "",
+    "category": "3002道路运输类"
+  },
+  {
+    "code": "300202",
+    "name": "智能交通管理",
+    "className": "3002道路运输类",
+    "classCode": "",
+    "category": "3002道路运输类"
+  },
+  {
+    "code": "300203",
+    "name": "汽车服务工程技术",
+    "className": "3002道路运输类",
+    "classCode": "",
+    "category": "3002道路运输类"
+  },
+  {
+    "code": "300204",
+    "name": "道路工程智能检测",
+    "className": "3002道路运输类",
+    "classCode": "",
+    "category": "3002道路运输类"
+  },
+  {
+    "code": "300301",
+    "name": "航海技术",
+    "className": "3003水上运输类",
+    "classCode": "",
+    "category": "3003水上运输类"
+  },
+  {
+    "code": "300302",
+    "name": "港口智能工程技术",
+    "className": "3003水上运输类",
+    "classCode": "",
+    "category": "3003水上运输类"
+  },
+  {
+    "code": "300303",
+    "name": "轮机工程技术",
+    "className": "3003水上运输类",
+    "classCode": "",
+    "category": "3003水上运输类"
+  },
+  {
+    "code": "300304",
+    "name": "国际邮轮运营管理",
+    "className": "3003水上运输类",
+    "classCode": "",
+    "category": "3003水上运输类"
+  },
+  {
+    "code": "300305",
+    "name": "水路运输与海事管理",
+    "className": "3003水上运输类",
+    "classCode": "",
+    "category": "3003水上运输类"
+  },
+  {
+    "code": "300401",
+    "name": "民航运输服务与管理",
+    "className": "3004航空运输类",
+    "classCode": "",
+    "category": "3004航空运输类"
+  },
+  {
+    "code": "300402",
+    "name": "航空机电设备维修技术",
+    "className": "3004航空运输类",
+    "classCode": "",
+    "category": "3004航空运输类"
+  },
+  {
+    "code": "300403",
+    "name": "智慧机场运行与管理",
+    "className": "3004航空运输类",
+    "classCode": "",
+    "category": "3004航空运输类"
+  },
+  {
+    "code": "300404",
+    "name": "通用航空航务技术",
+    "className": "3004航空运输类",
+    "classCode": "",
+    "category": "3004航空运输类"
+  },
+  {
+    "code": "300601",
+    "name": "城市轨道交通信号与控制技术",
+    "className": "3006城市轨道交通类",
+    "classCode": "",
+    "category": "3006城市轨道交通类"
+  },
+  {
+    "code": "300602",
+    "name": "城市轨道交通设备与控制技术",
+    "className": "3006城市轨道交通类",
+    "classCode": "",
+    "category": "3006城市轨道交通类"
+  },
+  {
+    "code": "300603",
+    "name": "城市轨道交通智能运营",
+    "className": "3006城市轨道交通类",
+    "classCode": "",
+    "category": "3006城市轨道交通类"
+  },
+  {
+    "code": "300701",
+    "name": "邮政快递管理",
+    "className": "3007邮政类",
+    "classCode": "",
+    "category": "3007邮政类"
+  },
+  {
+    "code": "310101",
+    "name": "电子信息工程技术",
+    "className": "3101电子信息类",
+    "classCode": "",
+    "category": "3101电子信息类"
+  },
+  {
+    "code": "310102",
+    "name": "物联网工程技术",
+    "className": "3101电子信息类",
+    "classCode": "",
+    "category": "3101电子信息类"
+  },
+  {
+    "code": "310103",
+    "name": "柔性电子技术",
+    "className": "3101电子信息类",
+    "classCode": "",
+    "category": "3101电子信息类"
+  },
+  {
+    "code": "310104",
+    "name": "光电信息工程技术",
+    "className": "3101电子信息类",
+    "classCode": "",
+    "category": "3101电子信息类"
+  },
+  {
+    "code": "310105",
+    "name": "智能体工程技术",
+    "className": "3101电子信息类",
+    "classCode": "",
+    "category": "3101电子信息类"
+  },
+  {
+    "code": "310201",
+    "name": "计算机应用工程",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310202",
+    "name": "网络工程技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310203",
+    "name": "软件工程技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310204",
+    "name": "数字媒体技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310205",
+    "name": "大数据工程技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310206",
+    "name": "云计算技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310207",
+    "name": "信息安全与管理",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310208",
+    "name": "虚拟现实技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310209",
+    "name": "人工智能工程技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310210",
+    "name": "嵌入式技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310211",
+    "name": "工业互联网技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310212",
+    "name": "区块链技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310204",
+    "name": "物联网智能控制技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310213",
+    "name": "数据安全技术与管理",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310214",
+    "name": "密码工程技术",
+    "className": "3102计算机类",
+    "classCode": "",
+    "category": "3102计算机类"
+  },
+  {
+    "code": "310301",
+    "name": "现代通信工程",
+    "className": "3103通信类",
+    "classCode": "",
+    "category": "3103通信类"
+  },
+  {
+    "code": "310302",
+    "name": "通信软件工程",
+    "className": "3103通信类",
+    "classCode": "",
+    "category": "3103通信类"
+  },
+  {
+    "code": "310303",
+    "name": "卫星通信工程",
+    "className": "3103通信类",
+    "classCode": "",
+    "category": "3103通信类"
+  },
+  {
+    "code": "310401",
+    "name": "集成电路工程技术",
+    "className": "3104集成电路类",
+    "classCode": "",
+    "category": "3104集成电路类"
+  },
+  {
+    "code": "310401",
+    "name": "计算机应用工程",
+    "className": "3104集成电路类",
+    "classCode": "",
+    "category": "3104集成电路类"
+  },
+  {
+    "code": "310501",
+    "name": "大数据工程技术",
+    "className": "3105新增专业类",
+    "classCode": "",
+    "category": "3105新增专业类"
+  },
+  {
+    "code": "310601",
+    "name": "人工智能工程技术",
+    "className": "3106新增专业类",
+    "classCode": "",
+    "category": "3106新增专业类"
+  },
+  {
+    "code": "320201",
+    "name": "护理",
+    "className": "3202护理类",
+    "classCode": "",
+    "category": "3202护理类"
+  },
+  {
+    "code": "320301",
+    "name": "药学",
+    "className": "3203药学类",
+    "classCode": "",
+    "category": "3203药学类"
+  },
+  {
+    "code": "320401",
+    "name": "中药制药",
+    "className": "3204中医药类",
+    "classCode": "",
+    "category": "3204中医药类"
+  },
+  {
+    "code": "320402",
+    "name": "中药学",
+    "className": "3204中医药类",
+    "classCode": "",
+    "category": "3204中医药类"
+  },
+  {
+    "code": "320403",
+    "name": "中药材生产与加工",
+    "className": "3204中医药类",
+    "classCode": "",
+    "category": "3204中医药类"
+  },
+  {
+    "code": "320501",
+    "name": "医学检验技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320502",
+    "name": "医学影像技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320503",
+    "name": "医学生物技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320504",
+    "name": "口腔医学技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320505",
+    "name": "放射治疗技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320506",
+    "name": "呼吸治疗技术",
+    "className": "3205医学技术类",
+    "classCode": "",
+    "category": "3205医学技术类"
+  },
+  {
+    "code": "320601",
+    "name": "康复治疗",
+    "className": "3206康复治疗类",
+    "classCode": "",
+    "category": "3206康复治疗类"
+  },
+  {
+    "code": "320602",
+    "name": "康复辅助器具技术",
+    "className": "3206康复治疗类",
+    "classCode": "",
+    "category": "3206康复治疗类"
+  },
+  {
+    "code": "320603",
+    "name": "言语听觉治疗技术",
+    "className": "3206康复治疗类",
+    "classCode": "",
+    "category": "3206康复治疗类"
+  },
+  {
+    "code": "320604",
+    "name": "儿童康复治疗",
+    "className": "3206康复治疗类",
+    "classCode": "",
+    "category": "3206康复治疗类"
+  },
+  {
+    "code": "320701",
+    "name": "公共卫生管理",
+    "className": "3207公共卫生与卫生管理类",
+    "classCode": "",
+    "category": "3207公共卫生与卫生管理类"
+  },
+  {
+    "code": "320702",
+    "name": "职业卫生工程技术",
+    "className": "3207公共卫生与卫生管理类",
+    "classCode": "",
+    "category": "3207公共卫生与卫生管理类"
+  },
+  {
+    "code": "320703",
+    "name": "职业病危害检测评价技术",
+    "className": "3207公共卫生与卫生管理类",
+    "classCode": "",
+    "category": "3207公共卫生与卫生管理类"
+  },
+  {
+    "code": "320801",
+    "name": "健康管理",
+    "className": "3208健康管理与促进类",
+    "classCode": "",
+    "category": "3208健康管理与促进类"
+  },
+  {
+    "code": "320802",
+    "name": "婴幼儿发展与健康管理",
+    "className": "3208健康管理与促进类",
+    "classCode": "",
+    "category": "3208健康管理与促进类"
+  },
+  {
+    "code": "320803",
+    "name": "医养照护与管理",
+    "className": "3208健康管理与促进类",
+    "classCode": "",
+    "category": "3208健康管理与促进类"
+  },
+  {
+    "code": "320901",
+    "name": "眼视光技术",
+    "className": "3209眼视光类",
+    "classCode": "",
+    "category": "3209眼视光类"
+  },
+  {
+    "code": "330101",
+    "name": "财税大数据应用",
+    "className": "3301财政税务类",
+    "classCode": "",
+    "category": "3301财政税务类"
+  },
+  {
+    "code": "330102",
+    "name": "政府采购管理",
+    "className": "3301财政税务类",
+    "classCode": "",
+    "category": "3301财政税务类"
+  },
+  {
+    "code": "330103",
+    "name": "资产评估与管理",
+    "className": "3301财政税务类",
+    "classCode": "",
+    "category": "3301财政税务类"
+  },
+  {
+    "code": "330201",
+    "name": "金融管理",
+    "className": "3302金融类",
+    "classCode": "",
+    "category": "3302金融类"
+  },
+  {
+    "code": "330202",
+    "name": "金融科技应用",
+    "className": "3302金融类",
+    "classCode": "",
+    "category": "3302金融类"
+  },
+  {
+    "code": "330203",
+    "name": "保险",
+    "className": "3302金融类",
+    "classCode": "",
+    "category": "3302金融类"
+  },
+  {
+    "code": "330204",
+    "name": "信用管理",
+    "className": "3302金融类",
+    "classCode": "",
+    "category": "3302金融类"
+  },
+  {
+    "code": "330301",
+    "name": "大数据与财务管理",
+    "className": "3303财务会计类",
+    "classCode": "",
+    "category": "3303财务会计类"
+  },
+  {
+    "code": "330302",
+    "name": "大数据与会计",
+    "className": "3303财务会计类",
+    "classCode": "",
+    "category": "3303财务会计类"
+  },
+  {
+    "code": "330303",
+    "name": "大数据与审计",
+    "className": "3303财务会计类",
+    "classCode": "",
+    "category": "3303财务会计类"
+  },
+  {
+    "code": "330501",
+    "name": "国际经济与贸易",
+    "className": "3305经济贸易类",
+    "classCode": "",
+    "category": "3305经济贸易类"
+  },
+  {
+    "code": "330502",
+    "name": "国际商务",
+    "className": "3305经济贸易类",
+    "classCode": "",
+    "category": "3305经济贸易类"
+  },
+  {
+    "code": "330601",
+    "name": "企业数字化管理",
+    "className": "3306工商管理类",
+    "classCode": "",
+    "category": "3306工商管理类"
+  },
+  {
+    "code": "330602",
+    "name": "市场营销",
+    "className": "3306工商管理类",
+    "classCode": "",
+    "category": "3306工商管理类"
+  },
+  {
+    "code": "330603",
+    "name": "品牌策划与运营",
+    "className": "3306工商管理类",
+    "classCode": "",
+    "category": "3306工商管理类"
+  },
+  {
+    "code": "330701",
+    "name": "电子商务",
+    "className": "3307电子商务类",
+    "classCode": "",
+    "category": "3307电子商务类"
+  },
+  {
+    "code": "330702",
+    "name": "跨境电子商务",
+    "className": "3307电子商务类",
+    "classCode": "",
+    "category": "3307电子商务类"
+  },
+  {
+    "code": "330703",
+    "name": "全媒体电商运营",
+    "className": "3307电子商务类",
+    "classCode": "",
+    "category": "3307电子商务类"
+  },
+  {
+    "code": "330701",
+    "name": "电子商务",
+    "className": "3307电子商务类",
+    "classCode": "",
+    "category": "3307电子商务类"
+  },
+  {
+    "code": "330704",
+    "name": "商务数据分析与管理",
+    "className": "3307电子商务类",
+    "classCode": "",
+    "category": "3307电子商务类"
+  },
+  {
+    "code": "330801",
+    "name": "物流工程技术",
+    "className": "3308物流类",
+    "classCode": "",
+    "category": "3308物流类"
+  },
+  {
+    "code": "330802",
+    "name": "现代物流管理",
+    "className": "3308物流类",
+    "classCode": "",
+    "category": "3308物流类"
+  },
+  {
+    "code": "330801",
+    "name": "现代物流管理",
+    "className": "3308物流类",
+    "classCode": "",
+    "category": "3308物流类"
+  },
+  {
+    "code": "330803",
+    "name": "供应链管理",
+    "className": "3308物流类",
+    "classCode": "",
+    "category": "3308物流类"
+  },
+  {
+    "code": "330401",
+    "name": "统计与大数据分析",
+    "className": "3304新增专业类",
+    "classCode": "",
+    "category": "3304新增专业类"
+  },
+  {
+    "code": "340101",
+    "name": "旅游管理",
+    "className": "3401旅游类",
+    "classCode": "",
+    "category": "3401旅游类"
+  },
+  {
+    "code": "340102",
+    "name": "酒店管理",
+    "className": "3401旅游类",
+    "classCode": "",
+    "category": "3401旅游类"
+  },
+  {
+    "code": "340103",
+    "name": "旅游规划与设计",
+    "className": "3401旅游类",
+    "classCode": "",
+    "category": "3401旅游类"
+  },
+  {
+    "code": "340104",
+    "name": "研学旅行策划与管理",
+    "className": "3401旅游类",
+    "classCode": "",
+    "category": "3401旅游类"
+  },
+  {
+    "code": "340105",
+    "name": "会展策划与管理",
+    "className": "3401旅游类",
+    "classCode": "",
+    "category": "3401旅游类"
+  },
+  {
+    "code": "340201",
+    "name": "烹饪与餐饮管理",
+    "className": "3402餐饮类",
+    "classCode": "",
+    "category": "3402餐饮类"
+  },
+  {
+    "code": "350101",
+    "name": "工艺美术",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350102",
+    "name": "视觉传达设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350103",
+    "name": "数字媒体艺术",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350104",
+    "name": "产品设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350105",
+    "name": "服装与服饰设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350106",
+    "name": "环境艺术设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350107",
+    "name": "美术",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350108",
+    "name": "公共艺术设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350109",
+    "name": "游戏创意设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350110",
+    "name": "展示艺术设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350111",
+    "name": "数字影像设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350112",
+    "name": "时尚品设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350102",
+    "name": "舞蹈表演与编导",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350113",
+    "name": "陶瓷艺术设计",
+    "className": "3501艺术设计类",
+    "classCode": "",
+    "category": "3501艺术设计类"
+  },
+  {
+    "code": "350201",
+    "name": "音乐表演",
+    "className": "3502表演艺术类",
+    "classCode": "",
+    "category": "3502表演艺术类"
+  },
+  {
+    "code": "350202",
+    "name": "舞蹈表演与编导",
+    "className": "3502表演艺术类",
+    "classCode": "",
+    "category": "3502表演艺术类"
+  },
+  {
+    "code": "350203",
+    "name": "戏曲表演",
+    "className": "3502表演艺术类",
+    "classCode": "",
+    "category": "3502表演艺术类"
+  },
+  {
+    "code": "350204",
+    "name": "舞台艺术设计",
+    "className": "3502表演艺术类",
+    "classCode": "",
+    "category": "3502表演艺术类"
+  },
+  {
+    "code": "350205",
+    "name": "戏剧影视表演",
+    "className": "3502表演艺术类",
+    "classCode": "",
+    "category": "3502表演艺术类"
+  },
+  {
+    "code": "350401",
+    "name": "文物修复与保护",
+    "className": "3504文化服务类",
+    "classCode": "",
+    "category": "3504文化服务类"
+  },
+  {
+    "code": "350402",
+    "name": "公共文化管理",
+    "className": "3504文化服务类",
+    "classCode": "",
+    "category": "3504文化服务类"
+  },
+  {
+    "code": "350403",
+    "name": "文化创意产业管理",
+    "className": "3504文化服务类",
+    "classCode": "",
+    "category": "3504文化服务类"
+  },
+  {
+    "code": "360101",
+    "name": "网络与新媒体",
+    "className": "3601新闻出版类",
+    "classCode": "",
+    "category": "3601新闻出版类"
+  },
+  {
+    "code": "360201",
+    "name": "播音与主持",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "360202",
+    "name": "影视摄影与制作",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "360203",
+    "name": "数字广播电视技术",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "360204",
+    "name": "影视编导",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "360205",
+    "name": "全媒体新闻采编与制作",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "360206",
+    "name": "数字动画",
+    "className": "3602广播影视类",
+    "classCode": "",
+    "category": "3602广播影视类"
+  },
+  {
+    "code": "370101",
+    "name": "学前教育",
+    "className": "3701教育类",
+    "classCode": "",
+    "category": "3701教育类"
+  },
+  {
+    "code": "370201",
+    "name": "应用英语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370202",
+    "name": "应用日语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370203",
+    "name": "应用韩语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370204",
+    "name": "应用俄语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370205",
+    "name": "应用泰语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370206",
+    "name": "应用外语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370207",
+    "name": "应用西班牙语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370208",
+    "name": "中文国际教育",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370201",
+    "name": "应用英语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370209",
+    "name": "应用法语",
+    "className": "3702语言类",
+    "classCode": "",
+    "category": "3702语言类"
+  },
+  {
+    "code": "370301",
+    "name": "社会体育指导与管理",
+    "className": "3703体育类",
+    "classCode": "",
+    "category": "3703体育类"
+  },
+  {
+    "code": "370302",
+    "name": "休闲体育",
+    "className": "3703体育类",
+    "classCode": "",
+    "category": "3703体育类"
+  },
+  {
+    "code": "370303",
+    "name": "体能训练",
+    "className": "3703体育类",
+    "classCode": "",
+    "category": "3703体育类"
+  },
+  {
+    "code": "370304",
+    "name": "电子竞技技术与管理",
+    "className": "3703体育类",
+    "classCode": "",
+    "category": "3703体育类"
+  },
+  {
+    "code": "380201",
+    "name": "刑事科学技术",
+    "className": "3802公安技术类",
+    "classCode": "",
+    "category": "3802公安技术类"
+  },
+  {
+    "code": "380202",
+    "name": "网络安全与执法",
+    "className": "3802公安技术类",
+    "classCode": "",
+    "category": "3802公安技术类"
+  },
+  {
+    "code": "380301",
+    "name": "刑事侦查",
+    "className": "3803侦查类",
+    "classCode": "",
+    "category": "3803侦查类"
+  },
+  {
+    "code": "380401",
+    "name": "法律",
+    "className": "3804法律实务类",
+    "classCode": "",
+    "category": "3804法律实务类"
+  },
+  {
+    "code": "380501",
+    "name": "刑事矫正与管理",
+    "className": "3805法律执行类",
+    "classCode": "",
+    "category": "3805法律执行类"
+  },
+  {
+    "code": "380502",
+    "name": "司法警务管理",
+    "className": "3805法律执行类",
+    "classCode": "",
+    "category": "3805法律执行类"
+  },
+  {
+    "code": "380503",
+    "name": "综合行政执法",
+    "className": "3805法律执行类",
+    "classCode": "",
+    "category": "3805法律执行类"
+  },
+  {
+    "code": "380601",
+    "name": "智慧司法技术与应用",
+    "className": "3806司法技术类",
+    "classCode": "",
+    "category": "3806司法技术类"
+  },
+  {
+    "code": "380701",
+    "name": "数字安防技术",
+    "className": "3807安全防范类",
+    "classCode": "",
+    "category": "3807安全防范类"
+  },
+  {
+    "code": "380702",
+    "name": "国际安保服务与管理",
+    "className": "3807安全防范类",
+    "classCode": "",
+    "category": "3807安全防范类"
+  },
+  {
+    "code": "390101",
+    "name": "社会工作",
+    "className": "3901公共事业类",
+    "classCode": "",
+    "category": "3901公共事业类"
+  },
+  {
+    "code": "390102",
+    "name": "党务工作",
+    "className": "3901公共事业类",
+    "classCode": "",
+    "category": "3901公共事业类"
+  },
+  {
+    "code": "390103",
+    "name": "智慧社区管理",
+    "className": "3901公共事业类",
+    "classCode": "",
+    "category": "3901公共事业类"
+  },
+  {
+    "code": "390104",
+    "name": "慈善管理",
+    "className": "3901公共事业类",
+    "classCode": "",
+    "category": "3901公共事业类"
+  },
+  {
+    "code": "390201",
+    "name": "民政管理",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390202",
+    "name": "人力资源管理",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390203",
+    "name": "行政管理",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390204",
+    "name": "外事实务",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390201",
+    "name": "现代家政管理",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390205",
+    "name": "婚姻服务与管理",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390206",
+    "name": "标准化技术",
+    "className": "3902公共管理类",
+    "classCode": "",
+    "category": "3902公共管理类"
+  },
+  {
+    "code": "390301",
+    "name": "现代家政管理",
+    "className": "3903公共服务类",
+    "classCode": "",
+    "category": "3903公共服务类"
+  },
+  {
+    "code": "390302",
+    "name": "智慧健康养老管理",
+    "className": "3903公共服务类",
+    "classCode": "",
+    "category": "3903公共服务类"
+  },
+  {
+    "code": "390303",
+    "name": "现代殡葬管理",
+    "className": "3903公共服务类",
+    "classCode": "",
+    "category": "3903公共服务类"
+  },
+  {
+    "code": "390401",
+    "name": "现代文秘",
+    "className": "3904新增专业类",
+    "classCode": "",
+    "category": "3904新增专业类"
+  }
+]
