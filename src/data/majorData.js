@@ -375,9 +375,13 @@ export function checkQualification(major) {
   }
 
   if (level === '专科') {
-    const normalizedCollege = collegeCodes.map(normalizeCode)
-    if (normalizedCollege.includes(code)) {
-      return { qualified: true, matchedCode: code, className }
+    // 高职专科 + 高职本科：用名称匹配
+    const name = major.name || ''
+    if (gzMajorNames.has(name)) {
+      return { qualified: true, matchedName: name, level: '高职专科' }
+    }
+    if (zyjyMajorNames.has(name)) {
+      return { qualified: true, matchedName: name, level: '高职本科' }
     }
     return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
   }
