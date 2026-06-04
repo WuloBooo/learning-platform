@@ -10,6 +10,7 @@
             v-model="searchText"
             placeholder="请输入专业名称或专业代码"
             @keyup.enter="handleSearch"
+            autocomplete="off"
           />
           <button class="search-btn" @click="handleSearch" :disabled="loading">
             {{ loading ? '搜索中...' : '搜索' }}
