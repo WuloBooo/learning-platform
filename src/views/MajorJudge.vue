@@ -535,12 +535,12 @@ const selectMajor = (item) => {
   border-radius: 4px;
 }
 .chsi-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #1e293b;
 }
 .chsi-level-tag {
-  font-size: 11px;
+  font-size: 12px;
   color: white;
   padding: 1px 6px;
   border-radius: 4px;
