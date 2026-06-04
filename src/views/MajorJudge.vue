@@ -156,6 +156,8 @@ const searchChsi = async () => {
       const data = await res.json()
       if (data.result && data.result[0] && data.result[0].resultVo) {
         data.result[0].resultVo.forEach(v => {
+          // 跳过专业类（needBold=true 表示是专业类而非具体专业）
+          if (v.needBold) return
           if (!all[v.zydm]) {
             all[v.zydm] = { ...v, _level: level }
           }
