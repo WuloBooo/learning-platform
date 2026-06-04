@@ -186,6 +186,23 @@ const searchChsi = async () => {
     }
 
     chsiResults.value = Object.values(all)
+
+    // 兜底：如果学信网没有返回任何结果，用本地777名称列表直接匹配
+    if (chsiResults.value.length === 0) {
+      const localQual = checkQualificationByName(searchText.value.trim())
+      if (localQual.qualified) {
+        chsiResults.value = [{
+          zydm: '',
+          zymc: searchText.value.trim(),
+          _level: localQual.level,
+          _qualified: true,
+          _checked: true,
+          _reason: `符合条件（${localQual.level}：${searchText.value.trim()}）`,
+          _traceResult: localQual,
+          yzyList: []
+        }]
+      }
+    }
   } catch (e) {
     console.error('学信网查询失败:', e)
   }
