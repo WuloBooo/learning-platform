@@ -472,7 +472,7 @@ export const benkeMajorNames = new Set([
   '助产学',
 ])
 
-// ==================== 名称匹配判断（高职专科 + 高职本科 + 普通本科）====================
+// ==================== 名称匹配判断（高职专科 + 高职本科 + 普通本科 + 研究生）====================
 export function checkQualificationByName(name) {
   if (!name) return { qualified: false, reason: '未提供专业名称' }
   if (gzMajorNames.has(name)) {
@@ -484,38 +484,28 @@ export function checkQualificationByName(name) {
   if (benkeMajorNames.has(name)) {
     return { qualified: true, matchedName: name, level: '普通本科' }
   }
+  // 研究生：按一级学科名称匹配（名称中包含一级学科名即可）
+  const matched = masterLevelOneNames.filter(n => name.includes(n))
+  if (matched.length > 0) {
+    return { qualified: true, matchedName: matched[0], level: '研究生' }
+  }
   return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
 }
 
-// ==================== 以下为旧逻辑（普通本科/研究生暂用，后续重构）====================
-
-// 本科可报考专业类代码
-const bachelorCodes = [
-  '0807', '0809', '0806', '3104',
-  '1001', '1009', '1003', '1010', '1005', '1006', '1004', '1005b', '1006b', '1007', '1008',
-  '0808',
-  '0401', '0402'
-]
-
-const bachelorNameKeywords = ['师范']
-
-// 专科可报考专业类代码
-const collegeCodes = [
-  '5101', '5103', '5102', '5104',
-  '5203', '5209', '5201', '5205', '5206', '5202', '5207', '5208', '5204',
-  '4601', '4607', '4602', '4603', '4606', '4604', '4605',
-  '5701', '5703', '5702'
-]
-
-// 研究生可报考专业类名称
-const masterNames = [
-  '电子科学与技术', '信息与通信工程', '计算机科学与技术', '软件工程', '网络空间安全',
-  '新一代电子信息技术', '通信工程硕士', '集成电路工程', '计算机技术', '软件工程硕士',
-  '光电信息工程', '人工智能', '大数据技术与工程', '网络与信息安全',
+// ==================== 研究生可报考一级学科名称（777文档）====================
+// 研究生按一级学科匹配，用户的二级学科归属于一级学科即可
+const masterLevelOneNames = [
+  // 教育学门类
+  '体育学', '教育', '体育',
+  // 工学门类
+  '电气工程', '电子科学与技术', '信息与通信工程', '控制科学与工程',
+  '计算机科学与技术', '软件工程', '网络空间安全', '电子信息',
+  // 医学门类 — 学术学位
   '基础医学', '临床医学', '口腔医学', '公共卫生与预防医学',
-  '中医学', '中西医结合', '药学', '中药学', '医学技术', '护理学',
-  '控制科学与工程', '控制工程',
-  '教育学', '体育学', '师范'
+  '中医学', '中西医结合', '药学', '中药学', '特种医学',
+  '护理学', '法医学', '医学技术',
+  // 医学门类 — 专业学位
+  '公共卫生', '护理', '中药', '中医', '针灸'
 ]
 
 function normalizeCode(code) {
@@ -556,9 +546,10 @@ export function checkQualification(major) {
   }
 
   if (level === '研究生') {
-    const matched = masterNames.filter(n => className.includes(n))
+    // 研究生按一级学科名称匹配（className 中包含一级学科名即可）
+    const matched = masterLevelOneNames.filter(n => className.includes(n) || (major.name || '').includes(n))
     if (matched.length > 0) {
-      return { qualified: true, matchedName: matched[0], className }
+      return { qualified: true, matchedName: matched[0], level: '研究生' }
     }
     return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
   }

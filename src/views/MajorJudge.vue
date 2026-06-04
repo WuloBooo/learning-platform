@@ -16,6 +16,7 @@
             {{ loading ? '搜索中...' : '搜索' }}
           </button>
         </div>
+        <p class="search-hint">💡 研究生按一级学科匹配，输入二级学科名称也可查询（如输入"人工智能"可匹配到"计算机科学与技术"一级学科）</p>
 
         <!-- 学信网查询结果（搜索时自动获取） -->
       <div class="chsi-section" v-if="chsiResults.length > 0">
@@ -359,6 +360,13 @@ const selectMajor = (item) => {
   border-radius: 10px;
   font-size: 16px;
   transition: border-color 0.2s;
+}
+
+.search-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 8px 0 0;
+  text-align: center;
 }
 
 .search-row input:focus {
