@@ -121,7 +121,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
-import { checkQualification } from '../data/majorData'
+import { checkQualification, checkQualificationByName } from '../data/majorData'
 
 onMounted(() => { document.title = '专业报考条件查询' })
 onBeforeUnmount(() => { document.title = '智能学习平台' })
@@ -137,7 +137,7 @@ const chsiResults = ref([])
 const chsiLoading = ref(false)
 
 // cc参数映射
-const ccMap = { '本科': 'ptjy', '专科': 'gz', '研究生': 'yjs' }
+const ccMap = { '本科': 'ptjy', '专科': 'gz', '高职本科': 'zyjy', '研究生': 'yjs' }
 
 const searchChsi = async () => {
   if (!searchText.value.trim()) return
@@ -148,6 +148,7 @@ const searchChsi = async () => {
     const ccList = [
       { cc: 'ptjy', level: '本科' },
       { cc: 'gz', level: '专科' },
+      { cc: 'zyjy', level: '高职本科' },
       { cc: 'yjs', level: '研究生' }
     ]
     for (const { cc, level } of ccList) {
@@ -170,8 +171,8 @@ const searchChsi = async () => {
       all[key]._qualified = finalMajor.qualified
       all[key]._checked = true
       all[key]._reason = finalMajor.qualified
-        ? `符合条件（专业${item.zydm} → 专业类${finalMajor.matchedCode} ${finalMajor.className || ''}）`
-        : `不符合（专业${item.zydm} → 专业类${finalMajor.matchedCode || item.zydm?.substring(0,4)} 不在可报考范围内）`
+        ? `符合条件（${finalMajor.level || item._level}：${finalMajor.name || item.zymc}）`
+        : `不符合（${item.zymc} 不在可报考专业范围内）`
       if (finalMajor.name !== item.zymc) {
         all[key]._finalName = finalMajor.name
       }
@@ -188,26 +189,24 @@ const searchChsi = async () => {
 const traceFinalMajor = async (item, depth = 0) => {
   if (depth > 5) return { qualified: false, reason: '追踪层级过深' }
   const level = item._level || '本科'
+  // 先用名称直接匹配（高职专科 + 高职本科）
+  const nameQual = checkQualificationByName(item.zymc)
+  if (nameQual.qualified) return { ...nameQual, name: item.zymc }
+  // 名称不匹配时，走旧逻辑（普通本科/研究生）
   const major = buildMajorFromChsi(item, level)
-  if (!major) return { qualified: false, reason: '无法识别专业' }
-  const qual = checkQualification(major)
-  if (qual.qualified) return { ...qual, name: item.zymc }
-  // 不合格时，用专业名称再搜一次学信网，看这个名称是不是旧专业
-  const ccMap = { '本科': 'ptjy', '专科': 'gz', '研究生': 'yjs' }
+  if (major) {
+    const qual = checkQualification(major)
+    if (qual.qualified) return { ...qual, name: item.zymc }
+  }
+  // 不合格时，用专业名称再搜一次学信网，追踪变化链
   const cc = ccMap[level]
-  if (!cc) return { ...qual, name: item.zymc }
+  if (!cc) return { ...nameQual, name: item.zymc }
   try {
     const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(item.zymc)}`)
     const data = await res.json()
     if (data.result && data.result[0] && data.result[0].resultVo) {
-      // 找到结果中对应的条目（代码匹配）
-      const found = data.result[0].resultVo.find(v => v.zydm === item.zydm)
-      // found 不需要再处理，关键是看搜索结果中有没有不同的专业指向它
-      // 搜索返回的结果本身就是包含原专业的，我们需要检查有没有其他专业把当前专业作为原专业
-      // 即：搜索当前专业名，看结果中是否有专业在 yzyList 里包含当前专业代码
       for (const v of data.result[0].resultVo) {
         if (v.yzyList && v.yzyList.some(y => y.zydm === item.zydm) && v.zydm !== item.zydm) {
-          // v 是当前专业变更后的新专业，递归追踪
           const nextItem = { ...v, _level: level }
           const finalResult = await traceFinalMajor(nextItem, depth + 1)
           if (finalResult.qualified) {
@@ -221,7 +220,7 @@ const traceFinalMajor = async (item, depth = 0) => {
   } catch (e) {
     console.error('追踪专业变化失败:', e)
   }
-  return { ...qual, name: item.zymc }
+  return { ...nameQual, name: item.zymc }
 }
 
 // 从学信网数据构建专业对象用于判断
