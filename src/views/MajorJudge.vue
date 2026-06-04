@@ -50,6 +50,7 @@
       <div class="chsi-hint" v-if="chsiLoading">
         <p>正在从学信网查询...</p>
       </div>
+        <!-- 本地搜索建议（暂时隐藏，仅使用学信网判断）
         <div class="suggestions" v-if="suggestions.length > 0 && showSuggestions">
           <div
             v-for="item in suggestions"
@@ -65,9 +66,10 @@
             </span>
           </div>
         </div>
+        -->
       </div>
 
-      <!-- 查询结果 -->
+      <!-- 本地判断结果（暂时隐藏，仅使用学信网判断）
       <div class="result-section" v-if="result">
         <div :class="['result-card', result.qualified ? 'pass' : 'fail']">
           <div class="result-icon">{{ result.qualified ? '✅' : '❌' }}</div>
@@ -89,11 +91,13 @@
           </div>
         </div>
       </div>
+      -->
 
-      <!-- 多个专业提示 -->
+      <!-- 未找到提示（暂时隐藏）
       <div class="multi-hint" v-if="searched && !result && !showSuggestions && chsiResults.length === 0 && !chsiLoading">
         <p>未找到匹配的专业，请检查输入是否正确。</p>
       </div>
+      -->
 
       <!-- 说明 -->
       <div class="info-section">
