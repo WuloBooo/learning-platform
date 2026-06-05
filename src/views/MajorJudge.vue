@@ -196,7 +196,7 @@ const searchChsi = async () => {
         chsiResults.value = [{
           zydm: '',
           zymc: searchText.value.trim(),
-          _level: localQual.level,
+          _level: localQual.levels.join('、'),
           _qualified: true,
           _checked: true,
           _reason: `符合条件（${localQual.level}：${searchText.value.trim()}）`,

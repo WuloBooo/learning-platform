@@ -475,19 +475,16 @@ export const benkeMajorNames = new Set([
 // ==================== 名称匹配判断（高职专科 + 高职本科 + 普通本科 + 研究生）====================
 export function checkQualificationByName(name) {
   if (!name) return { qualified: false, reason: '未提供专业名称' }
-  if (gzMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '高职专科' }
-  }
-  if (zyjyMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '高职本科' }
-  }
-  if (benkeMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '普通本科' }
-  }
-  // 研究生：按一级学科名称匹配（名称中包含一级学科名即可）
-  const matched = masterLevelOneNames.filter(n => name.includes(n))
-  if (matched.length > 0) {
-    return { qualified: true, matchedName: matched[0], level: '研究生' }
+
+  const levels = []
+  if (gzMajorNames.has(name)) levels.push('高职专科')
+  if (zyjyMajorNames.has(name)) levels.push('高职本科')
+  if (benkeMajorNames.has(name)) levels.push('普通本科')
+  const masterMatched = masterLevelOneNames.filter(n => name.includes(n))
+  if (masterMatched.length > 0) levels.push('研究生')
+
+  if (levels.length > 0) {
+    return { qualified: true, matchedName: name, levels, level: levels.join('、') }
   }
   return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
 }
