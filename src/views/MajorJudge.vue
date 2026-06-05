@@ -128,7 +128,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
-import { checkQualification, checkQualificationByName, masterLevelOneNames, gzMajorNames, zyjyMajorNames, benkeMajorNames } from '../data/majorData'
+import { checkQualification, checkQualificationByName, checkQualificationByZK, masterLevelOneNames, gzMajorNames, zyjyMajorNames, benkeMajorNames } from '../data/majorData'
 
 onMounted(() => { document.title = '专业报考条件查询' })
 onBeforeUnmount(() => { document.title = '智能学习平台' })
@@ -189,20 +189,37 @@ const searchChsi = async () => {
 
     chsiResults.value = Object.values(all)
 
-    // 兜底：如果学信网没有返回任何结果，用本地777名称列表直接匹配
+    // 兜底：如果学信网没有返回任何结果，用本地名称列表匹配
     if (chsiResults.value.length === 0) {
-      const localQual = checkQualificationByName(searchText.value.trim())
+      const input = searchText.value.trim()
+      // 先用777表名称精确匹配
+      const localQual = checkQualificationByName(input)
       if (localQual.qualified) {
         chsiResults.value = [{
           zydm: '',
-          zymc: searchText.value.trim(),
-          _level: localQual.levels.join('、'),
+          zymc: input,
+          _level: localQual.levels ? localQual.levels.join('、') : localQual.level,
           _qualified: true,
           _checked: true,
-          _reason: `符合条件（${localQual.level}：${searchText.value.trim()}）`,
+          _reason: `符合条件（${localQual.level}：${input}）`,
           _traceResult: localQual,
           yzyList: []
         }]
+      } else {
+        // 777表没匹配到，尝试自考旧名称匹配
+        const zkQual = checkQualificationByZK(input)
+        if (zkQual.qualified) {
+          chsiResults.value = [{
+            zydm: '',
+            zymc: input,
+            _level: zkQual.level,
+            _qualified: true,
+            _checked: true,
+            _reason: `符合条件（${zkQual.level}）`,
+            _traceResult: zkQual,
+            yzyList: []
+          }]
+        }
       }
     }
   } catch (e) {
