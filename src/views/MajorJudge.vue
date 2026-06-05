@@ -128,7 +128,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import majorCatalog from '../data/majorCatalog.json'
-import { checkQualification, checkQualificationByName, masterLevelOneNames } from '../data/majorData'
+import { checkQualification, checkQualificationByName, masterLevelOneNames, gzMajorNames, zyjyMajorNames, benkeMajorNames } from '../data/majorData'
 
 onMounted(() => { document.title = '专业报考条件查询' })
 onBeforeUnmount(() => { document.title = '智能学习平台' })
@@ -217,7 +217,7 @@ const traceFinalMajor = async (item, depth = 0) => {
   const level = item._level || '本科'
   const name = item.zymc
 
-  // 按学信网返回的层次优先匹配
+  // 研究生：按一级学科名称匹配
   if (level === '研究生') {
     const matched = masterLevelOneNames?.filter(n => name.includes(n))
     if (matched && matched.length > 0) {
@@ -225,13 +225,20 @@ const traceFinalMajor = async (item, depth = 0) => {
     }
   }
 
-  // 名称精确匹配（不限层次）
+  // 按学信网标注的层次精确匹配
+  if (level === '专科' && gzMajorNames.has(name)) {
+    return { qualified: true, matchedName: name, level: '高职专科', name }
+  }
+  if (level === '高职本科' && zyjyMajorNames.has(name)) {
+    return { qualified: true, matchedName: name, level: '高职本科', name }
+  }
+  if (level === '本科' && benkeMajorNames.has(name)) {
+    return { qualified: true, matchedName: name, level: '普通本科', name }
+  }
+
+  // 不限层次的名称匹配（学信网层次无匹配时兜底）
   const nameQual = checkQualificationByName(name)
   if (nameQual.qualified) {
-    // 如果学信网标为研究生但名称匹配到了其他层次，优先用学信网的层次
-    if (level === '研究生') {
-      nameQual.level = '研究生'
-    }
     return { ...nameQual, name }
   }
 
