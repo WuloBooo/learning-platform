@@ -1,5 +1,347 @@
 [
   {
+    "code": "020101",
+    "name": "经济学",
+    "className": "",
+    "classCode": "0201",
+    "category": "经济学",
+    "oldCode": "B020115",
+    "oldName": "经济学"
+  },
+  {
+    "code": "320101",
+    "name": "区域经济开发与管理*",
+    "className": "",
+    "classCode": "3201",
+    "category": "经济学",
+    "oldCode": "C020147",
+    "oldName": "区域经济开发与管理"
+  },
+  {
+    "code": "320101",
+    "name": "区域经济开发与管理*",
+    "className": "",
+    "classCode": "3201",
+    "category": "经济学",
+    "oldCode": "B090624",
+    "oldName": "乡镇区域发展"
+  },
+  {
+    "code": "020102",
+    "name": "经济统计学",
+    "className": "",
+    "classCode": "0201",
+    "category": "经济学",
+    "oldCode": "B020102",
+    "oldName": "统计"
+  },
+  {
+    "code": "020103T",
+    "name": "国民经济管理",
+    "className": "",
+    "classCode": "0201",
+    "category": "经济学",
+    "oldCode": "B082216",
+    "oldName": "城镇经济与管理"
+  },
+  {
+    "code": "020103T",
+    "name": "国民经济管理",
+    "className": "",
+    "classCode": "0201",
+    "category": "经济学",
+    "oldCode": "B020125",
+    "oldName": "经济管理"
+  },
+  {
+    "code": "020103T",
+    "name": "国民经济管理",
+    "className": "",
+    "classCode": "0201",
+    "category": "经济学",
+    "oldCode": "B020227",
+    "oldName": "资源经济与管理"
+  },
+  {
+    "code": "020202",
+    "name": "税收学",
+    "className": "",
+    "classCode": "0202",
+    "category": "经济学",
+    "oldCode": "B020104",
+    "oldName": "财税"
+  },
+  {
+    "code": "020301K",
+    "name": "金融学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020106",
+    "oldName": "金融"
+  },
+  {
+    "code": "020301K",
+    "name": "金融学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020183",
+    "oldName": "国际金融"
+  },
+  {
+    "code": "020301K",
+    "name": "金融学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "C020120",
+    "oldName": "金融管理"
+  },
+  {
+    "code": "020301K",
+    "name": "金融学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020175",
+    "oldName": "金融工程"
+  },
+  {
+    "code": "020303",
+    "name": "保险学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020108",
+    "oldName": "保险"
+  },
+  {
+    "code": "020304",
+    "name": "投资学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020251",
+    "oldName": "投资管理"
+  },
+  {
+    "code": "020304",
+    "name": "投资学",
+    "className": "",
+    "classCode": "0203",
+    "category": "经济学",
+    "oldCode": "B020177",
+    "oldName": "投资理财"
+  },
+  {
+    "code": "020401",
+    "name": "国际经济与贸易",
+    "className": "",
+    "classCode": "0204",
+    "category": "经济学",
+    "oldCode": "B020173",
+    "oldName": "国际经济与贸易"
+  },
+  {
+    "code": "020401",
+    "name": "国际经济与贸易",
+    "className": "",
+    "classCode": "0204",
+    "category": "经济学",
+    "oldCode": "B020148",
+    "oldName": "国际经济与管理"
+  },
+  {
+    "code": "020401",
+    "name": "国际经济与贸易",
+    "className": "",
+    "classCode": "0204",
+    "category": "经济学",
+    "oldCode": "B020145",
+    "oldName": "国际经济"
+  },
+  {
+    "code": "020401",
+    "name": "国际经济与贸易",
+    "className": "",
+    "classCode": "0204",
+    "category": "经济学",
+    "oldCode": "B020110",
+    "oldName": "国际贸易"
+  },
+  {
+    "code": "020401",
+    "name": "国际经济与贸易",
+    "className": "",
+    "classCode": "0204",
+    "category": "经济学",
+    "oldCode": "C020151",
+    "oldName": "国际金融与贸易"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B030117",
+    "oldName": "法律"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "C030106",
+    "oldName": "法律"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B030113",
+    "oldName": "法律教育"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B030105",
+    "oldName": "国际经济法"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "C030116",
+    "oldName": "民商法"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B030114",
+    "oldName": "行政法"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B030107",
+    "oldName": "经济法学"
+  },
+  {
+    "code": "030101K",
+    "name": "法学",
+    "className": "",
+    "classCode": "0301",
+    "category": "法学",
+    "oldCode": "B020225",
+    "oldName": "知识产权管理"
+  },
+  {
+    "code": "330101K",
+    "name": "监所管理*",
+    "className": "",
+    "classCode": "3301",
+    "category": "法学",
+    "oldCode": "B030109",
+    "oldName": "监所管理"
+  },
+  {
+    "code": "030201",
+    "name": "政治学与行政学",
+    "className": "",
+    "classCode": "0302",
+    "category": "法学",
+    "oldCode": "B030308",
+    "oldName": "政治学"
+  },
+  {
+    "code": "030301",
+    "name": "社会学",
+    "className": "",
+    "classCode": "0303",
+    "category": "法学",
+    "oldCode": "B030207",
+    "oldName": "社会学"
+  },
+  {
+    "code": "030302",
+    "name": "社会工作",
+    "className": "",
+    "classCode": "0303",
+    "category": "法学",
+    "oldCode": "B030203",
+    "oldName": "社会工作与管理"
+  },
+  {
+    "code": "030503",
+    "name": "思想政治教育",
+    "className": "",
+    "classCode": "0305",
+    "category": "法学",
+    "oldCode": "B040203",
+    "oldName": "政治教育"
+  },
+  {
+    "code": "030503",
+    "name": "思想政治教育",
+    "className": "",
+    "classCode": "0305",
+    "category": "法学",
+    "oldCode": "B040202",
+    "oldName": "思想政治教育"
+  },
+  {
+    "code": "030601K",
+    "name": "治安学",
+    "className": "",
+    "classCode": "0306",
+    "category": "法学",
+    "oldCode": "C030407",
+    "oldName": "治安管理"
+  },
+  {
+    "code": "030612TK",
+    "name": "公安管理学",
+    "className": "",
+    "classCode": "0306",
+    "category": "法学",
+    "oldCode": "C030402",
+    "oldName": "刑事侦察"
+  },
+  {
+    "code": "030612TK",
+    "name": "公安管理学",
+    "className": "",
+    "classCode": "0306",
+    "category": "法学",
+    "oldCode": "B030405",
+    "oldName": "侦查学"
+  },
+  {
+    "code": "030612TK",
+    "name": "公安管理学",
+    "className": "",
+    "classCode": "0306",
+    "category": "法学",
+    "oldCode": "C030401",
+    "oldName": "公安管理"
+  },
+  {
     "code": "040101",
     "name": "教育学",
     "className": "",
@@ -7,6 +349,15 @@
     "category": "教育学",
     "oldCode": "B040108",
     "oldName": "教育学"
+  },
+  {
+    "code": "340101",
+    "name": "教育管理*",
+    "className": "",
+    "classCode": "3401",
+    "category": "教育学",
+    "oldCode": "B040107",
+    "oldName": "教育管理"
   },
   {
     "code": "040102",
@@ -54,6 +405,15 @@
     "oldName": "物理教育"
   },
   {
+    "code": "340102",
+    "name": "心理健康教育*",
+    "className": "",
+    "classCode": "3401",
+    "category": "教育学",
+    "oldCode": "B040110",
+    "oldName": "心理健康教育"
+  },
+  {
     "code": "040103",
     "name": "人文教育",
     "className": "",
@@ -61,6 +421,15 @@
     "category": "教育学",
     "oldCode": "B060102",
     "oldName": "历史教育"
+  },
+  {
+    "code": "340103",
+    "name": "双语教育*",
+    "className": "",
+    "classCode": "3401",
+    "category": "教育学",
+    "oldCode": "B040123",
+    "oldName": "双语教育"
   },
   {
     "code": "040104",
@@ -135,6 +504,186 @@
     "oldName": "体育教育"
   },
   {
+    "code": "050101",
+    "name": "汉语言文学",
+    "className": "",
+    "classCode": "0501",
+    "category": "文学",
+    "oldCode": "C050105",
+    "oldName": "汉语言文学"
+  },
+  {
+    "code": "050101",
+    "name": "汉语言文学",
+    "className": "",
+    "classCode": "0501",
+    "category": "文学",
+    "oldCode": "B050113",
+    "oldName": "汉语言文学教育"
+  },
+  {
+    "code": "350101",
+    "name": "维吾尔语言文学*",
+    "className": "",
+    "classCode": "3501",
+    "category": "文学",
+    "oldCode": "C050107",
+    "oldName": "维吾尔语言文学"
+  },
+  {
+    "code": "350102",
+    "name": "哈萨克语言文学*",
+    "className": "",
+    "classCode": "3501",
+    "category": "文学",
+    "oldCode": "C050109",
+    "oldName": "哈语言文学"
+  },
+  {
+    "code": "350103",
+    "name": "蒙古语言文学*",
+    "className": "",
+    "classCode": "3501",
+    "category": "文学",
+    "oldCode": "C050106",
+    "oldName": "蒙古语言文学"
+  },
+  {
+    "code": "350104",
+    "name": "朝鲜语言文学*",
+    "className": "",
+    "classCode": "3501",
+    "category": "文学",
+    "oldCode": "C050110",
+    "oldName": "朝鲜语言文学"
+  },
+  {
+    "code": "350105",
+    "name": "藏语言文学*",
+    "className": "",
+    "classCode": "3501",
+    "category": "文学",
+    "oldCode": "C050111",
+    "oldName": "藏语言文学"
+  },
+  {
+    "code": "050103",
+    "name": "汉语国际教育",
+    "className": "",
+    "classCode": "0501",
+    "category": "文学",
+    "oldCode": "B050140",
+    "oldName": "对外汉语"
+  },
+  {
+    "code": "050107T",
+    "name": "秘书学",
+    "className": "",
+    "classCode": "0501",
+    "category": "文学",
+    "oldCode": "B050104",
+    "oldName": "秘书学"
+  },
+  {
+    "code": "050107T",
+    "name": "秘书学",
+    "className": "",
+    "classCode": "0501",
+    "category": "文学",
+    "oldCode": "C050125",
+    "oldName": "商务秘书"
+  },
+  {
+    "code": "050201",
+    "name": "英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050206",
+    "oldName": "英语教育"
+  },
+  {
+    "code": "050201",
+    "name": "英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050134",
+    "oldName": "英语翻译"
+  },
+  {
+    "code": "050201",
+    "name": "英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050201",
+    "oldName": "英语"
+  },
+  {
+    "code": "050201",
+    "name": "英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050222",
+    "oldName": "旅游英语"
+  },
+  {
+    "code": "050202",
+    "name": "俄语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050203",
+    "oldName": "俄语"
+  },
+  {
+    "code": "050206",
+    "name": "阿拉伯语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050230",
+    "oldName": "阿拉伯语"
+  },
+  {
+    "code": "050207",
+    "name": "日语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050202",
+    "oldName": "日语"
+  },
+  {
+    "code": "050209",
+    "name": "朝鲜语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050205",
+    "oldName": "朝鲜语"
+  },
+  {
+    "code": "050209",
+    "name": "朝鲜语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050223",
+    "oldName": "韩国语"
+  },
+  {
+    "code": "050223",
+    "name": "越南语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050204",
+    "oldName": "越语"
+  },
+  {
     "code": "050262",
     "name": "商务英语",
     "className": "",
@@ -178,6 +727,105 @@
     "category": "文学",
     "oldCode": "C050234",
     "oldName": "外贸英语"
+  },
+  {
+    "code": "050301",
+    "name": "新闻学",
+    "className": "",
+    "classCode": "0503",
+    "category": "文学",
+    "oldCode": "C050305",
+    "oldName": "新闻学"
+  },
+  {
+    "code": "050301",
+    "name": "新闻学",
+    "className": "",
+    "classCode": "0503",
+    "category": "文学",
+    "oldCode": "B050319",
+    "oldName": "新闻与传播学"
+  },
+  {
+    "code": "050303",
+    "name": "广告学",
+    "className": "",
+    "classCode": "0503",
+    "category": "文学",
+    "oldCode": "B050302",
+    "oldName": "广告学"
+  },
+  {
+    "code": "050304",
+    "name": "传播学",
+    "className": "",
+    "classCode": "0503",
+    "category": "文学",
+    "oldCode": "B050320",
+    "oldName": "大众传播"
+  },
+  {
+    "code": "050306T",
+    "name": "网络与新媒体",
+    "className": "",
+    "classCode": "0503",
+    "category": "文学",
+    "oldCode": "B050307",
+    "oldName": "网络传播"
+  },
+  {
+    "code": "070302",
+    "name": "应用化学",
+    "className": "",
+    "classCode": "0703",
+    "category": "理学",
+    "oldCode": "B081209",
+    "oldName": "应用化学"
+  },
+  {
+    "code": "070504",
+    "name": "地理信息科学",
+    "className": "",
+    "classCode": "0705",
+    "category": "理学",
+    "oldCode": "B082234",
+    "oldName": "地理信息系统"
+  },
+  {
+    "code": "071002",
+    "name": "生物技术",
+    "className": "",
+    "classCode": "0710",
+    "category": "理学",
+    "oldCode": "B070405",
+    "oldName": "生物技术"
+  },
+  {
+    "code": "071002",
+    "name": "生物技术",
+    "className": "",
+    "classCode": "0710",
+    "category": "理学",
+    "oldCode": "B081315",
+    "oldName": "应用生物技术"
+  },
+  {
+    "code": "071101",
+    "name": "心理学",
+    "className": "",
+    "classCode": "0711",
+    "category": "理学",
+    "oldCode": "B071504",
+    "oldName": "心理学"
+  },
+  {
+    "code": "071102",
+    "name": "应用心理学",
+    "className": "",
+    "classCode": "0711",
+    "category": "理学",
+    "oldCode": "B071502",
+    "oldName": "应用心理学"
   },
   {
     "code": "080202",
@@ -288,6 +936,15 @@
     "oldName": "工业设计"
   },
   {
+    "code": "080206",
+    "name": "过程装备与控制工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080342",
+    "oldName": "过程装备与控制工程"
+  },
+  {
     "code": "080207",
     "name": "车辆工程",
     "className": "",
@@ -385,6 +1042,60 @@
     "category": "工学",
     "oldCode": "B081722",
     "oldName": "汽车营销与售后技术服务"
+  },
+  {
+    "code": "080301",
+    "name": "测控技术与仪器",
+    "className": "",
+    "classCode": "0803",
+    "category": "工学",
+    "oldCode": "B080333",
+    "oldName": "测控技术与仪器"
+  },
+  {
+    "code": "080404",
+    "name": "冶金工程",
+    "className": "",
+    "classCode": "0804",
+    "category": "工学",
+    "oldCode": "B080208",
+    "oldName": "冶金工程"
+  },
+  {
+    "code": "080405",
+    "name": "金属材料工程",
+    "className": "",
+    "classCode": "0804",
+    "category": "工学",
+    "oldCode": "B080207",
+    "oldName": "金属材料工程"
+  },
+  {
+    "code": "080410T",
+    "name": "宝石及材料工艺学",
+    "className": "",
+    "classCode": "0804",
+    "category": "工学",
+    "oldCode": "B080110",
+    "oldName": "珠宝及材料工艺学"
+  },
+  {
+    "code": "080414T",
+    "name": "新能源材料与器件",
+    "className": "",
+    "classCode": "0804",
+    "category": "工学",
+    "oldCode": "B080206",
+    "oldName": "光伏材料应用技术"
+  },
+  {
+    "code": "080501",
+    "name": "能源与动力工程",
+    "className": "",
+    "classCode": "0805",
+    "category": "工学",
+    "oldCode": "B080502",
+    "oldName": "电厂热能动力工程"
   },
   {
     "code": "080601",
@@ -702,6 +1413,492 @@
     "oldName": "数字媒体技术"
   },
   {
+    "code": "081001",
+    "name": "土木工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080825",
+    "oldName": "土木工程"
+  },
+  {
+    "code": "081001",
+    "name": "土木工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080821",
+    "oldName": "公路与城市道路工程"
+  },
+  {
+    "code": "081001",
+    "name": "土木工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080806",
+    "oldName": "建筑工程"
+  },
+  {
+    "code": "081001",
+    "name": "土木工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080809",
+    "oldName": "交通土建工程"
+  },
+  {
+    "code": "081002",
+    "name": "建筑环境与能源应用工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080824",
+    "oldName": "建筑环境与设备工程"
+  },
+  {
+    "code": "081006T",
+    "name": "道路桥梁与渡河工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B081707",
+    "oldName": "铁道与道路工程"
+  },
+  {
+    "code": "081006T",
+    "name": "道路桥梁与渡河工程",
+    "className": "",
+    "classCode": "0810",
+    "category": "工学",
+    "oldCode": "B080807",
+    "oldName": "道路与桥梁工程"
+  },
+  {
+    "code": "081101",
+    "name": "水利水电工程",
+    "className": "",
+    "classCode": "0811",
+    "category": "工学",
+    "oldCode": "B080902",
+    "oldName": "水利水电建筑工程"
+  },
+  {
+    "code": "081101",
+    "name": "水利水电工程",
+    "className": "",
+    "classCode": "0811",
+    "category": "工学",
+    "oldCode": "B080904",
+    "oldName": "水利水电与港航工程"
+  },
+  {
+    "code": "081201",
+    "name": "测绘工程",
+    "className": "",
+    "classCode": "0812",
+    "category": "工学",
+    "oldCode": "B080837",
+    "oldName": "测绘工程"
+  },
+  {
+    "code": "081301",
+    "name": "化学工程与工艺",
+    "className": "",
+    "classCode": "0813",
+    "category": "工学",
+    "oldCode": "B081203",
+    "oldName": "化学工程"
+  },
+  {
+    "code": "081301",
+    "name": "化学工程与工艺",
+    "className": "",
+    "classCode": "0813",
+    "category": "工学",
+    "oldCode": "B081205",
+    "oldName": "化学工程与工艺"
+  },
+  {
+    "code": "081401",
+    "name": "地质工程",
+    "className": "",
+    "classCode": "0814",
+    "category": "工学",
+    "oldCode": "B080835",
+    "oldName": "地质工程"
+  },
+  {
+    "code": "081501",
+    "name": "采矿工程",
+    "className": "",
+    "classCode": "0815",
+    "category": "工学",
+    "oldCode": "B080109",
+    "oldName": "采矿工程"
+  },
+  {
+    "code": "081502",
+    "name": "石油工程",
+    "className": "",
+    "classCode": "0815",
+    "category": "工学",
+    "oldCode": "B080105",
+    "oldName": "石油工程"
+  },
+  {
+    "code": "081601",
+    "name": "纺织工程",
+    "className": "",
+    "classCode": "0816",
+    "category": "工学",
+    "oldCode": "B081328",
+    "oldName": "纺织工程"
+  },
+  {
+    "code": "081602",
+    "name": "服装设计与工程",
+    "className": "",
+    "classCode": "0816",
+    "category": "工学",
+    "oldCode": "B050443",
+    "oldName": "服装设计与工程"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081711",
+    "oldName": "交通(铁路)运输"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081718",
+    "oldName": "交通运输"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081720",
+    "oldName": "铁路运输"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081712",
+    "oldName": "铁路运输工程"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081724",
+    "oldName": "铁路运输管理"
+  },
+  {
+    "code": "081801",
+    "name": "交通运输",
+    "className": "",
+    "classCode": "0818",
+    "category": "工学",
+    "oldCode": "B081715",
+    "oldName": "空中交通运输"
+  },
+  {
+    "code": "081901",
+    "name": "船舶与海洋工程",
+    "className": "",
+    "classCode": "0819",
+    "category": "工学",
+    "oldCode": "B080325",
+    "oldName": "船舶与海洋工程"
+  },
+  {
+    "code": "082502",
+    "name": "环境工程",
+    "className": "",
+    "classCode": "0825",
+    "category": "工学",
+    "oldCode": "B081102",
+    "oldName": "环境工程"
+  },
+  {
+    "code": "082502",
+    "name": "环境工程",
+    "className": "",
+    "classCode": "0825",
+    "category": "工学",
+    "oldCode": "B081103",
+    "oldName": "环境工程与管理"
+  },
+  {
+    "code": "082504",
+    "name": "环境生态工程",
+    "className": "",
+    "classCode": "0825",
+    "category": "工学",
+    "oldCode": "B020277",
+    "oldName": "环境保护与管理"
+  },
+  {
+    "code": "082701",
+    "name": "食品科学与工程",
+    "className": "",
+    "classCode": "0827",
+    "category": "工学",
+    "oldCode": "B081308",
+    "oldName": "食品科学与工程"
+  },
+  {
+    "code": "082702",
+    "name": "食品质量与安全",
+    "className": "",
+    "classCode": "0827",
+    "category": "工学",
+    "oldCode": "B081323",
+    "oldName": "食品质量与安全"
+  },
+  {
+    "code": "082702",
+    "name": "食品质量与安全",
+    "className": "",
+    "classCode": "0827",
+    "category": "工学",
+    "oldCode": "B081314",
+    "oldName": "食品安全与品控"
+  },
+  {
+    "code": "082702",
+    "name": "食品质量与安全",
+    "className": "",
+    "classCode": "0827",
+    "category": "工学",
+    "oldCode": "B081313",
+    "oldName": "食品加工与检验"
+  },
+  {
+    "code": "082802",
+    "name": "城乡规划",
+    "className": "",
+    "classCode": "0828",
+    "category": "工学",
+    "oldCode": "B020275",
+    "oldName": "资源环境与城乡规划管理"
+  },
+  {
+    "code": "082802",
+    "name": "城乡规划",
+    "className": "",
+    "classCode": "0828",
+    "category": "工学",
+    "oldCode": "B080811",
+    "oldName": "城镇规划与建设"
+  },
+  {
+    "code": "082901",
+    "name": "安全工程",
+    "className": "",
+    "classCode": "0829",
+    "category": "工学",
+    "oldCode": "B080834",
+    "oldName": "工程安全管理"
+  },
+  {
+    "code": "082901",
+    "name": "安全工程",
+    "className": "",
+    "classCode": "0829",
+    "category": "工学",
+    "oldCode": "B080836",
+    "oldName": "安全工程"
+  },
+  {
+    "code": "083001",
+    "name": "生物工程",
+    "className": "",
+    "classCode": "0830",
+    "category": "工学",
+    "oldCode": "B070404",
+    "oldName": "生物工程"
+  },
+  {
+    "code": "083002T",
+    "name": "生物制药",
+    "className": "",
+    "classCode": "0830",
+    "category": "工学",
+    "oldCode": "B100907",
+    "oldName": "生物制药"
+  },
+  {
+    "code": "083102K",
+    "name": "消防工程",
+    "className": "",
+    "classCode": "0831",
+    "category": "工学",
+    "oldCode": "B080622",
+    "oldName": "消防工程"
+  },
+  {
+    "code": "090101",
+    "name": "农学",
+    "className": "",
+    "classCode": "0901",
+    "category": "农学",
+    "oldCode": "B090102",
+    "oldName": "农学"
+  },
+  {
+    "code": "090102",
+    "name": "园艺",
+    "className": "",
+    "classCode": "0901",
+    "category": "农学",
+    "oldCode": "B090113",
+    "oldName": "现代园艺"
+  },
+  {
+    "code": "090103",
+    "name": "植物保护",
+    "className": "",
+    "classCode": "0901",
+    "category": "农学",
+    "oldCode": "B090303",
+    "oldName": "植物保护与检疫"
+  },
+  {
+    "code": "090103",
+    "name": "植物保护",
+    "className": "",
+    "classCode": "0901",
+    "category": "农学",
+    "oldCode": "C090122",
+    "oldName": "植物科学技术"
+  },
+  {
+    "code": "090105",
+    "name": "种子科学与工程",
+    "className": "",
+    "classCode": "0901",
+    "category": "农学",
+    "oldCode": "B090129",
+    "oldName": "种子科学与工程"
+  },
+  {
+    "code": "090301",
+    "name": "动物科学",
+    "className": "",
+    "classCode": "0903",
+    "category": "农学",
+    "oldCode": "B090407",
+    "oldName": "动物科学"
+  },
+  {
+    "code": "090301",
+    "name": "动物科学",
+    "className": "",
+    "classCode": "0903",
+    "category": "农学",
+    "oldCode": "B090416",
+    "oldName": "现代牧业生产"
+  },
+  {
+    "code": "090301",
+    "name": "动物科学",
+    "className": "",
+    "classCode": "0903",
+    "category": "农学",
+    "oldCode": "B090613",
+    "oldName": "牧业高新技术与管理"
+  },
+  {
+    "code": "090401",
+    "name": "动物医学",
+    "className": "",
+    "classCode": "0904",
+    "category": "农学",
+    "oldCode": "B100511",
+    "oldName": "动物医学"
+  },
+  {
+    "code": "090401",
+    "name": "动物医学",
+    "className": "",
+    "classCode": "0904",
+    "category": "农学",
+    "oldCode": "B090403",
+    "oldName": "畜牧兽医"
+  },
+  {
+    "code": "090401",
+    "name": "动物医学",
+    "className": "",
+    "classCode": "0904",
+    "category": "农学",
+    "oldCode": "B090419",
+    "oldName": "动物科学与动物医学"
+  },
+  {
+    "code": "090403T",
+    "name": "动植物检疫",
+    "className": "",
+    "classCode": "0904",
+    "category": "农学",
+    "oldCode": "B090418",
+    "oldName": "动物防疫与检疫"
+  },
+  {
+    "code": "090403T",
+    "name": "动植物检疫",
+    "className": "",
+    "classCode": "0904",
+    "category": "农学",
+    "oldCode": "B090406",
+    "oldName": "动物检疫与食品检验"
+  },
+  {
+    "code": "090501",
+    "name": "林学",
+    "className": "",
+    "classCode": "0905",
+    "category": "农学",
+    "oldCode": "B090202",
+    "oldName": "林学"
+  },
+  {
+    "code": "090502",
+    "name": "园林",
+    "className": "",
+    "classCode": "0905",
+    "category": "农学",
+    "oldCode": "B090115",
+    "oldName": "园林"
+  },
+  {
+    "code": "090701",
+    "name": "草业科学",
+    "className": "",
+    "classCode": "0907",
+    "category": "农学",
+    "oldCode": "B090117",
+    "oldName": "草业科学"
+  },
+  {
     "code": "100402",
     "name": "食品卫生与营养学",
     "className": "",
@@ -781,5 +1978,905 @@
     "category": "医学",
     "oldCode": "B100702",
     "oldName": "护理学"
+  },
+  {
+    "code": "401101",
+    "name": "社区护理学*",
+    "className": "",
+    "classCode": "4011",
+    "category": "医学",
+    "oldCode": "B100705",
+    "oldName": "社区护理学"
+  },
+  {
+    "code": "120102",
+    "name": "信息管理与信息系统",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B071602",
+    "oldName": "信息管理与服务"
+  },
+  {
+    "code": "120102",
+    "name": "信息管理与信息系统",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082213",
+    "oldName": "信息管理与信息系统"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082211",
+    "oldName": "邮电管理工程"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082228",
+    "oldName": "电力管理工程"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082202",
+    "oldName": "管理工程"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B020279",
+    "oldName": "工程管理"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B020221",
+    "oldName": "建筑经济管理"
+  },
+  {
+    "code": "120103",
+    "name": "工程管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B020256",
+    "oldName": "项目管理"
+  },
+  {
+    "code": "120104",
+    "name": "房地产开发与管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B020224",
+    "oldName": "房地产经营与管理"
+  },
+  {
+    "code": "120104",
+    "name": "房地产开发与管理",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082241",
+    "oldName": "房地产开发与经营"
+  },
+  {
+    "code": "120105",
+    "name": "工程造价",
+    "className": "",
+    "classCode": "1201",
+    "category": "管理学",
+    "oldCode": "B082231",
+    "oldName": "工程造价管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020320",
+    "oldName": "中小企业经营管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020142",
+    "oldName": "工商管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020309",
+    "oldName": "现代企业管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020253",
+    "oldName": "企业经济管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020259",
+    "oldName": "企业管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020202",
+    "oldName": "工商企业管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B090617",
+    "oldName": "乡镇企业管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020143",
+    "oldName": "公司管理"
+  },
+  {
+    "code": "120201K",
+    "name": "工商管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "C020226",
+    "oldName": "商务管理"
+  },
+  {
+    "code": "420201",
+    "name": "网络营销与管理*",
+    "className": "",
+    "classCode": "4202",
+    "category": "管理学",
+    "oldCode": "B020333",
+    "oldName": "网络营销与管理"
+  },
+  {
+    "code": "120202",
+    "name": "市场营销",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020208",
+    "oldName": "市场营销"
+  },
+  {
+    "code": "120202",
+    "name": "市场营销",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020314",
+    "oldName": "销售管理"
+  },
+  {
+    "code": "120202",
+    "name": "市场营销",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020262",
+    "oldName": "电力市场营销"
+  },
+  {
+    "code": "120203K",
+    "name": "会计学",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020204",
+    "oldName": "会计"
+  },
+  {
+    "code": "120203K",
+    "name": "会计学",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020236",
+    "oldName": "会计电算化"
+  },
+  {
+    "code": "120203K",
+    "name": "会计学",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020305",
+    "oldName": "会计信息技术"
+  },
+  {
+    "code": "120203K",
+    "name": "会计学",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020157",
+    "oldName": "财务会计与审计"
+  },
+  {
+    "code": "120204",
+    "name": "财务管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020303",
+    "oldName": "财务管理"
+  },
+  {
+    "code": "120204",
+    "name": "财务管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020213",
+    "oldName": "企业财务管理"
+  },
+  {
+    "code": "120204",
+    "name": "财务管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020261",
+    "oldName": "工程财务管理"
+  },
+  {
+    "code": "120204",
+    "name": "财务管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020220",
+    "oldName": "军队财务"
+  },
+  {
+    "code": "120204",
+    "name": "财务管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020264",
+    "oldName": "铁道财务会计"
+  },
+  {
+    "code": "120205",
+    "name": "国际商务",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020174",
+    "oldName": "国际商务"
+  },
+  {
+    "code": "120206",
+    "name": "人力资源管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020218",
+    "oldName": "人力资源管理"
+  },
+  {
+    "code": "120207",
+    "name": "审计学",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020117",
+    "oldName": "审计学"
+  },
+  {
+    "code": "120208",
+    "name": "资产评估",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020331",
+    "oldName": "资产评估"
+  },
+  {
+    "code": "120209",
+    "name": "物业管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020222",
+    "oldName": "物业管理"
+  },
+  {
+    "code": "120210",
+    "name": "文化产业管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020155",
+    "oldName": "文化产业"
+  },
+  {
+    "code": "120210",
+    "name": "文化产业管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020318",
+    "oldName": "经纪学"
+  },
+  {
+    "code": "120212T",
+    "name": "体育经济与管理",
+    "className": "",
+    "classCode": "1202",
+    "category": "管理学",
+    "oldCode": "B020159",
+    "oldName": "体育产业经营与管理"
+  },
+  {
+    "code": "120301",
+    "name": "农林经济管理",
+    "className": "",
+    "classCode": "1203",
+    "category": "管理学",
+    "oldCode": "B020114",
+    "oldName": "农业经济管理"
+  },
+  {
+    "code": "120301",
+    "name": "农林经济管理",
+    "className": "",
+    "classCode": "1203",
+    "category": "管理学",
+    "oldCode": "B090615",
+    "oldName": "现代农业管理"
+  },
+  {
+    "code": "120301",
+    "name": "农林经济管理",
+    "className": "",
+    "classCode": "1203",
+    "category": "管理学",
+    "oldCode": "B090705",
+    "oldName": "农业高新技术与管理"
+  },
+  {
+    "code": "120301",
+    "name": "农林经济管理",
+    "className": "",
+    "classCode": "1203",
+    "category": "管理学",
+    "oldCode": "B090614",
+    "oldName": "林业及园林高新技术与管理"
+  },
+  {
+    "code": "120401",
+    "name": "公共事业管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B020267",
+    "oldName": "公共管理"
+  },
+  {
+    "code": "120401",
+    "name": "公共事业管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B020322",
+    "oldName": "能源管理"
+  },
+  {
+    "code": "120401",
+    "name": "公共事业管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B020230",
+    "oldName": "公共事业管理"
+  },
+  {
+    "code": "120401",
+    "name": "公共事业管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B100902",
+    "oldName": "卫生事业管理"
+  },
+  {
+    "code": "120401",
+    "name": "公共事业管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B110109",
+    "oldName": "武警指挥与管理"
+  },
+  {
+    "code": "120402",
+    "name": "行政管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B030302",
+    "oldName": "行政管理学"
+  },
+  {
+    "code": "120402",
+    "name": "行政管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B020123",
+    "oldName": "工商行政管理"
+  },
+  {
+    "code": "120402",
+    "name": "行政管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B030311",
+    "oldName": "经济与行政管理"
+  },
+  {
+    "code": "120402",
+    "name": "行政管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B082218",
+    "oldName": "电子政务"
+  },
+  {
+    "code": "120402",
+    "name": "行政管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B030316",
+    "oldName": "机关管理与办公自动化"
+  },
+  {
+    "code": "120404",
+    "name": "土地资源管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B020217",
+    "oldName": "土地资源管理"
+  },
+  {
+    "code": "120405",
+    "name": "城市管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B030320",
+    "oldName": "城市管理"
+  },
+  {
+    "code": "120407T",
+    "name": "交通管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B081704",
+    "oldName": "交通管理工程"
+  },
+  {
+    "code": "120407T",
+    "name": "交通管理",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B081719",
+    "oldName": "机场管理"
+  },
+  {
+    "code": "120409T",
+    "name": "公共关系学",
+    "className": "",
+    "classCode": "1204",
+    "category": "管理学",
+    "oldCode": "B050309",
+    "oldName": "公共关系"
+  },
+  {
+    "code": "120502",
+    "name": "档案学",
+    "className": "",
+    "classCode": "1205",
+    "category": "管理学",
+    "oldCode": "B060202",
+    "oldName": "档案学"
+  },
+  {
+    "code": "120503",
+    "name": "信息资源管理",
+    "className": "",
+    "classCode": "1205",
+    "category": "管理学",
+    "oldCode": "B071604",
+    "oldName": "情报学"
+  },
+  {
+    "code": "120503",
+    "name": "信息资源管理",
+    "className": "",
+    "classCode": "1205",
+    "category": "管理学",
+    "oldCode": "B020273",
+    "oldName": "经济信息管理"
+  },
+  {
+    "code": "120601",
+    "name": "物流管理",
+    "className": "",
+    "classCode": "1206",
+    "category": "管理学",
+    "oldCode": "B020229",
+    "oldName": "物流管理"
+  },
+  {
+    "code": "120601",
+    "name": "物流管理",
+    "className": "",
+    "classCode": "1206",
+    "category": "管理学",
+    "oldCode": "B020304",
+    "oldName": "电子商务物流"
+  },
+  {
+    "code": "120601",
+    "name": "物流管理",
+    "className": "",
+    "classCode": "1206",
+    "category": "管理学",
+    "oldCode": "B081731",
+    "oldName": "运输工程与物流管理"
+  },
+  {
+    "code": "120603T",
+    "name": "采购管理",
+    "className": "",
+    "classCode": "1206",
+    "category": "管理学",
+    "oldCode": "B020282",
+    "oldName": "采购与供应管理"
+  },
+  {
+    "code": "120701",
+    "name": "工业工程",
+    "className": "",
+    "classCode": "1207",
+    "category": "管理学",
+    "oldCode": "C082206",
+    "oldName": "工业工程"
+  },
+  {
+    "code": "120701",
+    "name": "工业工程",
+    "className": "",
+    "classCode": "1207",
+    "category": "管理学",
+    "oldCode": "B082205",
+    "oldName": "工业工程"
+  },
+  {
+    "code": "120701",
+    "name": "工业工程",
+    "className": "",
+    "classCode": "1207",
+    "category": "管理学",
+    "oldCode": "B082244",
+    "oldName": "工业管理工程"
+  },
+  {
+    "code": "120701",
+    "name": "工业工程",
+    "className": "",
+    "classCode": "1207",
+    "category": "管理学",
+    "oldCode": "B020289",
+    "oldName": "企业现场管理"
+  },
+  {
+    "code": "120701",
+    "name": "工业工程",
+    "className": "",
+    "classCode": "1207",
+    "category": "管理学",
+    "oldCode": "B020252",
+    "oldName": "企业内部控制"
+  },
+  {
+    "code": "120801",
+    "name": "电子商务",
+    "className": "",
+    "classCode": "1208",
+    "category": "管理学",
+    "oldCode": "B020216",
+    "oldName": "电子商务"
+  },
+  {
+    "code": "120801",
+    "name": "电子商务",
+    "className": "",
+    "classCode": "1208",
+    "category": "管理学",
+    "oldCode": "B020263",
+    "oldName": "现代商务"
+  },
+  {
+    "code": "120901K",
+    "name": "旅游管理",
+    "className": "",
+    "classCode": "1209",
+    "category": "管理学",
+    "oldCode": "B020235",
+    "oldName": "国际旅游管理"
+  },
+  {
+    "code": "120901K",
+    "name": "旅游管理",
+    "className": "",
+    "classCode": "1209",
+    "category": "管理学",
+    "oldCode": "B020210",
+    "oldName": "旅游管理"
+  },
+  {
+    "code": "120902",
+    "name": "酒店管理",
+    "className": "",
+    "classCode": "1209",
+    "category": "管理学",
+    "oldCode": "B020302",
+    "oldName": "酒店管理"
+  },
+  {
+    "code": "120903",
+    "name": "会展经济与管理",
+    "className": "",
+    "classCode": "1209",
+    "category": "管理学",
+    "oldCode": "B020180",
+    "oldName": "会展管理"
+  },
+  {
+    "code": "130305",
+    "name": "广播电视编导",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050311",
+    "oldName": "广播电视编导"
+  },
+  {
+    "code": "130305",
+    "name": "广播电视编导",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "C050313",
+    "oldName": "广播电视编导"
+  },
+  {
+    "code": "130307",
+    "name": "戏剧影视美术设计",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050461",
+    "oldName": "影视美术设计"
+  },
+  {
+    "code": "130307",
+    "name": "戏剧影视美术设计",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050453",
+    "oldName": "文化(影视)艺术"
+  },
+  {
+    "code": "130309",
+    "name": "播音与主持艺术",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050310",
+    "oldName": "播音与主持"
+  },
+  {
+    "code": "130310",
+    "name": "动画",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B080746",
+    "oldName": "动画"
+  },
+  {
+    "code": "130310",
+    "name": "动画",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050438",
+    "oldName": "动画设计"
+  },
+  {
+    "code": "130310",
+    "name": "动画",
+    "className": "",
+    "classCode": "1303",
+    "category": "艺术学",
+    "oldCode": "B050451",
+    "oldName": "动漫设计"
+  },
+  {
+    "code": "130502",
+    "name": "视觉传达设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "C050428",
+    "oldName": "视觉传达设计"
+  },
+  {
+    "code": "130502",
+    "name": "视觉传达设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050433",
+    "oldName": "视觉传达设计"
+  },
+  {
+    "code": "130503",
+    "name": "环境设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "C050426",
+    "oldName": "环境艺术设计"
+  },
+  {
+    "code": "130503",
+    "name": "环境设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050412",
+    "oldName": "环境艺术设计"
+  },
+  {
+    "code": "130503",
+    "name": "环境设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050432",
+    "oldName": "室内设计"
+  },
+  {
+    "code": "130503",
+    "name": "环境设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B081318",
+    "oldName": "家具与室内设计"
+  },
+  {
+    "code": "130504",
+    "name": "产品设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "C050448",
+    "oldName": "艺术设计"
+  },
+  {
+    "code": "130504",
+    "name": "产品设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050437",
+    "oldName": "艺术设计"
+  },
+  {
+    "code": "130505",
+    "name": "服装与服饰设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "C050424",
+    "oldName": "服装艺术设计"
+  },
+  {
+    "code": "130505",
+    "name": "服装与服饰设计",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050419",
+    "oldName": "服装艺术设计"
+  },
+  {
+    "code": "130508",
+    "name": "数字媒体艺术",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050418",
+    "oldName": "数字媒体艺术"
+  },
+  {
+    "code": "130508",
+    "name": "数字媒体艺术",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050460",
+    "oldName": "游戏艺术设计"
+  },
+  {
+    "code": "130508",
+    "name": "数字媒体艺术",
+    "className": "",
+    "classCode": "1305",
+    "category": "艺术学",
+    "oldCode": "B050450",
+    "oldName": "电脑艺术设计"
   }
 ]
