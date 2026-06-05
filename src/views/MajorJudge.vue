@@ -1,8 +1,8 @@
 <template>
   <div class="major-check-page">
     <div class="check-card">
-      <h1>人工智能训练师三级 — 专业报考条件查询</h1>
-      <p class="subtitle">人工智能训练师 — 查询您的专业是否符合报名条件</p>
+      <h1>专业报考条件查询（Beta）</h1>
+      <p class="subtitle">人工智能训练师（三级）— 查询你的专业是否符合报名条件</p>
 
       <div class="form-section">
         <div class="search-row">
