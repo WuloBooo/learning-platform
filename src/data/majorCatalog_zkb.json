@@ -1,1 +1,785 @@
-[]
+[
+  {
+    "code": "040101",
+    "name": "教育学",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B040108",
+    "oldName": "教育学"
+  },
+  {
+    "code": "040102",
+    "name": "科学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B080713",
+    "oldName": "信息技术教育"
+  },
+  {
+    "code": "040102",
+    "name": "科学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B070702",
+    "oldName": "地理教育"
+  },
+  {
+    "code": "040102",
+    "name": "科学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B070302",
+    "oldName": "化学教育"
+  },
+  {
+    "code": "040102",
+    "name": "科学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B070402",
+    "oldName": "生物教育"
+  },
+  {
+    "code": "040102",
+    "name": "科学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B070202",
+    "oldName": "物理教育"
+  },
+  {
+    "code": "040103",
+    "name": "人文教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B060102",
+    "oldName": "历史教育"
+  },
+  {
+    "code": "040104",
+    "name": "教育技术学",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B040105",
+    "oldName": "教育技术"
+  },
+  {
+    "code": "040105",
+    "name": "艺术教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B050408",
+    "oldName": "音乐教育"
+  },
+  {
+    "code": "040105",
+    "name": "艺术教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B050410",
+    "oldName": "美术教育"
+  },
+  {
+    "code": "040105",
+    "name": "艺术教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B050434",
+    "oldName": "美术"
+  },
+  {
+    "code": "040106",
+    "name": "学前教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B040102",
+    "oldName": "学前教育"
+  },
+  {
+    "code": "040107",
+    "name": "小学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B040121",
+    "oldName": "初等教育"
+  },
+  {
+    "code": "040107",
+    "name": "小学教育",
+    "className": "",
+    "classCode": "0401",
+    "category": "教育学",
+    "oldCode": "B040112",
+    "oldName": "小学教育"
+  },
+  {
+    "code": "040201",
+    "name": "体育教育",
+    "className": "",
+    "classCode": "0402",
+    "category": "教育学",
+    "oldCode": "B040302",
+    "oldName": "体育教育"
+  },
+  {
+    "code": "050262",
+    "name": "商务英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050225",
+    "oldName": "商务英语"
+  },
+  {
+    "code": "050262",
+    "name": "商务英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050218",
+    "oldName": "商务英语"
+  },
+  {
+    "code": "050262",
+    "name": "商务英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "B050215",
+    "oldName": "经贸英语"
+  },
+  {
+    "code": "050262",
+    "name": "商务英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050217",
+    "oldName": "经贸英语"
+  },
+  {
+    "code": "050262",
+    "name": "商务英语",
+    "className": "",
+    "classCode": "0502",
+    "category": "文学",
+    "oldCode": "C050234",
+    "oldName": "外贸英语"
+  },
+  {
+    "code": "080202",
+    "name": "机械设计制造及其自动化",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080302",
+    "oldName": "机械制造及自动化"
+  },
+  {
+    "code": "080202",
+    "name": "机械设计制造及其自动化",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080324",
+    "oldName": "机械设计制造与自动化"
+  },
+  {
+    "code": "080202",
+    "name": "机械设计制造及其自动化",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080741",
+    "oldName": "数控技术"
+  },
+  {
+    "code": "080202",
+    "name": "机械设计制造及其自动化",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "C080327",
+    "oldName": "数控加工与模具设计"
+  },
+  {
+    "code": "080202",
+    "name": "机械设计制造及其自动化",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080313",
+    "oldName": "模具设计与制造"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080307",
+    "oldName": "机电一体化工程"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080339",
+    "oldName": "机械电子工程"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080308",
+    "oldName": "光机电一体化工程"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080338",
+    "oldName": "机电设备与管理"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B082225",
+    "oldName": "航空维修工程管理"
+  },
+  {
+    "code": "080204",
+    "name": "机械电子工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B081804",
+    "oldName": "航空机电工程"
+  },
+  {
+    "code": "080205",
+    "name": "工业设计",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B050421",
+    "oldName": "工业设计"
+  },
+  {
+    "code": "080207",
+    "name": "车辆工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080317",
+    "oldName": "汽车制造"
+  },
+  {
+    "code": "080207",
+    "name": "车辆工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B081737",
+    "oldName": "机车车辆"
+  },
+  {
+    "code": "080207",
+    "name": "车辆工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "C080349",
+    "oldName": "汽车机械制造技术"
+  },
+  {
+    "code": "080207",
+    "name": "车辆工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080332",
+    "oldName": "汽车车身数字化设计"
+  },
+  {
+    "code": "080207",
+    "name": "车辆工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "C080345",
+    "oldName": "汽车制造与装调技术"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B080610",
+    "oldName": "汽车运用工程"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B082232",
+    "oldName": "汽车服务工程"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B081726",
+    "oldName": "汽车维修与检测"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "C081710",
+    "oldName": "汽车维修与检测"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "C081727",
+    "oldName": "汽车营销与售后技术服务"
+  },
+  {
+    "code": "080208",
+    "name": "汽车服务工程",
+    "className": "",
+    "classCode": "0802",
+    "category": "工学",
+    "oldCode": "B081722",
+    "oldName": "汽车营销与售后技术服务"
+  },
+  {
+    "code": "080601",
+    "name": "电气工程及其自动化",
+    "className": "",
+    "classCode": "0806",
+    "category": "工学",
+    "oldCode": "B080605",
+    "oldName": "电力系统及其自动化"
+  },
+  {
+    "code": "080601",
+    "name": "电气工程及其自动化",
+    "className": "",
+    "classCode": "0806",
+    "category": "工学",
+    "oldCode": "B080612",
+    "oldName": "电气工程与自动化"
+  },
+  {
+    "code": "080701",
+    "name": "电子信息工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B110110",
+    "oldName": "信息技术应用与管理"
+  },
+  {
+    "code": "080701",
+    "name": "电子信息工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080738",
+    "oldName": "电子信息技术"
+  },
+  {
+    "code": "080701",
+    "name": "电子信息工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080753",
+    "oldName": "电子信息工程"
+  },
+  {
+    "code": "080702",
+    "name": "电子科学与技术",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080705",
+    "oldName": "电子工程"
+  },
+  {
+    "code": "080702",
+    "name": "电子科学与技术",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080735",
+    "oldName": "应用电子技术"
+  },
+  {
+    "code": "080703",
+    "name": "通信工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080791",
+    "oldName": "移动通信技术"
+  },
+  {
+    "code": "080703",
+    "name": "通信工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080708",
+    "oldName": "计算机通信工程"
+  },
+  {
+    "code": "080703",
+    "name": "通信工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080707",
+    "oldName": "通信工程"
+  },
+  {
+    "code": "080703",
+    "name": "通信工程",
+    "className": "",
+    "classCode": "0807",
+    "category": "工学",
+    "oldCode": "B080724",
+    "oldName": "通信与信息系统管理"
+  },
+  {
+    "code": "080801",
+    "name": "自动化",
+    "className": "",
+    "classCode": "0808",
+    "category": "工学",
+    "oldCode": "B080603",
+    "oldName": "工业自动化"
+  },
+  {
+    "code": "080801",
+    "name": "自动化",
+    "className": "",
+    "classCode": "0808",
+    "category": "工学",
+    "oldCode": "B080613",
+    "oldName": "自动化"
+  },
+  {
+    "code": "080802T",
+    "name": "轨道交通信号与控制",
+    "className": "",
+    "classCode": "0808",
+    "category": "工学",
+    "oldCode": "B080780",
+    "oldName": "轨道交通信号及控制"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080793",
+    "oldName": "信息系统管理"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B082208",
+    "oldName": "计算机信息管理"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080773",
+    "oldName": "信息与计算科学"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080745",
+    "oldName": "计算机科学教育"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080717",
+    "oldName": "计算机应用"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080749",
+    "oldName": "计算机科学与技术"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080702",
+    "oldName": "计算机及应用"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080787",
+    "oldName": "移动商务技术"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080789",
+    "oldName": "嵌入式技术"
+  },
+  {
+    "code": "080901",
+    "name": "计算机科学与技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080760",
+    "oldName": "计算机器件及设备"
+  },
+  {
+    "code": "080902",
+    "name": "软件工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080743",
+    "oldName": "游戏软件开发技术"
+  },
+  {
+    "code": "080902",
+    "name": "软件工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080720",
+    "oldName": "软件工程"
+  },
+  {
+    "code": "080902",
+    "name": "软件工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "C080762",
+    "oldName": "计算机应用软件"
+  },
+  {
+    "code": "080902",
+    "name": "软件工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "C080719",
+    "oldName": "计算机软件"
+  },
+  {
+    "code": "080902",
+    "name": "软件工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080711",
+    "oldName": "计算机软件"
+  },
+  {
+    "code": "080903",
+    "name": "网络工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080727",
+    "oldName": "网络工程"
+  },
+  {
+    "code": "080903",
+    "name": "网络工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080709",
+    "oldName": "计算机网络"
+  },
+  {
+    "code": "080904K",
+    "name": "信息安全",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080782",
+    "oldName": "信息安全与网络管理"
+  },
+  {
+    "code": "080904K",
+    "name": "信息安全",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080751",
+    "oldName": "信息安全"
+  },
+  {
+    "code": "080905",
+    "name": "物联网工程",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B080798",
+    "oldName": "物联网工程"
+  },
+  {
+    "code": "080906",
+    "name": "数字媒体技术",
+    "className": "",
+    "classCode": "0809",
+    "category": "工学",
+    "oldCode": "B082301",
+    "oldName": "数字媒体技术"
+  },
+  {
+    "code": "100402",
+    "name": "食品卫生与营养学",
+    "className": "",
+    "classCode": "1004",
+    "category": "医学",
+    "oldCode": "B081311",
+    "oldName": "营养、食品与健康"
+  },
+  {
+    "code": "100701",
+    "name": "药学",
+    "className": "",
+    "classCode": "1007",
+    "category": "医学",
+    "oldCode": "B100805",
+    "oldName": "药学"
+  },
+  {
+    "code": "100701",
+    "name": "药学",
+    "className": "",
+    "classCode": "1007",
+    "category": "医学",
+    "oldCode": "B100904",
+    "oldName": "药学与药品营销"
+  },
+  {
+    "code": "100702",
+    "name": "药物制剂",
+    "className": "",
+    "classCode": "1007",
+    "category": "医学",
+    "oldCode": "B081204",
+    "oldName": "制药科学与工程"
+  },
+  {
+    "code": "100702",
+    "name": "药物制剂",
+    "className": "",
+    "classCode": "1007",
+    "category": "医学",
+    "oldCode": "B100806",
+    "oldName": "药物制剂"
+  },
+  {
+    "code": "100801",
+    "name": "中药学",
+    "className": "",
+    "classCode": "1008",
+    "category": "医学",
+    "oldCode": "C100802",
+    "oldName": "中药学"
+  },
+  {
+    "code": "101001",
+    "name": "医学检验技术",
+    "className": "",
+    "classCode": "1010",
+    "category": "医学",
+    "oldCode": "B100311",
+    "oldName": "检验"
+  },
+  {
+    "code": "101004",
+    "name": "眼视光学",
+    "className": "",
+    "classCode": "1010",
+    "category": "医学",
+    "oldCode": "B100312",
+    "oldName": "眼视光学"
+  },
+  {
+    "code": "101101",
+    "name": "护理学",
+    "className": "",
+    "classCode": "1011",
+    "category": "医学",
+    "oldCode": "B100702",
+    "oldName": "护理学"
+  }
+]
