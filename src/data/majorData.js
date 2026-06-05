@@ -682,34 +682,26 @@ export const zkZhuankeOldNameMap = {
   '韩国语': '应用韩语',
 }
 
-// 自考匹配：通过旧名称找到新名称，再用新名称走777表判断
+// 自考匹配：旧名称→新名称，自考新专业全部符合报名条件
 export function checkQualificationByZK(name) {
-  // 自考本科旧名称 → 新名称 → 777表判断
+  // 自考本科旧名称 → 新名称
   const benkeNew = zkBenkeOldNameMap[name]
   if (benkeNew) {
-    const result = checkQualificationByName(benkeNew)
-    if (result.qualified) {
-      return { ...result, level: '自考本科（原' + name + '→' + benkeNew + '）' }
-    }
+    return { qualified: true, matchedName: benkeNew, level: '自考本科（原' + name + '→' + benkeNew + '）' }
   }
-  // 自考专科旧名称 → 新名称 → 777表判断
+  // 自考专科旧名称 → 新名称
   const zkzNew = zkZhuankeOldNameMap[name]
   if (zkzNew) {
-    const result = checkQualificationByName(zkzNew)
-    if (result.qualified) {
-      return { ...result, level: '自考专科（原' + name + '→' + zkzNew + '）' }
-    }
+    return { qualified: true, matchedName: zkzNew, level: '自考专科（原' + name + '→' + zkzNew + '）' }
   }
-  // 直接用输入名称匹配自考新专业名称
+  // 直接输入的是自考新专业名称
   const benkeNewNames = new Set(Object.values(zkBenkeOldNameMap))
   if (benkeNewNames.has(name)) {
-    const result = checkQualificationByName(name)
-    if (result.qualified) return { ...result, level: '自考本科' }
+    return { qualified: true, matchedName: name, level: '自考本科' }
   }
   const zkzNewNames = new Set(Object.values(zkZhuankeOldNameMap))
   if (zkzNewNames.has(name)) {
-    const result = checkQualificationByName(name)
-    if (result.qualified) return { ...result, level: '自考专科' }
+    return { qualified: true, matchedName: name, level: '自考专科' }
   }
   return { qualified: false, reason: '该专业不在人工智能训练师报考条件范围内' }
 }
