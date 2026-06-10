@@ -254,9 +254,15 @@ const traceFinalMajor = async (item, depth = 0) => {
   }
 
   // 不限层次的名称匹配（学信网层次无匹配时兜底）
+  // 注意：非研究生层次不能使用研究生一级学科的 includes 匹配，否则会把本科专业误判为符合
   const nameQual = checkQualificationByName(name)
   if (nameQual.qualified) {
-    return { ...nameQual, name }
+    // 如果学信网明确标注为非研究生层次，但匹配到的是研究生一级学科，则忽略该匹配
+    if (level !== '研究生' && nameQual.levels && nameQual.levels.every(l => l === '研究生')) {
+      // 不使用该匹配，继续往下走
+    } else {
+      return { ...nameQual, name }
+    }
   }
 
   // 名称不匹配时，走旧逻辑（普通本科/研究生）
