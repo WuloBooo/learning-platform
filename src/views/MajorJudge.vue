@@ -242,26 +242,33 @@ const traceFinalMajor = async (item, depth = 0) => {
     }
   }
 
-  // 按学信网标注的层次精确匹配
-  if (level === '专科' && gzMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '高职专科', name }
+  // 去掉学信网返回的注释后缀（如"(注：可授工学或理学学士学位)"），用纯净名再匹配一次
+  const cleanName = name.replace(/（注[：:].+）/, '').replace(/\(注[：:].+\)/, '').trim()
+
+  // 按学信网标注的层次精确匹配（原名 + 纯净名）
+  if (level === '专科') {
+    const matched = gzMajorNames.has(name) ? name : (gzMajorNames.has(cleanName) ? cleanName : null)
+    if (matched) return { qualified: true, matchedName: matched, level: '高职专科', name }
   }
-  if (level === '高职本科' && zyjyMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '高职本科', name }
+  if (level === '高职本科') {
+    const matched = zyjyMajorNames.has(name) ? name : (zyjyMajorNames.has(cleanName) ? cleanName : null)
+    if (matched) return { qualified: true, matchedName: matched, level: '高职本科', name }
   }
-  if (level === '本科' && benkeMajorNames.has(name)) {
-    return { qualified: true, matchedName: name, level: '普通本科', name }
+  if (level === '本科') {
+    const matched = benkeMajorNames.has(name) ? name : (benkeMajorNames.has(cleanName) ? cleanName : null)
+    if (matched) return { qualified: true, matchedName: matched, level: '普通本科', name }
   }
 
-  // 不限层次的名称匹配（学信网层次无匹配时兜底）
-  // 注意：非研究生层次不能使用研究生一级学科的 includes 匹配，否则会把本科专业误判为符合
-  const nameQual = checkQualificationByName(name)
-  if (nameQual.qualified) {
-    // 如果学信网明确标注为非研究生层次，但匹配到的是研究生一级学科，则忽略该匹配
-    if (level !== '研究生' && nameQual.levels && nameQual.levels.every(l => l === '研究生')) {
-      // 不使用该匹配，继续往下走
+  // 不限层次的名称匹配（学信网层次无匹配时兜底，用纯净名再试一次）
+  const nameQual = checkQualificationByName(name) || {}
+  const cleanNameQual = (!nameQual.qualified && cleanName !== name) ? checkQualificationByName(cleanName) : null
+  const finalNameQual = nameQual.qualified ? nameQual : cleanNameQual
+  if (finalNameQual && finalNameQual.qualified) {
+    // 非研究生层次不能使用研究生一级学科的 includes 匹配，否则会把本科专业误判为符合
+    if (level !== '研究生' && finalNameQual.levels && finalNameQual.levels.every(l => l === '研究生')) {
+      // 忽略该匹配，继续往下走
     } else {
-      return { ...nameQual, name }
+      return { ...finalNameQual, name }
     }
   }
 
