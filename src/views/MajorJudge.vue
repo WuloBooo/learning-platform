@@ -301,7 +301,7 @@ const traceFinalMajor = async (item, depth = 0) => {
   } catch (e) {
     console.error('追踪专业变化失败:', e)
   }
-  return { ...nameQual, name: item.zymc }
+  return { qualified: false, name: item.zymc, reason: '该专业不在人工智能训练师报考条件范围内' }
 }
 
 // 从学信网数据构建专业对象用于判断
