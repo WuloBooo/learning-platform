@@ -146,6 +146,21 @@ const chsiLoading = ref(false)
 // cc参数映射
 const ccMap = { '本科': 'ptjy', '专科': 'gz', '高职本科': 'zyjy', '研究生': 'yjs' }
 
+// 学信网层次与777表层次的对应关系，用于过滤跨层次误匹配
+// 学信网标注的层次 → 该层次下允许匹配的777表层次
+const levelAllowedMap = {
+  '本科': ['普通本科'],
+  '专科': ['高职专科'],
+  '高职本科': ['高职本科'],
+  '研究生': ['研究生'],
+}
+// 过滤出与学信网层次一致的匹配层次
+function filterValidLevels(chsiLevel, matchedLevels) {
+  const allowed = levelAllowedMap[chsiLevel]
+  if (!allowed) return matchedLevels // 未知层次不做过滤
+  return matchedLevels.filter(l => allowed.includes(l))
+}
+
 const searchChsi = async () => {
   if (!searchText.value.trim()) return
   chsiLoading.value = true
@@ -260,16 +275,18 @@ const traceFinalMajor = async (item, depth = 0) => {
   }
 
   // 不限层次的名称匹配（学信网层次无匹配时兜底，用纯净名再试一次）
+  // 关键：学信网已明确标注层次时，不允许跨层次匹配
+  // （如本科"商务英语"不应匹配到高职专科777表，本科"思想政治教育"不应匹配到研究生一级学科）
   const nameQual = checkQualificationByName(name) || {}
   const cleanNameQual = (!nameQual.qualified && cleanName !== name) ? checkQualificationByName(cleanName) : null
   const finalNameQual = nameQual.qualified ? nameQual : cleanNameQual
   if (finalNameQual && finalNameQual.qualified) {
-    // 非研究生层次不能使用研究生一级学科的 includes 匹配，否则会把本科专业误判为符合
-    if (level !== '研究生' && finalNameQual.levels && finalNameQual.levels.every(l => l === '研究生')) {
-      // 忽略该匹配，继续往下走
-    } else {
-      return { ...finalNameQual, name }
+    // 过滤掉与学信网层次不一致的匹配
+    const validLevels = filterValidLevels(level, finalNameQual.levels || [])
+    if (validLevels.length > 0) {
+      return { ...finalNameQual, levels: validLevels, level: validLevels.join('、'), name }
     }
+    // 所有匹配都与学信网层次不一致，忽略
   }
 
   // 名称不匹配时，走旧逻辑（普通本科/研究生）
