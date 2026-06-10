@@ -146,19 +146,11 @@ const chsiLoading = ref(false)
 // cc参数映射
 const ccMap = { '本科': 'ptjy', '专科': 'gz', '高职本科': 'zyjy', '研究生': 'yjs' }
 
-// 学信网层次与777表层次的对应关系，用于过滤跨层次误匹配
-// 学信网标注的层次 → 该层次下允许匹配的777表层次
-const levelAllowedMap = {
-  '本科': ['普通本科'],
-  '专科': ['高职专科'],
-  '高职本科': ['高职本科'],
-  '研究生': ['研究生'],
-}
-// 过滤出与学信网层次一致的匹配层次
-function filterValidLevels(chsiLevel, matchedLevels) {
-  const allowed = levelAllowedMap[chsiLevel]
-  if (!allowed) return matchedLevels // 未知层次不做过滤
-  return matchedLevels.filter(l => allowed.includes(l))
+// 每个层次对应的777表（严格按层次匹配，不跨层次）
+const level777Map = {
+  '本科': benkeMajorNames,
+  '专科': gzMajorNames,
+  '高职本科': zyjyMajorNames,
 }
 
 const searchChsi = async () => {
@@ -244,61 +236,33 @@ const searchChsi = async () => {
 }
 
 // 追踪专业变化链，找到最终专业后做判断
+// 核心原则：学信网返回的层次就是该条结果的层次，只查对应的那一张777表，不跨层次
 const traceFinalMajor = async (item, depth = 0) => {
   if (depth > 5) return { qualified: false, reason: '追踪层级过深' }
   const level = item._level || '本科'
   const name = item.zymc
 
-  // 研究生：按一级学科名称匹配
+  // 去掉学信网返回的注释后缀（如"(注：可授工学或理学学士学位)"）
+  const cleanName = name.replace(/（注[：:].+）/, '').replace(/\(注[：:].+\)/, '').trim()
+
+  // 研究生：按一级学科名称 includes 匹配
   if (level === '研究生') {
     const matched = masterLevelOneNames?.filter(n => name.includes(n))
     if (matched && matched.length > 0) {
       return { qualified: true, matchedName: matched[0], level: '研究生', name }
     }
-  }
-
-  // 去掉学信网返回的注释后缀（如"(注：可授工学或理学学士学位)"），用纯净名再匹配一次
-  const cleanName = name.replace(/（注[：:].+）/, '').replace(/\(注[：:].+\)/, '').trim()
-
-  // 按学信网标注的层次精确匹配（原名 + 纯净名）
-  if (level === '专科') {
-    const matched = gzMajorNames.has(name) ? name : (gzMajorNames.has(cleanName) ? cleanName : null)
-    if (matched) return { qualified: true, matchedName: matched, level: '高职专科', name }
-  }
-  if (level === '高职本科') {
-    const matched = zyjyMajorNames.has(name) ? name : (zyjyMajorNames.has(cleanName) ? cleanName : null)
-    if (matched) return { qualified: true, matchedName: matched, level: '高职本科', name }
-  }
-  if (level === '本科') {
-    const matched = benkeMajorNames.has(name) ? name : (benkeMajorNames.has(cleanName) ? cleanName : null)
-    if (matched) return { qualified: true, matchedName: matched, level: '普通本科', name }
-  }
-
-  // 不限层次的名称匹配（学信网层次无匹配时兜底，用纯净名再试一次）
-  // 关键：学信网已明确标注层次时，不允许跨层次匹配
-  // （如本科"商务英语"不应匹配到高职专科777表，本科"思想政治教育"不应匹配到研究生一级学科）
-  const nameQual = checkQualificationByName(name) || {}
-  const cleanNameQual = (!nameQual.qualified && cleanName !== name) ? checkQualificationByName(cleanName) : null
-  const finalNameQual = nameQual.qualified ? nameQual : cleanNameQual
-  if (finalNameQual && finalNameQual.qualified) {
-    // 过滤掉与学信网层次不一致的匹配
-    const validLevels = filterValidLevels(level, finalNameQual.levels || [])
-    if (validLevels.length > 0) {
-      return { ...finalNameQual, levels: validLevels, level: validLevels.join('、'), name }
+  } else {
+    // 本科/专科/高职本科：只用对应层次的777表精确匹配（原名 + 纯净名）
+    const set777 = level777Map[level]
+    if (set777) {
+      const matched = set777.has(name) ? name : (set777.has(cleanName) ? cleanName : null)
+      if (matched) return { qualified: true, matchedName: matched, level, name }
     }
-    // 所有匹配都与学信网层次不一致，忽略
   }
 
-  // 名称不匹配时，走旧逻辑（普通本科/研究生）
-  const major = buildMajorFromChsi(item, level)
-  if (major) {
-    const qual = checkQualification(major)
-    if (qual.qualified) return { ...qual, name }
-  }
-
-  // 不合格时，用专业名称再搜一次学信网，追踪变化链
+  // 以上未匹配到，尝试追踪学信网专业变化链（同名专业可能已更名）
   const cc = ccMap[level]
-  if (!cc) return { ...nameQual, name }
+  if (!cc) return { qualified: false, name, reason: '该专业不在人工智能训练师报考条件范围内' }
   try {
     const res = await fetch(`/api/chsi/major-search?cc=${cc}&key=${encodeURIComponent(item.zymc)}`)
     const data = await res.json()
@@ -318,7 +282,7 @@ const traceFinalMajor = async (item, depth = 0) => {
   } catch (e) {
     console.error('追踪专业变化失败:', e)
   }
-  return { qualified: false, name: item.zymc, reason: '该专业不在人工智能训练师报考条件范围内' }
+  return { qualified: false, name, reason: '该专业不在人工智能训练师报考条件范围内' }
 }
 
 // 从学信网数据构建专业对象用于判断
