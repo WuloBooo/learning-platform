@@ -147,20 +147,34 @@ _INPUT_REPLACEMENTS = {
 }
 
 
-def rewrite_input_calls(source: str) -> str:
+def rewrite_input_calls(source: str, filename: str = "") -> str:
     """把 input(prompt) 调用替换成固定示例输入，避免 Jupyter/Pyodide 阻塞。
 
-    策略：对每个 input(...) 调用，用映射表里的默认值替换；未命中映射时用空串占位。
+    策略：对每个 input(...) 调用，用映射表里的默认值替换；未命中映射时用空串占位，
+    并向 stderr 打印警告（便于发现新增的 input 场景、补充映射表）。
     返回新源码（原样保留注释与结构）。
     """
     pattern = re.compile(r'input\s*\(\s*([^)]*)\)')
+    unmapped_prompts: list = []
 
     def _sub(m: re.Match) -> str:
         prompt_expr = m.group(1).strip().strip('"').strip("'")
-        default = _INPUT_REPLACEMENTS.get(prompt_expr, "")
+        if prompt_expr in _INPUT_REPLACEMENTS:
+            default = _INPUT_REPLACEMENTS[prompt_expr]
+        else:
+            default = ""
+            unmapped_prompts.append(prompt_expr)
         return f'"{default}"  # 已由转换脚本替换 input()，避免阻塞；可自行修改'
 
-    return pattern.sub(_sub, source)
+    new_source = pattern.sub(_sub, source)
+    for p in unmapped_prompts:
+        where = f"[{filename}] " if filename else ""
+        print(
+            f"⚠️ {where}input(\"{p}\") 未命中默认值映射表，已用空串占位。"
+            f"如需真实示例输入，请在 _INPUT_REPLACEMENTS 补充该 prompt。",
+            file=sys.stderr,
+        )
+    return new_source
 
 
 def build_input_warning_cell(orig_source: str) -> object:
@@ -175,40 +189,100 @@ def build_input_warning_cell(orig_source: str) -> object:
 # ============================================================
 # __main__ 守卫处理
 # ============================================================
+_MAIN_GUARD_RE = re.compile(
+    r'^([ \t]*)if\s+__name__\s*==\s*[\'"]__main__[\'"]\s*:',
+    re.MULTILINE,
+)
+
+
+def _leading_ws(line: str) -> str:
+    """返回行首空白（空格/Tab）前缀。"""
+    out = []
+    for ch in line:
+        if ch in " \t":
+            out.append(ch)
+        else:
+            break
+    return "".join(out)
+
+
 def detect_main_call(source: str) -> Optional[str]:
     """若文件含 `if __name__ == "__main__":`，返回一个显式调用 cell 的代码。
 
     在 notebook 中 __name__ 实际等于 "__main__"，守卫块本身会执行；
     但为保守起见（PRD 2.3.2），追加一个无守卫的显式调用，确保 Run All 可见输出。
 
-    启发式：从守卫块内抓取第一个形如 `func()` 的顶层函数调用追加到 cell。
-    抓不到时退化为：注释提示学生手动运行。
+    策略：提取整个 __main__ 守卫块的全部缩进语句体（去除守卫块的基准缩进），
+    作为 explicit-call cell。这样多语句守卫块（如 q3_4 的 keyword 赋值 + 两个
+    print）能被完整保留，避免只抓到部分语句导致变量未定义。同时保留块内更深
+    层嵌套语句（if/for/with 的缩进体）的相对缩进。
+
+    守卫块体为空（仅 `if __name__ == "__main__":` 无内容）时，退化为注释提示。
     """
-    if 'if __name__' not in source:
+    m = _MAIN_GUARD_RE.search(source)
+    if not m:
         return None
-    # 抓守卫块内的函数调用：行首为 4 空格缩进的 `name(...)` 语句
+
+    guard_indent = m.group(1)  # 守卫行的缩进（通常为空串，即顶层）
+
     lines = source.splitlines()
-    in_main = False
-    for line in lines:
-        stripped = line.strip()
-        if stripped.startswith('if __name__'):
-            in_main = True
+    # 找到守卫行索引
+    start_idx = None
+    for i, line in enumerate(lines):
+        if re.match(r'^[ \t]*if\s+__name__\s*==\s*[\'"]__main__[\'"]\s*:', line):
+            start_idx = i + 1
+            break
+    if start_idx is None:
+        return None
+
+    # 第一条非空子行决定 block_indent（通常是 guard_indent + 4 空格）
+    block_indent = None
+    for line in lines[start_idx:]:
+        if line.strip() != "":
+            ws = _leading_ws(line)
+            if len(ws) > len(guard_indent):
+                block_indent = ws
+            break
+    if block_indent is None:
+        # 守卫块体全是空行 / 紧跟顶层语句 -> 块体为空
+        return (
+            "# === 显式调用提示 ===\n"
+            "# 原 .py 使用了 `if __name__ == \"__main__\"` 守卫，但块体为空。\n"
+            "# 在 notebook 中该块会自动执行；若无输出，请手动运行上方函数定义后的调用。\n"
+        )
+
+    # 收集守卫块体内所有「缩进 >= block_indent」的连续语句；
+    # 一旦遇到「缩进 <= guard_indent 的非空行」，守卫块结束。
+    body_lines = []
+    for line in lines[start_idx:]:
+        if line.strip() == "":
+            body_lines.append("")
             continue
-        if in_main:
-            # 守卫块内：缩进 4 空格且像函数调用
-            if line.startswith("    ") and re.match(r'^[A-Za-z_]\w*\s*\(', stripped):
-                return (
-                    "# === 显式调用（确保 Run All 能看到输出）===\n"
-                    f"{stripped}\n"
-                )
-            # 守卫块结束（回到顶层非空行）
-            if stripped and not line.startswith("    "):
-                in_main = False
-    # 兜底提示
+        ws = _leading_ws(line)
+        # 仍在块内：缩进严格比守卫行深
+        if len(ws) > len(guard_indent):
+            # 去掉一级 block_indent 缩进，保留更深层相对缩进；
+            # （len(ws) >= len(block_indent) 由收集条件保证）
+            body_lines.append(line[len(block_indent):])
+            continue
+        # 回到与守卫行同级或更浅 -> 守卫块结束
+        break
+
+    # 去掉尾部空行
+    while body_lines and body_lines[-1].strip() == "":
+        body_lines.pop()
+
+    if not body_lines:
+        return (
+            "# === 显式调用提示 ===\n"
+            "# 原 .py 使用了 `if __name__ == \"__main__\"` 守卫，但块体为空。\n"
+            "# 在 notebook 中该块会自动执行；若无输出，请手动运行上方函数定义后的调用。\n"
+        )
+
+    body = "\n".join(body_lines)
     return (
-        "# === 显式调用提示 ===\n"
-        "# 原 .py 使用了 `if __name__ == \"__main__\"` 守卫。\n"
-        "# 在 notebook 中该块会自动执行；若无输出，请手动运行上方函数定义后的调用。\n"
+        "# === 显式调用（确保 Run All 能看到输出）===\n"
+        f"{body}\n"
     )
 
 
@@ -236,7 +310,7 @@ def convert_py_to_ipynb(py_path: Path, out_ipynb: Path) -> dict:
     # 1. 先在源码层面处理 input() 改写（影响 jupytext 转出来的 code cell 内容）
     had_input = contains(source, "input(")
     if had_input:
-        source = rewrite_input_calls(source)
+        source = rewrite_input_calls(source, filename=stem)
         actions["input_rewritten"] = True
         # 把改写后的源写回临时文件，让 jupytext 读
         tmp_py = py_path.with_suffix(".py.tmp")
@@ -480,13 +554,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             pass
     print(f"\n✅ 转换完成，共 {len(all_summaries)} 项。")
 
-    # 关键断言（AC2/AC3）：torch cell 只注入到 import torch 的文件
-    torch_injected = {s["file"] for s in all_summaries if s.get("torch_cell")}
-    expected_torch = {"q3_1", "q3_2", "q3_3"}
-    if not torch_injected.issuperset(expected_torch & torch_injected) and torch_injected - expected_torch:
-        print(f"⚠️ 警告：注入 torch cell 的文件超出预期白名单: {torch_injected}", file=sys.stderr)
+    # torch cell 注入分布（仅日志，不硬编码白名单判定——判定一律 grep import torch）
+    torch_injected = sorted({s["file"] for s in all_summaries if s.get("torch_cell")})
     if torch_injected:
-        print(f"   torch cell 注入到: {sorted(torch_injected)}")
+        print(f"   torch cell 注入到: {torch_injected}")
     return 0
 
 

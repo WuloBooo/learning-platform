@@ -124,12 +124,147 @@ class TestConvertRules(unittest.TestCase):
         self.assertIn("simulate_test()", sources[-1])
         self.assertIn("显式调用", sources[-1])
 
+    # ---- __main__ 块含多语句（q3_4 场景）：显式调用 cell 应包含整个守卫块体 ----
+    def test_explicit_call_multi_statement_main_block(self):
+        """q3_4 真实场景：__main__ 块含 keyword 赋值 + 两个 print（含函数调用）。
+
+        回归覆盖 detect_main_call 旧 bug：旧逻辑只抓首个 `name(` 调用，
+        导致 cell = `print("查询结果：")`，丢失 query_knowledge(keyword) 调用、
+        且 keyword 未定义。
+        """
+        text = (
+            "knowledge_base = {'a': 'b'}\n"
+            "\n"
+            "def query_knowledge(keyword):\n"
+            "    return keyword\n"
+            "\n"
+            'if __name__ == "__main__":\n'
+            '    keyword = "垃圾分类"\n'
+            '    print("查询结果：")\n'
+            "    print(query_knowledge(keyword))\n"
+        )
+        ipynb = self._convert_py_text("q3_4_multi", text)
+        sources = _cell_sources(ipynb)
+        last = sources[-1]
+        self.assertIn("显式调用", last)
+        # 整个守卫块体三条语句都应在显式调用 cell 内
+        self.assertIn('keyword = "垃圾分类"', last)
+        self.assertIn('print("查询结果：")', last)
+        self.assertIn("print(query_knowledge(keyword))", last)
+        # 不应只含 print("查询结果：")（旧 bug 的产物）
+        self.assertNotEqual(
+            last,
+            "# === 显式调用（确保 Run All 能看到输出）===\n"
+            'print("查询结果：")\n',
+        )
+
+    # ---- __main__ 块含嵌套缩进（if/for 体）：相对缩进应保留 ----
+    def test_explicit_call_nested_indent_preserved(self):
+        """守卫块内含嵌套结构（for/if）时，去外层缩进但保留内部相对缩进。"""
+        text = (
+            "def f(items):\n"
+            "    return items\n"
+            "\n"
+            'if __name__ == "__main__":\n'
+            "    for x in [1, 2, 3]:\n"
+            "        print(x)\n"
+            "    print('done')\n"
+        )
+        ipynb = self._convert_py_text("q_nested", text)
+        sources = _cell_sources(ipynb)
+        last = sources[-1]
+        self.assertIn("for x in [1, 2, 3]:", last)
+        # for 体内的 print(x) 应保留 4 空格相对缩进
+        self.assertIn("    print(x)", last)
+        self.assertIn("print('done')", last)
+
     def test_no_explicit_call_when_no_main(self):
         text = "import torch\nprint(torch.__version__)\n"
         ipynb = self._convert_py_text("q3_x", text)
         sources = _cell_sources(ipynb)
         joined = "\n".join(sources)
         self.assertNotIn("显式调用", joined)
+
+
+class TestDetectMainCall(unittest.TestCase):
+    """detect_main_call 纯单元测试（不依赖 jupytext/nbformat，直接测返回字符串）。
+
+    覆盖 __main__ 块多语句场景（审查第 2 轮必改项）的回归保护。
+    """
+
+    def test_no_main_returns_none(self):
+        self.assertIsNone(convert.detect_main_call("print('hi')\n"))
+
+    def test_single_call_block(self):
+        src = (
+            'def f():\n    pass\n\n'
+            'if __name__ == "__main__":\n'
+            '    f()\n'
+        )
+        out = convert.detect_main_call(src)
+        self.assertIsNotNone(out)
+        self.assertIn("显式调用", out)
+        self.assertIn("f()", out)
+
+    def test_multi_statement_block_full_body_extracted(self):
+        """q3_4 真实场景：赋值 + print + print(函数调用) 必须全部保留。
+
+        回归旧 bug：旧逻辑只抓首个 `name(` 形态调用，得 `print("查询结果：")`，
+        丢失 keyword 赋值与 query_knowledge(keyword) 调用。
+        """
+        src = (
+            'if __name__ == "__main__":\n'
+            '    keyword = "垃圾分类"\n'
+            '    print("查询结果：")\n'
+            '    print(query_knowledge(keyword))\n'
+        )
+        out = convert.detect_main_call(src)
+        self.assertIsNotNone(out)
+        self.assertIn('keyword = "垃圾分类"', out)
+        self.assertIn('print("查询结果：")', out)
+        self.assertIn("print(query_knowledge(keyword))", out)
+        # 不应只含单独的 print("查询结果：")
+        self.assertNotEqual(
+            out,
+            "# === 显式调用（确保 Run All 能看到输出）===\n"
+            'print("查询结果：")\n',
+        )
+
+    def test_nested_indent_preserved(self):
+        """块内 for/if 缩进体去外层缩进后应保留相对缩进。"""
+        src = (
+            'if __name__ == "__main__":\n'
+            '    for x in [1, 2]:\n'
+            '        print(x)\n'
+            '    print("done")\n'
+        )
+        out = convert.detect_main_call(src)
+        self.assertIn("for x in [1, 2]:", out)
+        self.assertIn("    print(x)", out)  # 4 空格相对缩进
+        self.assertIn('print("done")', out)
+
+    def test_pass_only_block_preserved(self):
+        """守卫块体为 pass -> pass 被原样保留（非空块）。"""
+        src = (
+            'def f():\n    pass\n\n'
+            'if __name__ == "__main__":\n'
+            '    pass\n'
+        )
+        out = convert.detect_main_call(src)
+        self.assertIn("pass", out)
+
+    def test_guard_not_first_line(self):
+        """守卫不在文件首行：仍能正确定位并提取块体。"""
+        src = (
+            'import os\n'
+            '\n'
+            'CONST = 1\n'
+            '\n'
+            'if __name__ == "__main__":\n'
+            '    print(CONST)\n'
+        )
+        out = convert.detect_main_call(src)
+        self.assertIn("print(CONST)", out)
 
 
 class TestIdempotentAndIntegration(unittest.TestCase):
