@@ -5,6 +5,10 @@ server/node_modules/
 # Build output
 dist/
 
+# JupyterLite 构建产物与 Python 虚拟环境（不入库，服务器上 build.sh 现场生成）
+jupyterlite/_output/
+jupyterlite/.venv/
+
 # Environment files
 .env
 server/.env
