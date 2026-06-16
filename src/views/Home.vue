@@ -58,12 +58,6 @@
           <h3>学员登记</h3>
           <p>填写信息获取资料清单</p>
         </router-link>
-        <!-- Python 练习环境：外链新窗口打开 /jupyter/，不加 Vue route（隔离/AC5）-->
-        <a href="/jupyter/" target="_blank" rel="noopener" class="entry-card">
-          <span class="entry-icon">🐍</span>
-          <h3>Python 练习环境</h3>
-          <p>浏览器内运行 PyTorch 实操</p>
-        </a>
       </div>
     </section>
 

@@ -1,21 +1,11 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import path from 'path'
-import { fileURLToPath } from 'url'
-import fs from 'fs'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { initDatabase } from './config/database.js'
-
-// ESM __dirname（用于定位 JupyterLite 静态产物）
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-// JupyterLite 纯静态产物目录：默认指向项目根的 jupyterlite/_output
-// 可用环境变量 JUPYTER_OUTPUT_DIR 覆盖；目录不存在时不阻断服务启动
-const JUPYTER_OUTPUT_DIR = process.env.JUPYTER_OUTPUT_DIR ||
-  path.resolve(__dirname, '../../jupyterlite/_output')
 
 import authRoutes from './routes/auth.js'
 import userRoutes from './routes/user.js'
@@ -32,11 +22,7 @@ import { errorHandler, notFound } from './middleware/error.js'
 const app = express()
 
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  // 关闭 helmet 全局 COOP —— AC8 要求根路径无 COOP/COEP；
-  // COOP 仅应在 /jupyter/ 子路径显式设置（见下方 JupyterLite 中间件）。
-  // 关闭根 COOP 不会影响现有 Vue（same-origin COOP 本就不提供跨域隔离能力）。
-  crossOriginOpenerPolicy: false
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }))
 
 const allowedOrigins = [
@@ -137,58 +123,6 @@ app.use('/api/exam-rooms', examRoomRoutes)
 app.use('/api/survey', surveyRoutes)
 app.use('/api/workflow', workflowRoutes)
 app.use('/api/org', orgRoutes)
-
-// ============================================================
-// JupyterLite 三级练习站点（纯静态，隔离于现有 API/Vue）
-// 一致性契约：子路径 = /jupyter/（前端跳转 / 后端挂载 / output 目录三者一致）
-// 必须在 notFound / SPA fallback 之前注册，否则会被 404/SPA 吞掉（T10/边界 2.3.6）
-// ============================================================
-
-// 1) COOP/COEP 跨域隔离头 —— 仅 /jupyter/，绝不全站设置（AC7/AC8）
-//    Pyodide 的 SharedArrayBuffer 需要这两个头；全站设置会破坏 Vue iframe/第三方资源
-app.use('/jupyter', (req, res, next) => {
-  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
-  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
-  next()
-})
-
-// 2) 覆盖 helmet CSP —— 仅 /jupyter/（在 helmet 全局挂载之后执行，故会覆盖该路径的 CSP）
-//    允许 'wasm-unsafe-eval' 与 cdn.jsdelivr.net（Pyodide/WASM/Worker 必需，T16/AC9）
-app.use('/jupyter', (req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net",
-      "worker-src 'self' blob:",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self' https://cdn.jsdelivr.net https://files.pythonhosted.org",
-      "module-src 'self' blob:"
-    ].join('; ')
-  )
-  next()
-})
-
-// 3) 静态托管 —— 目录不存在时降级为提示 JSON，避免阻断服务启动
-if (JUPYTER_OUTPUT_DIR && fs.existsSync(JUPYTER_OUTPUT_DIR)) {
-  app.use('/jupyter', express.static(JUPYTER_OUTPUT_DIR, {
-    index: ['index.html'],
-    setHeaders: (res, filePath) => {
-      // .wasm / .wasm.gz 需正确 MIME，避免 Pyodide 加载失败
-      if (filePath.endsWith('.wasm')) res.setHeader('Content-Type', 'application/wasm')
-    }
-  }))
-  console.log(`📦 JupyterLite 站点挂载: /jupyter/ -> ${JUPYTER_OUTPUT_DIR}`)
-} else {
-  console.warn(`⚠️  JupyterLite 产物目录不存在: ${JUPYTER_OUTPUT_DIR}（/jupyter 暂不可用，请先运行 build.sh）`)
-  app.use('/jupyter', (req, res) => {
-    res.status(503).json({
-      message: 'JupyterLite 站点尚未构建。请在服务器执行 jupyterlite-training/build.sh 后重启服务。'
-    })
-  })
-}
 
 app.use(notFound)
 app.use(errorHandler)
