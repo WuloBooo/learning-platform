@@ -153,6 +153,9 @@ const level777Map = {
   '高职本科': zyjyMajorNames,
 }
 
+// 所有本科/专科白名单（用于条件④跨层兜底匹配）
+const allMajorSets = { benkeMajorNames, zyjyMajorNames, gzMajorNames }
+
 const searchChsi = async () => {
   if (!searchText.value.trim()) return
   chsiLoading.value = true
@@ -236,7 +239,7 @@ const searchChsi = async () => {
 }
 
 // 追踪专业变化链，找到最终专业后做判断
-// 核心原则：学信网返回的层次就是该条结果的层次，只查对应的那一张777表，不跨层次
+// 核心原则：学信网返回的层次就是该条结果的层次，先查对应777表，再跨层次兜底，最后追踪变化链
 const traceFinalMajor = async (item, depth = 0) => {
   if (depth > 5) return { qualified: false, reason: '追踪层级过深' }
   const level = item._level || '本科'
@@ -252,11 +255,25 @@ const traceFinalMajor = async (item, depth = 0) => {
       return { qualified: true, matchedName: matched[0], level: '研究生', name }
     }
   } else {
-    // 本科/专科/高职本科：只用对应层次的777表精确匹配（原名 + 纯净名）
+    // 本科/专科/高职本科：先用对应层次的777表精确匹配（原名 + 纯净名）
     const set777 = level777Map[level]
     if (set777) {
       const matched = set777.has(name) ? name : (set777.has(cleanName) ? cleanName : null)
       if (matched) return { qualified: true, matchedName: matched, level, name }
+    }
+
+    // 条件④兜底：当前层次白名单未命中，去所有本科白名单里查一次
+    // 用于解决"专业跨层对应"问题，例如：
+    //   普通本科"商务英语"在本科表里没有，但它是职业本科"应用英语"的原名，应当符合
+    //   普通本科"健康服务与管理"同理（职业本科"健康管理"的原名）
+    for (const setName of ['benkeMajorNames', 'zyjyMajorNames', 'gzMajorNames']) {
+      const otherSet = allMajorSets[setName]
+      if (otherSet && otherSet !== set777) {
+        const crossMatched = otherSet.has(name) ? name : (otherSet.has(cleanName) ? cleanName : null)
+        if (crossMatched) {
+          return { qualified: true, matchedName: crossMatched, level: level + '（跨层匹配）', name }
+        }
+      }
     }
   }
 
