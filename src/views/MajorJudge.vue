@@ -1,14 +1,7 @@
 <template>
   <div class="major-check-page">
     <div class="check-card">
-      <!-- 页眉:证书感装饰线 -->
-      <div class="cert-header">
-        <div class="cert-line"></div>
-        <span class="cert-mark">※</span>
-        <div class="cert-line"></div>
-      </div>
-
-      <h1>专业报考条件查询</h1>
+      <h1>专业报考条件查询（Beta）</h1>
       <p class="subtitle">人工智能训练师（三级）— 查询你的专业是否符合报名条件</p>
 
       <div class="form-section">
@@ -18,28 +11,20 @@
             placeholder="请输入专业名称或专业代码"
             @keyup.enter="handleSearch"
             autocomplete="off"
-            aria-label="专业名称或专业代码"
           />
           <button class="search-btn" @click="handleSearch" :disabled="loading">
-            {{ loading ? '查询中' : '查 询' }}
+            {{ loading ? '搜索中...' : '搜索' }}
           </button>
         </div>
-        <p class="search-hint">研究生按一级学科匹配 · 数据来源:学信网</p>
+        <p class="search-hint">💡 研究生按一级学科匹配</p>
 
-        <!-- 学信网查询结果 -->
+        <!-- 学信网查询结果（搜索时自动获取） -->
       <div class="chsi-section" v-if="chsiResults.length > 0">
-        <h3>学信网专业变化查询结果<span class="result-count">{{ chsiResults.length }} 条</span></h3>
+        <h3>📚 学信网专业变化查询结果（{{ chsiResults.length }}条）</h3>
         <div class="chsi-list">
           <div class="chsi-item" v-for="item in chsiResults" :key="item.zydm" :class="{'chsi-pass': item._qualified, 'chsi-fail': item._checked && !item._qualified}">
             <div class="chsi-current">
-              <span class="chsi-seal" v-if="item._qualified">
-                <!-- 通过印章:SVG勾 -->
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              </span>
-              <span class="chsi-seal seal-fail" v-else-if="item._checked">
-                <!-- 不通过:SVG叉 -->
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </span>
+              <span class="chsi-badge">{{ item._qualified ? '✅' : '❌' }}</span>
               <span class="chsi-code">{{ item.zydm }}</span>
               <span class="chsi-name">{{ item.zymc }}</span>
               <span class="chsi-level-tag" v-if="item._level">{{ item._level }}</span>
@@ -65,19 +50,62 @@
       </div>
 
       <div class="chsi-hint" v-if="chsiLoading">
-        <div class="loading-spinner"></div>
         <p>正在从学信网查询...</p>
       </div>
+        <!-- 本地搜索建议（暂时隐藏，仅使用学信网判断）
+        <div class="suggestions" v-if="suggestions.length > 0 && showSuggestions">
+          <div
+            v-for="item in suggestions"
+            :key="item.level + item.code + item.name"
+            class="suggestion-item"
+            @click="selectMajor(item)"
+          >
+            <span class="sug-name">{{ item.name }}</span>
+            <span class="sug-meta">
+              <span :class="['level-tag', item.level]">{{ item.level }}</span>
+              {{ item.className }}
+              <span class="sug-code" v-if="item.code">（{{ item.code }}）</span>
+            </span>
+          </div>
+        </div>
+        -->
       </div>
+
+      <!-- 本地判断结果（暂时隐藏，仅使用学信网判断）
+      <div class="result-section" v-if="result">
+        <div :class="['result-card', result.qualified ? 'pass' : 'fail']">
+          <div class="result-icon">{{ result.qualified ? '✅' : '❌' }}</div>
+          <div class="result-info">
+            <h3>{{ result.qualified ? '符合报名条件' : '不符合报名条件' }}</h3>
+            <div class="result-detail">
+              <p><strong>专业名称：</strong>{{ selectedMajor.name }}</p>
+              <p><strong>学历层次：</strong>{{ selectedMajor.level }}</p>
+              <p><strong>所属专业类：</strong>{{ selectedMajor.className }}</p>
+              <p v-if="selectedMajor.code"><strong>专业代码：</strong>{{ selectedMajor.code }}</p>
+              <p v-if="result.qualified && result.matchedCode" class="match-info">
+                匹配条件：专业类代码 {{ result.matchedCode }}
+              </p>
+              <p v-if="result.qualified && result.matchedName" class="match-info">
+                匹配条件：{{ result.matchedName }}
+              </p>
+              <p v-if="!result.qualified" class="fail-reason">{{ result.reason }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <!-- 未找到提示（暂时隐藏）
+      <div class="multi-hint" v-if="searched && !result && !showSuggestions && chsiResults.length === 0 && !chsiLoading">
+        <p>未找到匹配的专业，请检查输入是否正确。</p>
+      </div>
+      -->
 
       <!-- 说明 -->
       <div class="info-section">
-        <p class="disclaimer">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          以上查询结果仅供参考，最终报考资格以实际审核结果为准。
-        </p>
+        <p class="disclaimer">⚠️ 以上查询结果仅供参考，最终报考资格以实际审核结果为准。</p>
         <h3>报考条件说明</h3>
-        <p class="info-intro">人工智能训练师可报考的专业范围（按学历层次）：</p>
+        <p>人工智能训练师可报考的专业范围（按学历层次）：</p>
         <div class="info-grid">
           <div class="info-item">
             <h4>本科</h4>
@@ -92,13 +120,6 @@
             <p>电子与信息、医药卫生、装备制造、教育与体育相关学科</p>
           </div>
         </div>
-      </div>
-
-      <!-- 页脚:证书感装饰线 -->
-      <div class="cert-header cert-footer">
-        <div class="cert-line"></div>
-        <span class="cert-mark">※</span>
-        <div class="cert-line"></div>
       </div>
     </div>
   </div>
@@ -343,374 +364,372 @@ const selectMajor = (item) => {
 </script>
 
 <style scoped>
-/* ========== 设计系统:Trust & Authority 权威学术风 ==========
-   配色:深墨蓝主色 + 证书金点缀 + 米白底
-   字体:EB Garamond(衬线标题) + Lato(无衬线正文)
-   skill 来源:ui-ux-pro-max --design-system + style/color/typography 检索
-================================================================ */
-
 .major-check-page {
-  --color-primary: #0f172a;        /* 深墨蓝 */
-  --color-secondary: #334155;      /* 板岩灰 */
-  --color-accent: #0369a1;         /* 权威天蓝 */
-  --color-gold: #a16207;           /* 证书金 */
-  --color-bg: #faf8f3;             /* 米白底 */
-  --color-card: #ffffff;           /* 卡片白 */
-  --color-border: #e2e0d8;         /* 米色边框 */
-  --color-border-strong: #c9c5b8;  /* 强边框 */
-  --color-muted: #6b6757;          /* 次要文字 */
-  --color-pass: #15803d;           /* 通过绿(权威深绿) */
-  --color-pass-bg: #f7faf7;
-  --color-fail: #991b1b;           /* 不通过红(权威深红) */
-  --color-fail-bg: #fdf8f8;
-
-  --font-serif: 'EB Garamond', 'Songti SC', 'STSong', Georgia, serif;
-  --font-sans: 'Lato', -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
-
   min-height: 100vh;
-  background: var(--color-bg);
-  background-image:
-    radial-gradient(circle at 20% 10%, rgba(3, 105, 161, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 80% 90%, rgba(161, 98, 7, 0.03) 0%, transparent 40%);
-  padding: 48px 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 40px 20px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  font-family: var(--font-sans);
-  color: var(--color-primary);
 }
 
 .check-card {
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-  padding: 48px 56px;
-  width: 720px;
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  width: 680px;
   max-width: 100%;
-  box-shadow:
-    0 1px 0 rgba(15, 23, 42, 0.04),
-    0 4px 24px rgba(15, 23, 42, 0.06);
-  position: relative;
-}
-
-/* 证书感装饰线(页眉/页脚) */
-.cert-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 32px;
-}
-.cert-footer {
-  margin-bottom: 0;
-  margin-top: 40px;
-}
-.cert-line {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-border-strong), transparent);
-}
-.cert-mark {
-  color: var(--color-gold);
-  font-size: 14px;
-  font-family: var(--font-serif);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
 }
 
 .check-card h1 {
   text-align: center;
-  font-family: var(--font-serif);
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin: 0 0 10px;
-  letter-spacing: 1px;
+  font-size: 24px;
+  color: #1a1a2e;
+  margin: 0 0 8px;
 }
 
 .subtitle {
   text-align: center;
-  color: var(--color-muted);
+  color: #888;
   font-size: 14px;
-  margin: 0 0 36px;
-  letter-spacing: 0.5px;
+  margin: 0 0 32px;
 }
 
-/* ========== 搜索区 ========== */
 .form-section {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   position: relative;
 }
 
 .search-row {
   display: flex;
-  gap: 0;
-  border: 1px solid var(--color-border-strong);
-  border-radius: 2px;
-  overflow: hidden;
-  background: var(--color-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.search-row:focus-within {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(3, 105, 161, 0.1);
+  gap: 8px;
 }
 
 .search-row input {
   flex: 1;
-  padding: 16px 18px;
-  border: none;
-  background: transparent;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  color: var(--color-primary);
-  outline: none;
+  padding: 14px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 16px;
+  transition: border-color 0.2s;
 }
-.search-row input::placeholder {
-  color: var(--color-muted);
-  opacity: 0.7;
-}
-
-.search-btn {
-  padding: 0 32px;
-  background: var(--color-primary);
-  color: #fff;
-  border: none;
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s ease;
-  min-height: 52px;
-}
-.search-btn:hover:not(:disabled) { background: var(--color-secondary); }
-.search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .search-hint {
   font-size: 12px;
-  color: var(--color-muted);
-  margin: 10px 2px 0;
-  text-align: right;
-  letter-spacing: 0.3px;
+  color: #94a3b8;
+  margin: 8px 0 0;
+  text-align: center;
 }
 
-/* ========== 学信网结果区 ========== */
-.chsi-section {
-  margin-bottom: 28px;
-  padding: 0;
-  border-left: 3px solid var(--color-accent);
-  padding-left: 20px;
+.search-row input:focus {
+  outline: none;
+  border-color: #667eea;
 }
-.chsi-section h3 {
-  margin: 0 0 16px;
-  font-family: var(--font-serif);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--color-primary);
+
+.search-btn {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.search-btn:hover { opacity: 0.9; }
+.search-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.suggestion-item:hover { background: #f8f9ff; }
+.suggestion-item:last-child { border-bottom: none; }
+
+.sug-name {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.sug-meta {
+  font-size: 12px;
+  color: #999;
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-.result-count {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-muted);
-  letter-spacing: 0.5px;
+  gap: 6px;
 }
 
+.level-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: white;
+}
+
+.level-tag.本科 { background: #667eea; }
+.level-tag.专科 { background: #10b981; }
+.level-tag.研究生 { background: #f59e0b; }
+
+.sug-code { color: #bbb; }
+
+.result-section { margin-bottom: 24px; }
+
+.result-card {
+  display: flex;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+.result-card.pass {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.result-card.fail {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+}
+
+.result-icon { font-size: 36px; flex-shrink: 0; }
+
+.result-info h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.result-card.pass .result-info h3 { color: #166534; }
+.result-card.fail .result-info h3 { color: #991b1b; }
+
+.result-detail p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.match-info {
+  color: #166534 !important;
+  font-weight: 500;
+}
+
+.fail-reason {
+  color: #991b1b !important;
+}
+
+.chsi-btn {
+  margin-top: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.chsi-btn:hover { opacity: 0.9; }
+.chsi-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chsi-btn-inline {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: white;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.chsi-btn-inline:hover { background: #eff6ff; }
+.chsi-btn-inline:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.chsi-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+.chsi-section h3 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: #1e40af;
+}
 .chsi-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .chsi-item {
-  padding: 16px 18px;
-  background: var(--color-card);
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-  transition: border-color 0.2s ease, background-color 0.2s ease;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 .chsi-item.chsi-pass {
-  background: var(--color-pass-bg);
-  border-left: 3px solid var(--color-pass);
+  background: #f0fdf4;
+  border-color: #86efac;
 }
 .chsi-item.chsi-fail {
-  background: var(--color-fail-bg);
-  border-left: 3px solid var(--color-fail);
+  background: #fef2f2;
+  border-color: #fecaca;
 }
-
 .chsi-current {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
 }
-
-/* 印章式状态标记(替代emoji) */
-.chsi-seal {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--color-pass);
-  color: #fff;
+.chsi-badge {
+  font-size: 14px;
   flex-shrink: 0;
 }
-.chsi-seal.seal-fail {
-  background: var(--color-fail);
-}
-
 .chsi-code {
-  font-family: 'SF Mono', 'Menlo', monospace;
   font-size: 12px;
-  color: var(--color-muted);
-  background: var(--color-bg);
-  padding: 3px 8px;
-  border-radius: 2px;
-  border: 1px solid var(--color-border);
-  letter-spacing: 0.5px;
+  color: white;
+  background: #3b82f6;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 .chsi-name {
   font-size: 16px;
-  font-weight: 600;
-  color: var(--color-primary);
-  font-family: var(--font-sans);
+  font-weight: 500;
+  color: #1e293b;
 }
 .chsi-level-tag {
-  font-size: 11px;
-  color: var(--color-accent);
-  padding: 2px 8px;
-  border: 1px solid var(--color-accent);
-  border-radius: 2px;
-  background: rgba(3, 105, 161, 0.05);
-  letter-spacing: 0.5px;
+  font-size: 12px;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #6366f1;
 }
-
 .chsi-qualify {
-  margin-top: 6px;
-  padding-left: 36px;
+  margin-top: 4px;
 }
 .qualify-text {
-  font-size: 13px;
-  color: var(--color-pass);
+  font-size: 12px;
+  color: #166534;
   font-weight: 500;
 }
 .chsi-item.chsi-fail .qualify-text {
-  color: var(--color-fail);
+  color: #991b1b;
 }
 .chain-text {
-  font-size: 12px;
-  color: var(--color-muted);
-  margin-left: 6px;
+  font-size: 11px;
+  color: #6366f1;
+  margin-left: 4px;
 }
 .chsi-old {
   font-size: 12px;
-  color: var(--color-muted);
-  margin-top: 6px;
-  padding-left: 36px;
-  line-height: 1.7;
+  color: #64748b;
+  margin-top: 4px;
+  line-height: 1.6;
 }
-.chsi-arrow { color: var(--color-border-strong); margin-right: 4px; }
+.chsi-arrow { color: #94a3b8; }
 .chsi-old-item {
-  margin-right: 10px;
+  margin-right: 8px;
 }
-
 .chsi-hint {
   text-align: center;
-  padding: 24px;
-  color: var(--color-muted);
+  padding: 12px;
+  color: #64748b;
   font-size: 13px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-}
-.loading-spinner {
-  width: 22px;
-  height: 22px;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .loading-spinner { animation: none; }
 }
 
-/* ========== 信息说明区 ========== */
+.multi-hint {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
+}
+
 .info-section {
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid var(--color-border);
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
 }
 
 .disclaimer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  color: var(--color-gold);
-  margin: 0 0 24px;
-  padding: 12px 16px;
-  background: rgba(161, 98, 7, 0.05);
-  border: 1px solid rgba(161, 98, 7, 0.2);
-  border-radius: 2px;
-  letter-spacing: 0.3px;
+  text-align: center;
+  font-size: 13px !important;
+  color: #e67e22 !important;
+  margin: 0 0 16px !important;
+  padding: 10px;
+  background: #fef9e7;
+  border-radius: 8px;
+  border: 1px solid #f9e79f;
 }
 
 .info-section h3 {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin: 0 0 8px;
+  font-size: 16px;
+  color: #1a1a2e;
+  margin: 0 0 12px;
 }
-.info-intro {
+
+.info-section > p {
   font-size: 14px;
-  color: var(--color-muted);
-  margin: 0 0 20px;
+  color: #666;
+  margin: 0 0 16px;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--color-border);
-  border: 1px solid var(--color-border);
-  margin-bottom: 0;
+  gap: 12px;
+  margin-bottom: 16px;
 }
+
 .info-item {
-  padding: 20px;
-  background: var(--color-card);
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
 }
+
 .info-item h4 {
-  margin: 0 0 8px;
-  font-family: var(--font-serif);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-accent);
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: #667eea;
 }
+
 .info-item p {
   margin: 0;
   font-size: 12px;
-  color: var(--color-muted);
-  line-height: 1.7;
+  color: #888;
+  line-height: 1.5;
 }
 
-/* ========== 响应式 ========== */
+.related {
+  font-size: 12px !important;
+  color: #aaa !important;
+  line-height: 1.6;
+}
+
 @media (max-width: 600px) {
-  .major-check-page { padding: 20px 12px; }
-  .check-card { padding: 32px 24px; }
-  .check-card h1 { font-size: 26px; }
+  .check-card { padding: 24px 16px; }
   .search-row { flex-direction: column; }
-  .search-btn { padding: 14px; letter-spacing: 8px; }
   .info-grid { grid-template-columns: 1fr; }
-  .chsi-qualify, .chsi-old { padding-left: 0; }
+  .suggestion-item { flex-direction: column; align-items: flex-start; gap: 4px; }
 }
 </style>
